@@ -2,7 +2,6 @@ package utils;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.io.IOException;
 import java.text.Normalizer;
 import java.util.*;
 
@@ -120,7 +119,7 @@ public class StringUtilities {   //Utility methods
                 else throw new Exception( "Second value of this pair was found to be null");
 
             }catch (Exception gamma){
-                log.new error(GRAY+gamma+RESET);
+                log.new Error(GRAY+gamma+RESET);
 
             }
 

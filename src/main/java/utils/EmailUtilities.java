@@ -55,11 +55,11 @@ public class EmailUtilities {
             if (attachment!=null)
                 message.setContent(attachment);
 
-            log.new info("Sending...");
+            log.new Info("Sending...");
             Transport.send(message);// Send message
-            log.new success("Sent message successfully!");
+            log.new Success("Sent message successfully!");
         }
-        catch (MessagingException mex) {log.new error(mex.getMessage());}
+        catch (MessagingException mex) {log.new Error(mex.getMessage());}
     }
 
 }

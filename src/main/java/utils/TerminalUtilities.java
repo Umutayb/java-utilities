@@ -21,7 +21,7 @@ public class TerminalUtilities {
                 line = reader.readLine();
                 if (line.contains(logText)){
                     Thread.sleep(5000);
-                    log.new success(line);
+                    log.new Success(line);
                     break;
                 }
             }

@@ -29,7 +29,7 @@ public class ApiUtilities {
 
         String requestUrl = "https://"+url+uri;
 
-        log.new info("Performing "+BLUE+requestType+GRAY+" request at: \""+BLUE+requestUrl+GRAY+"\""+RESET);
+        log.new Info("Performing "+BLUE+requestType+GRAY+" request at: \""+BLUE+requestUrl+GRAY+"\""+RESET);
 
         try{
             switch (requestType.toLowerCase()){
@@ -109,7 +109,7 @@ public class ApiUtilities {
 
         String requestUrl = "https://"+url+uri;
 
-        log.new info("Performing "+BLUE+"post"+GRAY+" request at: \""+BLUE+requestUrl+GRAY+"\""+RESET);
+        log.new Info("Performing "+BLUE+"post"+GRAY+" request at: \""+BLUE+requestUrl+GRAY+"\""+RESET);
 
         request = RestAssured.given().multiPart("file", new File(fileUrl), "image/jpeg");
 
@@ -130,13 +130,13 @@ public class ApiUtilities {
 
     public void printStatusCode(Response response){
         if (response.getStatusCode()==200)
-            log.new info("Server response: "+GREEN+response.getStatusCode()+RESET);
+            log.new Info("Server response: "+GREEN+response.getStatusCode()+RESET);
         else if (response.getStatusCode()==500)
-            log.new info("Server response: "+RED+response.getStatusCode()+RESET);
+            log.new Info("Server response: "+RED+response.getStatusCode()+RESET);
         else if (response.getStatusCode()==404)
-            log.new info("Server response: "+YELLOW+response.getStatusCode()+RESET);
+            log.new Info("Server response: "+YELLOW+response.getStatusCode()+RESET);
         else
-            log.new info("Server response: "+BLUE_BACKGROUND+response.getStatusCode()+RESET);
+            log.new Info("Server response: "+BLUE_BACKGROUND+response.getStatusCode()+RESET);
     }
 
 }

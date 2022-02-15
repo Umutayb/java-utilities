@@ -21,24 +21,24 @@ public class Printer extends Colors {
 
     public <T> Printer(Class<T> className){log = LogFactory.getLog(className);}
 
-    public class important {
-        public important(Object text){report(PURPLE + text + RESET);}
+    public class Important {
+        public Important(Object text){report(PURPLE + text + RESET);}
     }
 
-    public class info {
-        public info(Object text) {report(GRAY + text + RESET);}
+    public class Info {
+        public Info(Object text) {report(GRAY + text + RESET);}
     }
 
-    public class success {
-        public success(Object text){report(GREEN + text + RESET);}
+    public class Success {
+        public Success(Object text){report(GREEN + text + RESET);}
     }
 
-    public class warning {
-        public warning(Object text){report(YELLOW + text + RESET);}
+    public class Warning {
+        public Warning(Object text){report(YELLOW + text + RESET);}
     }
 
-    public class error {
-        public error(Object text){report(RED + text + RESET);}
+    public class Error {
+        public Error(Object text){report(RED + text + RESET);}
     }
 
     public void report(Object text){
@@ -53,14 +53,14 @@ public class Printer extends Colors {
 
     public void captureScreen(String specName, RemoteWebDriver driver) {
         try {
-             new info("Capturing page");
+             new Info("Capturing page");
 
             String name = specName+"#"+numeric.randomNumber(1,10000)+".jpg";
             File sourceFile = new File("Screenshots");
             File fileDestination  = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
             FileUtils.copyFile(fileDestination, new File(sourceFile, name));
 
-            new info("Screenshot saved as; "+name+" at the \"Screenshots\" file.");
+            new Info("Screenshot saved as; "+name+" at the \"Screenshots\" file.");
 
         }catch (Exception gamma){
             Assert.fail(YELLOW+"Could not capture screen"+RED+"\n\t"+gamma+RESET);
