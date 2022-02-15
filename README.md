@@ -5,7 +5,7 @@
 First, the library should be exported into an empty automation project. There are two ways of doing this.
 ### First Way: 
 
-[![](https://jitpack.io/v/Umutayb/Pickleib.svg)](https://jitpack.io/#Umutayb/Pickleib)
+[![](https://jitpack.io/v/Umutayb/Pickleib.svg)](https://jitpack.io/#Umutayb/Java-Utilities)
 
 The dependency can be acquired by adding Jitpack repository into the pom.xml, as well as the dependency for the library as:
 ```xml
@@ -13,8 +13,8 @@ The dependency can be acquired by adding Jitpack repository into the pom.xml, as
     <!-- Framework -->
         <dependency>
             <groupId>com.github.Umutayb</groupId>
-            <artifactId>Pickleib</artifactId>
-            <version>0.5.1</version>
+            <artifactId>Java-Utils</artifactId>
+            <version>0.0.1</version>
         </dependency>   
 </dependencies>
         

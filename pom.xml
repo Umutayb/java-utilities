@@ -5,15 +5,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.Umutayb</groupId>
-  <artifactId>Pickleib</artifactId>
-  <version>0.6.1</version>
+  <artifactId>Utilities</artifactId>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
-  <name>Pickleib</name>
-  <url>http://github.com/Umutayb/Pickleib</url>
+  <name>Java-Utilities</name>
+  <url>http://github.com/Umutayb/Java-Utilities</url>
 
   <properties>
-    <buildDirectory>${project.basedir}/out/artifacts/POM-Framework_jar</buildDirectory>
+    <buildDirectory>${project.basedir}/out/artifacts/Java-Utilities_jar</buildDirectory>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <serenity.maven.version>1.9.12</serenity.maven.version>
     <maven.surefire.version>2.22.1</maven.surefire.version>
