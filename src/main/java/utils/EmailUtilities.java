@@ -7,7 +7,7 @@ import javax.mail.*;
 
 public class EmailUtilities {
 
-    Printer log = new Printer(EmailUtilities.class);
+    private final Printer log = new Printer(EmailUtilities.class);
 
     public static void main(String[] args) {}
 

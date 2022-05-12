@@ -11,7 +11,7 @@ import java.io.File;
 public class ApiUtilities {
 
     JsonUtilities jsonUtilities = new JsonUtilities();
-    Printer log = new Printer(ApiUtilities.class);
+    private final Printer log = new Printer(ApiUtilities.class);
 
     String url;
     String uri;

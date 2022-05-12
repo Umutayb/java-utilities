@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 public class ObjectUtilities {
 
-    Printer log = new Printer(ObjectUtilities.class);
+    private final Printer log = new Printer(ObjectUtilities.class);
 
     public <T> Object getFieldValue(String fieldName, Class<T> inputClass) {
         try {

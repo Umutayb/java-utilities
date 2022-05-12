@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class TerminalUtilities {
 
-    Printer log = new Printer(TerminalUtilities.class);
+    private final Printer log = new Printer(TerminalUtilities.class);
 
     public void runTerminalCommand(String command, String logText){
         try {

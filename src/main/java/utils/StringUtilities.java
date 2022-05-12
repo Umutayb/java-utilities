@@ -9,7 +9,7 @@ import static resources.Colors.*;
 
 public class StringUtilities {   //Utility methods
 
-    Printer log = new Printer(StringUtilities.class);
+    private final Printer log = new Printer(StringUtilities.class);
 
     public String reverse(String input){
         StringBuilder reversed = new StringBuilder();

@@ -13,7 +13,7 @@ import static resources.Colors.YELLOW;
 
 public class FileUtilities {
 
-    Printer log = new Printer(FileUtilities.class);
+    private final Printer log = new Printer(FileUtilities.class);
 
     public String getString(String directory, String fileName) {
         try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}

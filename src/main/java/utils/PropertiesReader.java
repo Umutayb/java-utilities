@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public class PropertiesReader {
 
-    Printer log = new Printer(StringUtilities.class);
+    private final Printer log = new Printer(StringUtilities.class);
 
     private Properties properties;
 
