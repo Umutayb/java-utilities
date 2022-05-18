@@ -3,7 +3,7 @@
 ### How To Get Started:
 
 First, the library should be exported into an empty automation project. There are two ways of doing this.
-### First Way: 
+### Dependency: 
 
 [![](https://jitpack.io/v/Umutayb/Java-Utilities.svg)](https://jitpack.io/#Umutayb/Java-Utilities)
 
