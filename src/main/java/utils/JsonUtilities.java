@@ -110,4 +110,14 @@ public class JsonUtilities {
         return object;
     }
 
+    public String formatJsonString(String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Object jsonObject = mapper.readValue(json, Object.class);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+        }
+        catch (IOException e) {e.printStackTrace();}
+        return null;
+    }
+
 }
