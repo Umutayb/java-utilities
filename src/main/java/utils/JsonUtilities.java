@@ -16,6 +16,7 @@ public class JsonUtilities {
 
     public JSONObject urlsJson = new JSONObject();
     public JSONObject notificationJson = new JSONObject();
+    private final Printer log = new Printer(JsonUtilities.class);
     FileUtilities fileUtil = new FileUtilities();
 
     public void saveJson(JSONObject inputJson, String jsonName){
@@ -101,12 +102,10 @@ public class JsonUtilities {
         try {
 
             JSONParser parser = new JSONParser();
-
             object = (JSONObject) parser.parse(inputString);
 
-        }catch (Exception gamma){
-            Assert.fail(String.valueOf(gamma));
         }
+        catch (Exception gamma){log.new Warning(gamma.getStackTrace());}
         return object;
     }
 
