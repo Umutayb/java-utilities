@@ -100,12 +100,10 @@ public class JsonUtilities {
     public JSONObject str2json(String inputString){
         JSONObject object = null;
         try {
-
             JSONParser parser = new JSONParser();
             object = (JSONObject) parser.parse(inputString);
-
         }
-        catch (Exception gamma){log.new Warning(gamma.getStackTrace());}
+        catch (Exception gamma){log.new Warning(gamma.getMessage());}
         return object;
     }
 
