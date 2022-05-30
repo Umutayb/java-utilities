@@ -103,7 +103,7 @@ public class JsonUtilities {
             JSONParser parser = new JSONParser();
             object = (JSONObject) parser.parse(inputString);
         }
-        catch (Exception gamma){log.new Warning(gamma.getMessage());}
+        catch (Exception gamma){log.new Warning(gamma.fillInStackTrace());}
         return object;
     }
 
