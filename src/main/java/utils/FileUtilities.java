@@ -2,7 +2,6 @@ package utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

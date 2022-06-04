@@ -1,17 +1,11 @@
 package utils;
 
 import org.apache.commons.logging.LogFactory;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.TakesScreenshot;
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.OutputType;
 import org.apache.commons.logging.Log;
 import java.util.Properties;
 import java.io.IOException;
 import java.io.FileReader;
 import resources.Colors;
-import org.junit.Assert;
-import java.io.File;
 
 public class Printer extends Colors {
 
