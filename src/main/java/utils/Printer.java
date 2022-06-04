@@ -30,8 +30,8 @@ public class Printer extends Colors {
 
     public void report(String color, Object text){
         if (Boolean.parseBoolean(properties.getProperty("enableLogging")))
-            log.info(color + text + RESET);
+            LogUtilities.log.info((String) text);
         else
-            System.out.println((String) text);
+            log.info(color + text + RESET);
     }
 }
