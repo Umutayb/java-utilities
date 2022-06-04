@@ -22,6 +22,11 @@ public class FileUtilities {
         }
     }
 
+    public void createIfAbsent(String pathname){
+        try {if (!verifyFilePresence(pathname)) new File(pathname).createNewFile();}
+        catch (IOException e) {throw new RuntimeException(e);}
+    }
+
     public void classWriter(String classString, String className) throws IOException {
         FileWriter file = new FileWriter("src/main/java/utils/classes/"+className+".java");
 
