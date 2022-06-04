@@ -34,6 +34,20 @@ public class FileUtilities {
         file.close();
     }
 
+    public void fileWriter(String location, String content){
+        try {
+            FileWriter file = new FileWriter(location);
+
+            if(file.toString().isEmpty())
+                file.write(content);
+            else
+                file.append(content);
+
+            file.close();
+        }
+        catch (IOException e) {throw new RuntimeException(e);}
+    }
+
     public boolean verifyFilePresence(String fileDirectory) { //Verifies presence of a file at a given directory
 
         boolean fileIsPresent = false;
