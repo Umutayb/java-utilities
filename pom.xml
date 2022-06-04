@@ -6,7 +6,7 @@
 
   <groupId>com.github.Umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>0.0.9</version>
+  <version>0.0.8</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
