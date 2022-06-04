@@ -1,18 +1,14 @@
 package utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import static resources.Colors.YELLOW;
+import static resources.Colors.*;
 
 public class FileUtilities {
-
-    private final Printer log = new Printer(FileUtilities.class);
 
     public String getString(String directory, String fileName) {
         try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}
