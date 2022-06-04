@@ -18,17 +18,17 @@ public class Printer extends Colors {
         catch (IOException e) {e.printStackTrace();}
     }
 
-    public class Important { public Important(Object text){report(PURPLE, text);}}
+    public class Important { public Important(Object text){log(PURPLE, text);}}
 
-    public class Info { public Info(Object text) {report(GRAY, text);}}
+    public class Info { public Info(Object text) {log(GRAY, text);}}
 
-    public class Success { public Success(Object text){report(GREEN, text);}}
+    public class Success { public Success(Object text){log(GREEN, text);}}
 
-    public class Warning { public Warning(Object text){report(YELLOW, text);}}
+    public class Warning { public Warning(Object text){log(YELLOW, text);}}
 
-    public class Error { public Error(Object text){report(RED,text);}}
+    public class Error { public Error(Object text){log(RED,text);}}
 
-    public void report(String color, Object text){
+    public void log(String color, Object text){
         if (Boolean.parseBoolean(properties.getProperty("enableLogging")))
             LogUtilities.log.info((String) text);
         else
