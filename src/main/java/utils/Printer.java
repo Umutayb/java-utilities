@@ -29,7 +29,7 @@ public class Printer extends Colors {
     public class Error { public Error(Object text){log(RED,text);}}
 
     public void log(String color, Object text){
-        if (Boolean.parseBoolean(properties.getProperty("enableLogging")))
+        if (Boolean.parseBoolean(properties.getProperty("save-logs")))
             LogUtilities.log.info(text.toString());
         else
             log.info(color + text + RESET);
