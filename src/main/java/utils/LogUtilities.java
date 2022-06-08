@@ -16,8 +16,8 @@ public class LogUtilities {
             file.setFormatter(formatter);
             log.addHandler(file);
         }
-        catch (IOException e) {throw new RuntimeException(e);}
+        catch (IOException ignored) {}
     }
 
-    public LogUtilities() throws IOException {}
+    public LogUtilities() {}
 }
