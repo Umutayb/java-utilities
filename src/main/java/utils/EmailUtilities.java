@@ -10,13 +10,12 @@ import javax.mail.internet.MimeMultipart;
 
 public class EmailUtilities {
 
+    public EmailUtilities(String host){setHost(host);}
+
     private static final Printer log = new Printer(EmailUtilities.class);
-    public static String host;
+    private String host;
 
-    public static Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
-
-        // Assuming you are sending email from through gmail's smtp
-        host = "smtp-relay.sendinblue.com";
+    public Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
 
         // Get system properties
         Properties properties = System.getProperties();
@@ -63,4 +62,5 @@ public class EmailUtilities {
         return false;
     }
 
+    private void setHost(String host){this.host = host;}
 }
