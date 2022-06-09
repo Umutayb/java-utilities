@@ -2,13 +2,23 @@ package utils;
 
 import org.junit.Assert;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Properties;
+
 import static resources.Colors.*;
 
 public class FileUtilities {
+
+    public static final Properties properties = new Properties();
+
+    static {
+        try {properties.load(new FileReader("src/test/resources/test.properties"));}
+        catch (Exception exception) {exception.printStackTrace();}
+    }
 
     public String getString(String directory, String fileName) {
         try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}

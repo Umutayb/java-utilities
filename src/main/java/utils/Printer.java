@@ -2,21 +2,14 @@ package utils;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
-import java.io.FileReader;
-import java.util.Properties;
-import java.io.IOException;
 import resources.Colors;
+import static utils.FileUtilities.properties;
 
 public class Printer extends Colors {
 
     private final Log log;
-    private final Properties properties = new Properties();
 
-    public <T> Printer(Class<T> className){
-        log = LogFactory.getLog(className);
-        try {properties.load(new FileReader("src/test/resources/test.properties"));}
-        catch (IOException e) {e.printStackTrace();}
-    }
+    public <T> Printer(Class<T> className){log = LogFactory.getLog(className);}
 
     public class Important { public Important(Object text){log(PURPLE, text);}}
 
