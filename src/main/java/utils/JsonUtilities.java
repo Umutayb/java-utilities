@@ -19,14 +19,14 @@ public class JsonUtilities {
     private final Printer log = new Printer(JsonUtilities.class);
     FileUtilities fileUtil = new FileUtilities();
 
-    public void saveJson(JSONObject inputJson, String jsonName){
+    public void saveJson(JSONObject inputJson, String directory){
         try {
 
             //JSONParser parser = new JSONParser();
 
             //JSONObject object = (JSONObject) parser.parse(new InputStreamReader(new FileInputStream("src/test/java/resources/database/"+"Getir"+".JSON")));
 
-            FileWriter file = new FileWriter("src/test/java/resources/database/"+jsonName+".JSON");
+            FileWriter file = new FileWriter(directory);
 
             ObjectMapper mapper = new ObjectMapper();
 
@@ -45,12 +45,12 @@ public class JsonUtilities {
 
     }
 
-    public JsonObject parseJsonFile(String directory, String JsonName) {
+    public JsonObject parseJsonFile(String directory) {
         try {
             JsonParser jsonParser = new JsonParser();
             JsonElement object;
 
-            FileReader fileReader = new FileReader(directory+"/"+JsonName+".JSON");
+            FileReader fileReader = new FileReader(directory);
 
             object = jsonParser.parse(fileReader);
             JsonObject jsonObject = (JsonObject) object;
@@ -66,12 +66,12 @@ public class JsonUtilities {
 
     }
 
-    public JSONObject parseJSONFile(String JsonName) throws IOException, ParseException {
+    public JSONObject parseJSONFile(String distance) throws IOException, ParseException {
 
         JSONParser jsonParser = new JSONParser();
         JSONObject object;
 
-        FileReader fileReader = new FileReader("src/test/java/resources/database/"+JsonName+".JSON");
+        FileReader fileReader = new FileReader(distance);
 
         object = (JSONObject) jsonParser.parse(fileReader);
         JSONObject jsonObject = object;
