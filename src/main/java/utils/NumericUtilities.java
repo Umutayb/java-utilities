@@ -65,6 +65,6 @@ public class NumericUtilities {
 
     public Double shortenDouble(Double number){
         DecimalFormat formatter = new DecimalFormat("#.##");
-        return Double.parseDouble(formatter.format(number));
+        return Double.parseDouble(formatter.format(number).replaceAll(",","."));
     }
 }
