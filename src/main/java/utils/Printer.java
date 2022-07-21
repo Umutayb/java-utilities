@@ -3,7 +3,6 @@ package utils;
 import resources.Colors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import static utils.FileUtilities.properties;
 
 public class Printer extends Colors {
@@ -43,7 +42,7 @@ public class Printer extends Colors {
         String method = locations[0].getMethodName();
         // Caller will be the third element
         if( locations.length > 2 ) {
-            StackTraceElement caller = locations[locations.length-1];
+            StackTraceElement caller = locations[3];
             method = caller.getMethodName();
         }
         return method;

@@ -6,7 +6,7 @@
 
   <groupId>com.github.Umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
@@ -114,8 +114,8 @@
         <version>${maven.compiler.version}</version>
         <configuration>
           <encoding>UTF-8</encoding>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>11</source>
+          <target>11</target>
         </configuration>
       </plugin>
 
