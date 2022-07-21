@@ -14,7 +14,7 @@ public class ObjectUtilities {
             field.setAccessible(true);
             return field.get(inputClass);
         }
-        catch (Exception e) {log.new Error(e.fillInStackTrace());}
+        catch (Exception exception) {log.new Error(exception.getMessage(), exception);}
         return null;
     }
 

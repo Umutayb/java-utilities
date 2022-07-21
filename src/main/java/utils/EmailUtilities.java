@@ -1,12 +1,9 @@
 package utils;
 
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import java.io.File;
 import java.util.Properties;
 import javax.mail.*;
-import javax.mail.internet.MimeMultipart;
 
 public class EmailUtilities {
 
@@ -58,7 +55,7 @@ public class EmailUtilities {
             log.new Success("Sent message successfully!");
             return true;
         }
-        catch (MessagingException mex) {log.new Error(mex.getMessage());}
+        catch (MessagingException mex) {log.new Error(mex.getMessage(), mex);}
         return false;
     }
 

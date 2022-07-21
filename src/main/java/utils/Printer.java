@@ -1,30 +1,51 @@
 package utils;
 
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import resources.Colors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static utils.FileUtilities.properties;
 
 public class Printer extends Colors {
 
-    private final Log log;
+    private final Logger log;
 
-    public <T> Printer(Class<T> className){log = LogFactory.getLog(className);}
+    public <T> Printer(Class<T> className){log = Logger.getLogger(className.getName());}
 
-    public class Important { public Important(Object text){log(PURPLE, text);}}
+    public class Important { public Important(Object text){log(Level.INFO, PURPLE, text);}}
 
-    public class Info { public Info(Object text) {log(GRAY, text);}}
+    public class Info { public Info(Object text) {log(Level.INFO, GRAY, text);}}
 
-    public class Success { public Success(Object text){log(GREEN, text);}}
+    public class Success { public Success(Object text){log(Level.INFO, GREEN, text);}}
 
-    public class Warning { public Warning(Object text){log(YELLOW, text);}}
+    public class Warning { public Warning(Object text){log(Level.WARNING, YELLOW, text);}}
 
-    public class Error { public Error(Object text){log(RED,text);}}
+    public class Error { public Error(Object text, Exception exception){log(Level.SEVERE, RED, text, exception);}}
 
-    public void log(String color, Object text){
+    private void log(Level level, String color, Object text){
+        text = (color + text + RESET);
         if (Boolean.parseBoolean(properties.getProperty("save-logs")))
             LogUtilities.log.info(text.toString());
-        else
-            log.info(color + text + RESET);
+        else log.logp(level, log.getName(), getMethod(), text.toString());
+    }
+
+    private void log(Level level, String color, Object text, Exception exception){
+        text = (color + text + RESET);
+        if (Boolean.parseBoolean(properties.getProperty("save-logs")))
+            LogUtilities.log.info(text.toString());
+        else log.logp(level, log.getName(), getMethod(), text.toString(), exception);
+    }
+
+    private String getMethod(){
+        Throwable dummyException = new Throwable();
+        StackTraceElement[] locations = dummyException.getStackTrace();
+        // LOGGING-132: use the provided logger name instead of the class name
+        String method = locations[0].getMethodName();
+        // Caller will be the third element
+        if( locations.length > 2 ) {
+            StackTraceElement caller = locations[locations.length-1];
+            method = caller.getMethodName();
+        }
+        return method;
     }
 }

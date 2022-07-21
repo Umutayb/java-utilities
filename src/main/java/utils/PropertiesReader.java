@@ -17,7 +17,7 @@ public class PropertiesReader {
             this.properties = new Properties();
             this.properties.load(inputStream);
         }
-        catch (IOException e) {log.new Error(e.getMessage());}
+        catch (IOException exception) {log.new Error(exception.getMessage(), exception);}
     }
 
     public String getProperty(String propertyName) {
