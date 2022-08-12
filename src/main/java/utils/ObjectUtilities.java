@@ -8,14 +8,13 @@ public class ObjectUtilities {
 
     private final Printer log = new Printer(ObjectUtilities.class);
 
-    public <T> Object getFieldValue(String fieldName, Class<T> inputClass) {
+    public Object getFieldValue(String fieldName, Object inputClass){
         try {
-            Field field = inputClass.getDeclaredField(fieldName);
+            Field field = inputClass.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             return field.get(inputClass);
         }
-        catch (Exception exception) {log.new Error(exception.getMessage(), exception);}
-        return null;
+        catch (IllegalAccessException | NoSuchFieldException exception) {throw new RuntimeException(exception);}
     }
 
     public Map<String,Object> getFields(Object inputClass){
@@ -26,7 +25,7 @@ public class ObjectUtilities {
                 fieldMap.put(field.getName(),field.get(inputClass));
             }
         }
-        catch (IllegalAccessException e) {throw new RuntimeException(e);}
+        catch (IllegalAccessException exception) {throw new RuntimeException(exception);}
         return fieldMap;
     }
 }
