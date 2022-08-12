@@ -6,18 +6,18 @@ import java.util.Map;
 
 public class ObjectUtilities {
 
-    public Object getFieldValue(String fieldName, Object inputClass){
+    public <T> Object getFieldValue(String fieldName, Class<T> inputClass){
         try {
-            Field field = inputClass.getClass().getDeclaredField(fieldName);
+            Field field = inputClass.getDeclaredField(fieldName);
             field.setAccessible(true);
             return field.get(inputClass);
         }
         catch (IllegalAccessException | NoSuchFieldException exception) {throw new RuntimeException(exception);}
     }
 
-    public <T> Object getFieldValue(String fieldName, Class<T> inputClass){
+    public Object getField(String fieldName, Object inputClass){
         try {
-            Field field = inputClass.getDeclaredField(fieldName);
+            Field field = inputClass.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             return field.get(inputClass);
         }
