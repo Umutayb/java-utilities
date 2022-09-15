@@ -37,12 +37,12 @@ public class Printer extends Colors {
 
     private String getMethod(){
         Throwable dummyException = new Throwable();
-        StackTraceElement[] locations = dummyException.getStackTrace();
+        StackTraceElement[] stackTrace = dummyException.getStackTrace();
         // LOGGING-132: use the provided logger name instead of the class name
-        String method = locations[0].getMethodName();
+        String method = stackTrace[0].getMethodName();
         // Caller will be the third element
-        if( locations.length > 2 ) {
-            StackTraceElement caller = locations[3];
+        if( stackTrace.length > 2 ) {
+            StackTraceElement caller = stackTrace[3];
             method = caller.getMethodName();
         }
         return method;

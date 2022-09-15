@@ -12,6 +12,13 @@ import java.io.IOException;
 import org.junit.Assert;
 import java.io.*;
 
+/**
+ * Calculate period between versions
+ * @deprecated
+ * This class is no longer acceptable to compute time between versions.
+ * <p> Use {@link FileUtilities.Json} instead.
+ */
+@Deprecated
 public class JsonUtilities {
 
     public JSONObject urlsJson = new JSONObject();

@@ -309,12 +309,9 @@ public class EmailUtilities {
          *  In the simple case, the results of the Message object's getContent method will be a MimeMultipart object.
          *  The first body part of the multipart object wil be the main text of the message.
          *  The other body parts will be attachments.
-         * @param part
-         * @return
-         * @throws MessagingException
-         * @throws IOException
+         * @param part is the body
+         * @return returns the body of the email
          */
-
         private String getText(Part part) throws MessagingException, IOException {
 
             if (part.isMimeType("text/*")) {return (String) part.getContent();}

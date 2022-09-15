@@ -10,7 +10,7 @@ import java.io.File;
 
 public class ApiUtilities {
 
-    JsonUtilities jsonUtilities = new JsonUtilities();
+    FileUtilities.Json jsonUtilities = new FileUtilities.Json();
     private final Printer log = new Printer(ApiUtilities.class);
 
     String url;
