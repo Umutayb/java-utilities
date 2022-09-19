@@ -4,11 +4,13 @@ import static utils.EmailUtilities.Inbox.EmailField.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
 import javax.mail.*;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class EmailUtilities {
 
     public EmailUtilities(String host){setHost(host);}
@@ -67,30 +69,48 @@ public class EmailUtilities {
 
     public static class Inbox {
         private final Printer log = new Printer(Inbox.class);
-
         private final String host;
         private final String port;
         private final String userName;
         private final String password;
         private final String secureCon;
 
+        private Boolean save = false;
+
         public List<Map<EmailField,Object>> messages = new ArrayList<>();
 
         public enum EmailField {SUBJECT, SENDER, CONTENT, INDEX, DATE, ATTACHMENTS}
 
         public Inbox(String host,
-                          String port,
-                          String userName,
-                          String password,
-                          String secureCon,
-                          Boolean print,
-                          Boolean saveAttachments) {
+                     String port,
+                     String userName,
+                     String password,
+                     String secureCon,
+                     Boolean print,
+                     Boolean saveAttachments) {
             this.host = host;
             this.port = port;
             this.userName = userName;
             this.password = password;
             this.secureCon = secureCon;
             loadInbox(null, null, print, saveAttachments);
+        }
+
+        public Inbox(String host,
+                     String port,
+                     String userName,
+                     String password,
+                     String secureCon,
+                     Boolean print,
+                     Boolean saveAttachments,
+                     Boolean save) {
+            this.host = host;
+            this.port = port;
+            this.userName = userName;
+            this.password = password;
+            this.secureCon = secureCon;
+            loadInbox(null, null, print, saveAttachments);
+            this.save = save;
         }
 
         public Inbox(
@@ -109,6 +129,31 @@ public class EmailUtilities {
             this.password = password;
             this.secureCon = secureCon;
             loadInbox(filterType, filterKey, print, saveAttachments);
+        }
+
+        public Inbox(
+                String host,
+                String port,
+                String userName,
+                String password,
+                String secureCon,
+                EmailField filterType,
+                String filterKey,
+                Boolean print,
+                Boolean saveAttachments,
+                Boolean save) {
+            this.host = host;
+            this.port = port;
+            this.userName = userName;
+            this.password = password;
+            this.secureCon = secureCon;
+            loadInbox(filterType, filterKey, print, saveAttachments);
+            this.save = save;
+        }
+
+        public void saveMessage(String filename, String messageContent){
+            try (FileWriter file = new FileWriter("email/" + filename + ".html")){file.write(messageContent);}
+            catch (IOException e) {throw new RuntimeException(e);}
         }
 
         private void loadInbox(EmailField filterType, String filterKey, Boolean print, Boolean saveAttachments){
@@ -209,6 +254,7 @@ public class EmailUtilities {
                     log.new Info("Sent Date: " + sentDate);
                     log.new Info("Message: " + messageContent);
                     if (attachments.length()>0) log.new Info("Attachments: " + attachments);
+                    if (save) saveMessage("message#" + index, messageContent);
                 }
             }
             catch (MessagingException exception){log.new Error("Could not connect to the message store", exception);}
@@ -288,7 +334,7 @@ public class EmailUtilities {
                             if (saveAttachments){ // Attachment
                                 String fileName = part.getFileName();
                                 attachments.append(fileName).append(", ");
-                                part.saveFile("attachments" + File.separator + fileName);
+                                part.saveFile("email/attachments" + File.separator + fileName);
                             }
                         }
                     }
