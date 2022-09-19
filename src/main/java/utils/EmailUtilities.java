@@ -152,7 +152,11 @@ public class EmailUtilities {
         }
 
         public void saveMessage(String filename, String messageContent){
-            try (FileWriter file = new FileWriter("email/" + filename + ".html")){file.write(messageContent);}
+            log.new Info("Saving email body...");
+            try (FileWriter file = new FileWriter("email/" + filename + ".html")){
+                file.write(String.valueOf(messageContent));
+                log.new Info("Saved as \"" + filename + ".html\"");
+            }
             catch (IOException e) {throw new RuntimeException(e);}
         }
 
@@ -254,8 +258,9 @@ public class EmailUtilities {
                     log.new Info("Sent Date: " + sentDate);
                     log.new Info("Message: " + messageContent);
                     if (attachments.length()>0) log.new Info("Attachments: " + attachments);
-                    if (save) saveMessage("message#" + index, messageContent);
                 }
+
+                if (save) saveMessage("message#" + index, messageContent);
             }
             catch (MessagingException exception){log.new Error("Could not connect to the message store", exception);}
         }

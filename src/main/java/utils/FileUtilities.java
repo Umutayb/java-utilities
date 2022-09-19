@@ -126,17 +126,13 @@ public class FileUtilities {
 
                 String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
 
-                if(file.toString().isEmpty())
-                    file.write(String.valueOf(json));
-                else
-                    file.append(String.valueOf(json));
+                if(file.toString().isEmpty()) file.write(String.valueOf(json));
+                else file.append(String.valueOf(json));
 
                 file.close();
 
-            }catch (Exception gamma){
-                Assert.fail(String.valueOf(gamma));
             }
-
+            catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
         }
 
         public JsonObject parseJsonFile(String directory) {
