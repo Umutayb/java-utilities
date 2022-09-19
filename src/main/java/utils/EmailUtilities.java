@@ -75,8 +75,6 @@ public class EmailUtilities {
         private final String password;
         private final String secureCon;
 
-        private Boolean save = false;
-
         public List<Map<EmailField,Object>> messages = new ArrayList<>();
 
         public enum EmailField {SUBJECT, SENDER, CONTENT, INDEX, DATE, ATTACHMENTS}
@@ -87,30 +85,15 @@ public class EmailUtilities {
                      String password,
                      String secureCon,
                      Boolean print,
-                     Boolean saveAttachments) {
+                     Boolean save,
+                     Boolean saveAttachments
+        ) {
             this.host = host;
             this.port = port;
             this.userName = userName;
             this.password = password;
             this.secureCon = secureCon;
-            loadInbox(null, null, print, saveAttachments);
-        }
-
-        public Inbox(String host,
-                     String port,
-                     String userName,
-                     String password,
-                     String secureCon,
-                     Boolean print,
-                     Boolean saveAttachments,
-                     Boolean save) {
-            this.host = host;
-            this.port = port;
-            this.userName = userName;
-            this.password = password;
-            this.secureCon = secureCon;
-            loadInbox(null, null, print, saveAttachments);
-            this.save = save;
+            loadInbox(null, null, print, save, saveAttachments);
         }
 
         public Inbox(
@@ -122,33 +105,15 @@ public class EmailUtilities {
                 EmailField filterType,
                 String filterKey,
                 Boolean print,
-                Boolean saveAttachments) {
+                Boolean save,
+                Boolean saveAttachments
+        ) {
             this.host = host;
             this.port = port;
             this.userName = userName;
             this.password = password;
             this.secureCon = secureCon;
-            loadInbox(filterType, filterKey, print, saveAttachments);
-        }
-
-        public Inbox(
-                String host,
-                String port,
-                String userName,
-                String password,
-                String secureCon,
-                EmailField filterType,
-                String filterKey,
-                Boolean print,
-                Boolean saveAttachments,
-                Boolean save) {
-            this.host = host;
-            this.port = port;
-            this.userName = userName;
-            this.password = password;
-            this.secureCon = secureCon;
-            loadInbox(filterType, filterKey, print, saveAttachments);
-            this.save = save;
+            loadInbox(filterType, filterKey, print, save, saveAttachments);
         }
 
         public void saveMessage(String filename, String messageContent){
@@ -160,7 +125,7 @@ public class EmailUtilities {
             catch (IOException e) {throw new RuntimeException(e);}
         }
 
-        private void loadInbox(EmailField filterType, String filterKey, Boolean print, Boolean saveAttachments){
+        private void loadInbox(EmailField filterType, String filterKey, Boolean print, Boolean save, Boolean saveAttachments){
             Properties properties = new Properties();
 
             //---------- Server Setting---------------
@@ -218,10 +183,10 @@ public class EmailUtilities {
                         }
 
                         if ((selector.contains(filterKey) || selector.equalsIgnoreCase(filterKey)))
-                            resolveMessage(message, messages.indexOf(message), print, saveAttachments);
+                            resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                     }
 
-                    else resolveMessage(message, messages.indexOf(message), print, saveAttachments);
+                    else resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
                 log.new Info("You have "+this.messages.size()+" new mails in your inbox");
                 // disconnect
@@ -231,7 +196,7 @@ public class EmailUtilities {
             catch (MessagingException exception) {log.new Error(exception.getCause().getMessage(),exception);}
         }
 
-        private void resolveMessage(Message message, Integer index, Boolean print, Boolean saveAttachments){
+        private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments){
             try {
                 String from = message.getFrom()[0].toString();
                 Date sentDate = message.getSentDate();
