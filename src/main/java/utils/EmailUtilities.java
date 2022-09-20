@@ -118,7 +118,7 @@ public class EmailUtilities {
 
         public void saveMessage(String filename, String messageContent){
             log.new Info("Saving email body...");
-            try (FileWriter file = new FileWriter("email/" + filename + ".html")){
+            try (FileWriter file = new FileWriter("inbox/" + filename + ".html")){
                 file.write(String.valueOf(messageContent));
                 log.new Info("Saved as \"" + filename + ".html\"");
             }
@@ -304,7 +304,7 @@ public class EmailUtilities {
                             if (saveAttachments){ // Attachment
                                 String fileName = part.getFileName();
                                 attachments.append(fileName).append(", ");
-                                part.saveFile("email/attachments" + File.separator + fileName);
+                                part.saveFile("inbox/attachments" + File.separator + fileName);
                             }
                         }
                     }
