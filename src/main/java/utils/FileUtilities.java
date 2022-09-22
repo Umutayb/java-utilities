@@ -15,9 +15,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static resources.Colors.*;
 
+@SuppressWarnings("unused")
 public class FileUtilities {
 
     public static final Properties properties = new Properties();
@@ -68,6 +71,50 @@ public class FileUtilities {
         return fileIsPresent;
     }
 
+    public static class Zip {
+        public File compress(String zipName, String directory, String extensionFilter) {
+            zipName = zipName + ".zip";
+            File screenshotsDirectory = new File(directory);
+            File[] files = screenshotsDirectory.listFiles();
+            assert files != null;
+            for (File file:files) {
+                String mediaType;
+                try {mediaType = Files.probeContentType(file.toPath());}
+                catch (IOException e) {throw new RuntimeException(e);}
+                if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
+                else if (extensionFilter == null) {createZip(zipName, file);}
+            }
+            return new File(zipName);
+        }
+
+        public File compress(String zipName, File[] files, String extensionFilter) {
+            zipName = zipName + ".zip";
+            assert files != null;
+            for (File file:files) {
+                String mediaType;
+                try {mediaType = Files.probeContentType(file.toPath());}
+                catch (IOException e) {throw new RuntimeException(e);}
+                if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
+                else if (extensionFilter == null) {createZip(zipName, file);}
+            }
+            return new File(zipName);
+        }
+
+        public void createZip(String zipName, File file){
+            try {
+                ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipName));
+                FileInputStream in = new FileInputStream(file);
+                out.putNextEntry(new ZipEntry(file.getName()));
+                byte[] b = new byte[1024];
+                int count;
+                while ((count = in.read(b)) > 0) out.write(b, 0, count);
+                in.close();
+                out.close();
+            }
+            catch (IOException e) {throw new RuntimeException(e);}
+        }
+    }
+
     public static class Excel {
         Printer log = new Printer(Excel.class);
         public Map<String, Map<String, Object>> getExcelList(String directory, String selector){
@@ -116,10 +163,6 @@ public class FileUtilities {
         public void saveJson(JSONObject inputJson, String directory){
             try {
 
-                //JSONParser parser = new JSONParser();
-
-                //JSONObject object = (JSONObject) parser.parse(new InputStreamReader(new FileInputStream("src/test/java/resources/database/"+"Getir"+".JSON")));
-
                 FileWriter file = new FileWriter(directory);
 
                 ObjectMapper mapper = new ObjectMapper();
@@ -137,12 +180,11 @@ public class FileUtilities {
 
         public JsonObject parseJsonFile(String directory) {
             try {
-                JsonParser jsonParser = new JsonParser();
                 JsonElement object;
 
                 FileReader fileReader = new FileReader(directory);
 
-                object = jsonParser.parse(fileReader);
+                object = JsonParser.parseReader(fileReader);
                 JsonObject jsonObject = (JsonObject) object;
 
                 assert jsonObject != null;
