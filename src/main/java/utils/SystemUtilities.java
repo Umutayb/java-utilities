@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
+import static resources.Colors.*;
+
 public class SystemUtilities {
     Printer log = new Printer(SystemUtilities.class);
 
     public boolean portIsAvailable(int port) {
-        log.new Info("Checking availability of port " + port);
+        log.new Info("Checking availability of port " + PURPLE + port + RESET);
         ServerSocket ss = null;
         DatagramSocket ds = null;
         try {
@@ -16,7 +18,7 @@ public class SystemUtilities {
             ss.setReuseAddress(true);
             ds = new DatagramSocket(port);
             ds.setReuseAddress(true);
-            log.new Success("Port " + port + " is available!");
+            log.new Success("Port is available!");
             return true;
         }
         catch (IOException ignored) {}
