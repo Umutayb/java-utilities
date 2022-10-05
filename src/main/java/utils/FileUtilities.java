@@ -198,20 +198,15 @@ public class FileUtilities {
 
         }
 
-        public JSONObject parseJSONFile(String distance) throws IOException, ParseException {
-
-            JSONParser jsonParser = new JSONParser();
-            JSONObject object;
-
-            FileReader fileReader = new FileReader(distance);
-
-            object = (JSONObject) jsonParser.parse(fileReader);
-            JSONObject jsonObject = object;
-
-            assert jsonObject != null;
-
-            return jsonObject;
-
+        public JSONObject parseJSONFile(String directory) {
+            try {
+                FileReader fileReader = new FileReader(directory);
+                JSONParser jsonParser = new JSONParser();
+                JSONObject object;
+                object = (JSONObject) jsonParser.parse(fileReader);
+                return object;
+            }
+            catch (IOException | ParseException e) {throw new RuntimeException(e);}
         }
 
         public JsonObject getJsonObject(JsonObject json, String key){
