@@ -41,7 +41,7 @@ public class ObjectUtilities {
         return fieldMap;
     }
 
-    public static void printObjectFields(Object object){
+    public void printObjectFields(Object object){
         List<Field> fields = List.of(object.getClass().getDeclaredFields());
         StringBuilder output = new StringBuilder();
         try {
