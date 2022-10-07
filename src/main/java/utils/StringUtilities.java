@@ -2,13 +2,38 @@ package utils;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import java.text.Normalizer;
+import resources.Colors;
 import java.util.*;
 
 import static resources.Colors.*;
 
+@SuppressWarnings("unused")
 public class StringUtilities {   //Utility methods
 
     private final Printer log = new Printer(StringUtilities.class);
+    private final ObjectUtilities objectUtils = new ObjectUtilities();
+
+    public enum Color {
+        CYAN("CYAN_BOLD"),
+        RED("RED"),
+        GREEN("GREEN"),
+        YELLOW("YELLOW"),
+        PURPLE("PURPLE"),
+        GRAY("GRAY"),
+        BLUE("BLUE"),
+        BLACK("BLACK_BOLD"),
+        PALE("WHITE_BOLD");
+
+        final String value;
+
+        Color(String value){this.value = value;}
+
+        public String getValue() {return value;}
+    }
+
+    public String highlighted(Color color, Object text){return (objectUtils.getFieldValue(color.getValue(), Colors.class) + text.toString() + RESET);}
+
+    public String highlight(Color color, Object text){return (objectUtils.getFieldValue(color.getValue(), Colors.class) + text.toString() + GRAY);}
 
     public String reverse(String input){
         StringBuilder reversed = new StringBuilder();

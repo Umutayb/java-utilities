@@ -1,5 +1,6 @@
 package api_assured;
 
+import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,13 +11,18 @@ import retrofit2.Call;
 import retrofit2.Response;
 import utils.FileUtilities;
 import utils.Printer;
+import utils.StringUtilities;
 
 import java.io.IOException;
+
+import static resources.Colors.GRAY;
+import static resources.Colors.WHITE_BOLD;
 
 @SuppressWarnings("unused")
 public abstract class Caller {
 
     static ObjectMapper objectMapper = new ObjectMapper();
+    static StringUtilities strUtils = new StringUtilities();
     static Printer log = new Printer(Caller.class);
 
     public Caller(){
@@ -29,64 +35,73 @@ public abstract class Caller {
 
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getMethod();
-        log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
+        log.new Info("Performing " +
+                strUtils.highlight(StringUtilities.Color.PALE, call.request().method()) +
+                " call for '" +
+                strUtils.highlight(StringUtilities.Color.PALE, serviceName) +
+                "' service on url: " + call.request().url()
+        );
         try {
             Response<Model> response = call.execute();
 
-            if (printBody) printBody(response);
-
             if (response.isSuccessful()){
-                if (response.message().length()>0) log.new Info(response.message());
                 log.new Success("The response code is: " + response.code());
+                if (response.message().length()>0) log.new Info(response.message());
+                if (printBody) printBody(response);
             }
             else{
-                if (response.message().length()>0)
-                    log.new Warning(response.message());
                 log.new Warning("The response code is: " + response.code());
+                if (response.message().length()>0) log.new Warning(response.message());
                 log.new Warning(response.raw());
-
-                if (strict)
-                    Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
+                if (printBody) printBody(response);
+                if (strict) throw new FailedCallException(
+                        "The strict call performed for " + serviceName + " service returned response code " + response.code()
+                );
             }
             return response.body();
         }
         catch (IOException exception) {
-            log.new Error(exception.getLocalizedMessage(),exception);
-            Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
+            if (strict){
+                log.new Error(exception.getLocalizedMessage(), exception);
+                throw new FailedCallException("The call performed for " + serviceName + " has failed.");
+            }
+            else return null;
         }
-        return null;
     }
+
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getMethod();
-        log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
-        try {
+        log.new Info("Performing " +
+                strUtils.highlight(StringUtilities.Color.PALE, call.request().method()) +
+                " call for '" +
+                strUtils.highlight(StringUtilities.Color.PALE, serviceName) +
+                "' service on url: " + call.request().url()
+        );        try {
             Response<Model> response = call.execute();
 
-            if (printBody) printBody(response);
-
             if (response.isSuccessful()){
-                if (response.message().length()>0)
-                    log.new Info(response.message());
                 log.new Success("The response code is: " + response.code());
+                if (response.message().length()>0) log.new Info(response.message());
+                if (printBody) printBody(response);
             }
             else{
-                if (response.message().length()>0)
-                    log.new Warning(response.message());
                 log.new Warning("The response code is: " + response.code());
+                if (response.message().length()>0) log.new Warning(response.message());
                 log.new Warning(response.raw());
-
-                if (strict)
-                    Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
+                if (printBody) printBody(response);
+                if (strict) throw new FailedCallException(
+                        "The strict call performed for " + serviceName + " service returned response code " + response.code()
+                );
             }
             return response;
         }
         catch (IOException exception) {
             if (strict){
                 log.new Error(exception.getLocalizedMessage(), exception);
-                Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
+                throw new FailedCallException("The call performed for " + serviceName + " has failed.");
             }
+            else return null;
         }
-        return null;
     }
 
     @Deprecated
