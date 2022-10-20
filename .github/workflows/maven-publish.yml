@@ -1,26 +1,35 @@
 name: Release
-
-# Run workflow on commits to the `master` branch
 on:
-  release:
-    types: [created]
-
+  workflow_dispatch:
+    inputs:
+      releaseversion:
+        description: 'Release version'
+        required: true
+        default: '2.4.0'
 jobs:
-  release:
-    runs-on: ubuntu-18.04
+  publish:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+      - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
 
-      - name: Install Java and Maven
+      - uses: actions/checkout@v2
+
+      - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
           java-version: 11
+          server-id: oss.sonatype.org
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Release Maven package
-        uses: samuelmeuli/action-maven-publish@v1.3.1
-        with:
-          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          nexus_username: ${{ secrets.OSSRH_USERNAME }}
-          nexus_password: ${{ secrets.OSSRH_TOKEN }}
+      - name: Set projects Maven version to GitHub Action GUI set version
+        run: mvn versions:set "-DnewVersion=${{ github.event.inputs.releaseversion }}"
+
+      - name: Publish package
+        run: mvn --batch-mode clean deploy -P central-deploy -DskipTests=true
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
