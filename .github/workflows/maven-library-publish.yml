@@ -25,6 +25,16 @@ jobs:
       run: mvn deploy
       env:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+        
+    - name: Import GPG key
+      id: import_gpg
+      uses: crazy-max/ghaction-import-gpg@v5
+      with:
+        gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        
+    - name: List keys
+      run: gpg -K  
 
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v3
