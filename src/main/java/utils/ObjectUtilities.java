@@ -11,6 +11,25 @@ public class ObjectUtilities {
 
     static Printer log = new Printer(ObjectUtilities.class);
 
+    public Map<String, Method> getMethods(Object object){
+        Map<String, Method> methodMap = new HashMap<>();
+        for (Method method: object.getClass().getDeclaredMethods()) {
+            method.setAccessible(true);
+            methodMap.put(method.getName(),method);
+        }
+        return methodMap;
+    }
+
+    public Method getMethod(String methodName, Object object){
+        for (Method method: object.getClass().getDeclaredMethods()) {
+            method.setAccessible(true);
+            if (method.getName().equals(methodName)) return method;
+        }
+        throw new RuntimeException(
+                "No method named " + methodName + " could be located in class called" + object.getClass().getName()
+        );
+    }
+
     public <T> Object getFieldValue(String fieldName, Class<T> inputClass){
         try {
             Field field = inputClass.getDeclaredField(fieldName);
