@@ -39,3 +39,9 @@ mvn archetype:generate                      \
 "-Dversion=1.0.0-SNAPSHOT"                  \
 "-DinteractiveMode=false"
 ````
+
+### To publish
+Run the following command:
+```` shell
+mvn clean deploy -P publish
+````
