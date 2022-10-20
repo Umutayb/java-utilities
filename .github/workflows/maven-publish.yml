@@ -31,7 +31,7 @@ jobs:
     - name: maven-settings-xml-action
       uses: whelk-io/maven-settings-xml-action@v20
       with:
-        servers: '[{ "id": "ossrh", "username": "${secrets.OSSRH_USERNAME}", "password": "${secrets.OSSRH_TOKEN}" }]' 
+        servers: '[{ "id": "ossrh", "username": "${OSSRH_USERNAME}", "password": "${OSSRH_TOKEN}" }]' 
         profiles: >
           [
             {
@@ -39,8 +39,8 @@ jobs:
               "activation":{
                 "activeByDefault":true
               },
-              "properties": {
-                "gpg.passphrase": "secrets.MAVEN_GPG_PASSPHRASE"
+              "properties": 
+                "gpg.passphrase": "${MAVEN_GPG_PASSPHRASE}"
               }
             }
           ]
