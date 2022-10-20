@@ -1,4 +1,4 @@
-name: release-to-maven-central
+name: Release
 on:
   workflow_dispatch:
     inputs:
@@ -7,36 +7,15 @@ on:
         required: true
         default: '1.0.6-test'
 jobs:
-  publish:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2.4.0
-      -
-        name: Unshallow
-        run: git fetch --prune --unshallow
-      -
-        name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      -
-        name: Import GPG key
+      - name: Import GPG key
         id: import_gpg
         uses: hashicorp/ghaction-import-gpg@v2.1.0
         env:
-          # These secrets will need to be configured for the repository:
-          GPG_PRIVATE_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
-          PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}    
-          
-      - name: Publish to Central Repository
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-        run: |
-          mvn \
-            --no-transfer-progress \
-            --batch-mode \
-            -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
-            clean deploy
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      - run: |
+          touch foo.txt
+          gpg --detach-sig foo.txt
