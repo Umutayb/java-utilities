@@ -1,17 +1,25 @@
-name: Java library publisher
+name: Release
+
+# Run workflow on commits to the `master` branch
 on:
   release:
     types: [created]
+
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  release:
+    runs-on: ubuntu-18.04
     steps:
-      - name: Maven Library build and publish
-        uses: MathieuSoysal/Java-maven-library-publisher@v1.0.3
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Java and Maven
+        uses: actions/setup-java@v1
         with:
-          nexus-username: ${{ secrets.OSSRH_USERNAME }}
-          nexus-password: ${{ secrets.OSSRH_TOKEN }}
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          java-version: 17
+          java-version: 11
+
+      - name: Release Maven package
+        uses: samuelmeuli/action-maven-publish@v1
+        with:
+          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          nexus_username: ${{ secrets.OSSRH_USERNAME }}
+          nexus_password: ${{ secrets.OSSRH_TOKEN }}
