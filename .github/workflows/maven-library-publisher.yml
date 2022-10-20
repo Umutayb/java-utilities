@@ -6,16 +6,46 @@ on:
         description: 'Release version'
         required: true
         default: '1.0.6-test'
+
 jobs:
-  goreleaser:
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Import GPG key
-        id: import_gpg
-        uses: hashicorp/ghaction-import-gpg@v2.1.0
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      - run: |
-          touch foo.txt
-          gpg --detach-sig foo.txt
+    - uses: actions/checkout@v2
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2.3.1
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+        cache: maven
+        server-id: ossrh
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} 
+        gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}   
+    #- name: Import GPG Key
+    #  uses: crazy-max/ghaction-import-gpg@v1
+    #  env:
+    #     GPG_PRIVATE_KEY: ${{ secrets.GPG_KEY }}
+    #     PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+    - name: Configure GPG Key
+      run: |
+          export GPG_TTY=$(tty)
+          echo -n "$GPG_SIGNING_KEY" | gpg --import
+      env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_KEY }}
+    - name: List of keys on gpg
+      run: gpg --list-secret-keys --keyid-format LONG
+    - name: Publish to key server
+      run: gpg --send-key 51B3F501B117AB627051C5D590DCBE00BA593271
+    - name: Publish to maven central
+      run: |
+         export GPG_TTY=$(tty)
+         mvn clean deploy --no-transfer-progress --batch-mode -Darguments=-Dgpg.passphrase=${GPG_PASSPHRASE}
+      env: 
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      
