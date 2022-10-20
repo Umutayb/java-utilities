@@ -8,6 +8,16 @@ on:
         description: 'Release version'
         required: true
         default: 'SNAPSHOT'
+        
+      username:
+        description: 'Username'
+        required: true
+        default: '***'
+        
+      password:
+        description: 'Password'
+        required: true
+        default: '***'
 
 jobs:
   build:
@@ -26,13 +36,13 @@ jobs:
       with:
           java-version: 11
           server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
-          server-username: OSSRH_USERNAME # env variable for username in deploy
-          server-password: OSSRH_PASSWORD # env variable for token in deploy
+          server-username: ${{ github.event.inputs.username }} # env variable for username in deploy
+          server-password: ${{ github.event.inputs.password }} # env variable for token in deploy
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
-          gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
+          gpg-passphrase: ${{ github.event.inputs.password }} # env variable for GPG private key passphrase
     - name: Publish to Maven Central
-      run: mvn deploy -P release
+      run: mvn deploy -P publish
       env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-          GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}       
+          OSSRH_USERNAME: ${{ github.event.inputs.username }}
+          OSSRH_PASSWORD: ${{ github.event.inputs.password }}
+          GPG_PASSPHRASE: ${{ github.event.inputs.password }}      
