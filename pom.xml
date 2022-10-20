@@ -6,7 +6,7 @@
 
   <groupId>io.github.umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
@@ -264,11 +264,10 @@
         </executions>
       </plugin>
 
-      <!-- Javax Mail -->
+      <!-- GPG Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -277,11 +276,11 @@
               <goal>sign</goal>
             </goals>
             <configuration>
+              <!-- This is necessary for gpg to not try to use the pinentry programs -->
               <gpgArguments>
                 <arg>--pinentry-mode</arg>
                 <arg>loopback</arg>
               </gpgArguments>
-              <skip>true</skip>
             </configuration>
           </execution>
         </executions>
