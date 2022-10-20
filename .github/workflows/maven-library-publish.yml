@@ -17,6 +17,7 @@ jobs:
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v3.6.0
         with:
+          distribution: 'temurin'
           java-version: 11
           server-id: oss.sonatype.org
           server-username: MAVEN_USERNAME
