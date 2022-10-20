@@ -1,43 +1,248 @@
-name: Release
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java#apache-maven-with-a-settings-path
+
+name: Java Deploy
+
 on:
   release:
-    types: [published]
+    types: [created]
   workflow_dispatch:
-    inputs:
-      releaseversion:
-        description: 'Release version'
-        required: true
-        default: 'SNAPSHOT'
-        
-      username:
-        description: 'Username'
-        required: true
-        default: '***'
-        
-      password:
-        description: 'Password'
-        required: true
-        default: '***'
+
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  JAVA_VERSION: '11'
+  WS: ${{ github.workspace }}
 
 jobs:
+
+  # the first job will build project artifacts
   build:
-    runs-on: ubuntu-latest
+
+    runs-on: ubuntu-20.04
+
     steps:
     - uses: actions/checkout@v2
-    - name: Set projects Maven version to GitHub Action GUI set version
-      run: mvn versions:set "-DnewVersion=${{ github.event.inputs.releaseversion }}"    
-    - name: Set up JDK 11
+
+    - name: Set up Java ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v1
       with:
-          java-version: 11
-          server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
-          server-username: ${{ github.event.inputs.username }} # env variable for username in deploy
-          server-password: ${{ github.event.inputs.password }} # env variable for token in deploy
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
-          gpg-passphrase: ${{ github.event.inputs.password }} # env variable for GPG private key passphrase
-    - name: Publish to Maven Central
-      run: mvn deploy -P publish
+        java-version: ${{ env.JAVA_VERSION }}
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
+
+    - name: Extract version from VERSION file
+      id: version
+      run: |
+        echo "VERSION=$(cat $WS/VERSION)" >> $GITHUB_ENV
+
+    - name: Set ${{ env.VERSION }} as project version in POM
+      run: |
+        echo "Setting $VERSION as current version in POM..."
+        mvn -B -T $(nproc) versions:set -DnewVersion=${{ env.VERSION }} -f $WS/java/pom.xml
+
+    - name: Build FLY Graph project
+      run: |
+        mvn -B -T $(nproc) verify package -f $WS/java/pom.xml
+        # cd $WS/java/
+        # bash <(curl -s https://codecov.io/bash)
+        # cd $WS
       env:
-          OSSRH_USERNAME: ${{ github.event.inputs.username }}
-          OSSRH_PASSWORD: ${{ github.event.inputs.password }}
-          GPG_PASSPHRASE: ${{ github.event.inputs.password }}      
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        # CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Set up cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ${{ env.WS }}/java
+        key: ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+          ${{ runner.os }}-maven-
+          ${{ runner.os }}-
+
+  # the second job will release artifacts over GitHub
+  release:
+
+    runs-on: ubuntu-20.04
+
+    needs: build
+
+    steps:
+    - name: Set up cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ${{ env.WS }}/java
+        key: ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+          ${{ runner.os }}-maven-
+          ${{ runner.os }}-
+
+    - name: Get latest FLY Graph release
+      id: release
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/:repository/releases/latest
+        repository: ${{ github.repository }}
+
+    - name: Get release URL and tag
+      id: release-url
+      run: |
+        url=$(echo "$response" | jq -r '.upload_url')
+        echo "::set-output name=url::$url"
+        tag=$(echo "$response" | jq -r '.tag_name')
+        echo "TAG=$tag" >> $GITHUB_ENV
+      env:
+        response: ${{ steps.release.outputs.data }}
+
+    - name: Upload JAR with dependencies as Release Asset
+      id: upload-jar-with-deps
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-jar-with-deps.jar
+        asset_name: fly-graph-${{ env.TAG }}-jar-with-deps.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload JAR with dependencies signature as Release Asset
+      id: upload-jar-with-deps-sig
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-jar-with-deps.jar.asc
+        asset_name: fly-graph-${{ env.TAG }}-jar-with-deps.jar.asc
+        asset_content_type: application/java-archive
+
+    - name: Upload library JAR as Release Asset
+      id: upload-lib
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}.jar
+        asset_name: fly-graph-${{ env.TAG }}.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload library JAR signature as Release Asset
+      id: upload-lib-sig
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}.jar.asc
+        asset_name: fly-graph-${{ env.TAG }}.jar.asc
+        asset_content_type: application/java-archive
+
+    - name: Upload sources JAR as Release Asset
+      id: upload-sources
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-sources.jar
+        asset_name: fly-graph-${{ env.TAG }}-sources.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload sources JAR signature as Release Asset
+      id: upload-sources-sig
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-sources.jar.asc
+        asset_name: fly-graph-${{ env.TAG }}-sources.jar.asc
+        asset_content_type: application/java-archive
+
+    - name: Upload javadoc JAR as Release Asset
+      id: upload-javadoc
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-javadoc.jar
+        asset_name: fly-graph-${{ env.TAG }}-javadoc.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload javadoc JAR signature as Release Asset
+      id: upload-javadoc-sig
+      uses: actions/upload-release-asset@latest
+      with:
+        upload_url: ${{ steps.release-url.outputs.url }}
+        asset_path: ./java/target/fly-graph-${{ env.TAG }}-javadoc.jar.asc
+        asset_name: fly-graph-${{ env.TAG }}-javadoc.jar.asc
+        asset_content_type: application/java-archive
+
+  # the third job will deploy artifacts over GitHub Packages
+  ghp-deploy:
+
+    runs-on: ubuntu-20.04
+
+    needs: build
+
+    steps:
+    - name: Set up cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ${{ env.WS }}/java
+        key: ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+          ${{ runner.os }}-maven-
+          ${{ runner.os }}-
+
+    - name: Set up GitHub Packages
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: GHS_USERNAME # env variable for username in deploy
+        server-password: GHS_TOKEN # env variable for token in deploy
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
+
+    - name: Publish GitHub Packages Apache Maven
+      run: |
+        mvn -B -T $(nproc) -DaltDeploymentRepository=${{ env.ALT_DEPLOY }} clean deploy -f $WS/java/pom.xml
+      env:
+        GHS_USERNAME: ${{ github.actor }}
+        GHS_TOKEN: ${{ github.token }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        ALT_DEPLOY: github::default::https://maven.pkg.github.com/bissim/FLY-graph
+
+  # the fourth job will deploy srtifacts over Nexus
+  oss-deploy:
+
+    runs-on: ubuntu-20.04
+
+    needs: build
+
+    steps:
+    - name: Set up cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+          ${{ env.WS }}/java
+        key: ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-${{ hashFiles('${{ env.WS }}/java/pom.xml') }}
+          ${{ runner.os }}-maven-
+          ${{ runner.os }}-
+
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v1
+      with: # running setup-java again overwrites the settings.xml
+        java-version: ${{ env.JAVA_VERSION }}
+        server-id: ossrh # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: OSSRH_USERNAME # env variable for username in deploy
+        server-password: OSSRH_PASSWORD # env variable for token in deploy
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
+
+    - name: Publish to Apache Maven Central
+      run: mvn -B -T $(nproc) clean deploy -f $WS/java/pom.xml
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
