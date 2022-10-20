@@ -31,7 +31,14 @@ jobs:
     - name: maven-settings-xml-action
       uses: whelk-io/maven-settings-xml-action@v20
       with:
-        servers: '[{ "id": "ossrh", "username": "${secrets.OSSRH_USERNAME}", "password": "${secrets.OSSRH_TOKEN}" }]' 
+        servers: >
+          [
+            {
+              "id": "some-id",
+              "username": "${secrets.OSSRH_USERNAME}",
+              "password": "${secrets.OSSRH_TOKEN}"
+            }
+          ]
         profiles: >
           [
             {
