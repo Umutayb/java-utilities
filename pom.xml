@@ -6,7 +6,7 @@
 
   <groupId>io.github.umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.6-2</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
@@ -281,6 +281,7 @@
                 <arg>--pinentry-mode</arg>
                 <arg>loopback</arg>
               </gpgArguments>
+              <!--<skip>true</skip>-->
             </configuration>
           </execution>
         </executions>
