@@ -1,3 +1,9 @@
+name: Maven Central Release
+
+on:
+  release:
+    types: [created]
+
 jobs:
   build:
     runs-on: ubuntu-latest
