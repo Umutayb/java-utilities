@@ -11,19 +11,12 @@ The dependency can be acquired by adding Jitpack repository into the pom.xml, as
 ```xml
 <dependencies>
     <!-- Framework -->
-        <dependency>
-            <groupId>com.github.Umutayb</groupId>
-            <artifactId>Java-Utils</artifactId>
-            <version>0.0.1</version>
-        </dependency>   
+    <dependency>
+        <groupId>io.github.umutayb</groupId>
+        <artifactId>Utilities</artifactId>
+        <version>1.0.6</version>
+    </dependency>
 </dependencies>
-        
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
 ```
 
 #### To create a cucumber project:
