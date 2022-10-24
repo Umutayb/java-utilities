@@ -6,6 +6,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      releaseversion:
+        description: 'Release version'
+        required: true
+        default: '1.0.6-test'    
 
 jobs:
   build:
