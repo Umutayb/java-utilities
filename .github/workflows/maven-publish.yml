@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    
+    - name: Check out Git repository
+      uses: actions/checkout@v2
 
     - name: Import GPG key
       id: import_gpg
