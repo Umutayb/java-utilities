@@ -40,5 +40,3 @@ jobs:
 
     - name: Publish to Apache Maven Central
       run: mvn -DskipTests deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }}
-      env:
-        MAVEN_USERNAME: Umutayb
