@@ -49,3 +49,7 @@ jobs:
 
     - name: Publish to Apache Maven Central
       run: mvn -Dsettings.security=/home/runner/.m2/settings.xml deploy
+      env:
+        MAVEN_USERNAME: Umutayb
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.OSS_SONATYPE_PASSWORD }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
