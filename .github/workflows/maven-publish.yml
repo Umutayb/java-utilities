@@ -42,5 +42,3 @@ jobs:
       run: mvn -DskipTests deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }}
       env:
         MAVEN_USERNAME: Umutayb
-        MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
