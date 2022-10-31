@@ -23,14 +23,14 @@ public class Printer extends Colors {
 
     private void log(Level level, String color, Object text){
         text = (color + text + RESET);
-        if (Boolean.parseBoolean(properties.getProperty("save-logs")))
+        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
             LogUtilities.log.info(text.toString());
         else log.logp(level, log.getName(), getMethod(), text.toString());
     }
 
     private void log(Level level, String color, Object text, Exception exception){
         text = (color + text + RESET);
-        if (Boolean.parseBoolean(properties.getProperty("save-logs")))
+        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
             LogUtilities.log.info(text.toString());
         else log.logp(level, log.getName(), getMethod(), text.toString(), exception);
     }

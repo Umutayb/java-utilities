@@ -52,7 +52,7 @@ public class ServiceGenerator {
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         HttpLoggingInterceptor headerInterceptor = new HttpLoggingInterceptor();
 
-        if (Boolean.parseBoolean(properties.getProperty("detailed-logging"))){
+        if (Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"))){
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
         }
