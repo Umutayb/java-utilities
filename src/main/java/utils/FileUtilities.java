@@ -13,6 +13,7 @@ import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -54,6 +55,13 @@ public class FileUtilities {
         file.close();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) for (File file : allContents) deleteDirectory(file);
+        return directoryToBeDeleted.delete();
+    }
+
     public boolean verifyFilePresence(String fileDirectory) { //Verifies presence of a file at a given directory
 
         boolean fileIsPresent = false;
@@ -90,13 +98,44 @@ public class FileUtilities {
         public File compress(String zipName, File[] files, String extensionFilter) {
             zipName = zipName + ".zip";
             assert files != null;
-            for (File file:files) {
-                String mediaType;
-                try {mediaType = Files.probeContentType(file.toPath());}
-                catch (IOException e) {throw new RuntimeException(e);}
-                if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
-                else if (extensionFilter == null) {createZip(zipName, file);}
+            List<File> toBeCompressed = new ArrayList<>();
+            if (extensionFilter == null) {createZip(zipName, List.of(files));}
+            else {
+                for (File file:files) {
+                    String mediaType;
+                    try {mediaType = Files.probeContentType(file.toPath());}
+                    catch (IOException e) {throw new RuntimeException(e);}
+                    if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+                }
+                createZip(zipName, toBeCompressed);
             }
+            return new File(zipName);
+        }
+
+        public File compress(String zipName, List<File> files, String extensionFilter) {
+            zipName = zipName + ".zip";
+            assert files != null;
+            List<File> toBeCompressed = new ArrayList<>();
+            if (extensionFilter == null) {createZip(zipName, files);}
+            else {
+                for (File file:files) {
+                    String mediaType;
+                    try {mediaType = Files.probeContentType(file.toPath());}
+                    catch (IOException e) {throw new RuntimeException(e);}
+                    if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+                }
+                createZip(zipName, toBeCompressed);
+            }
+            return new File(zipName);
+        }
+
+        public File compress(String zipName, File file, String extensionFilter) {
+            zipName = zipName + ".zip";
+            String mediaType;
+            try {mediaType = Files.probeContentType(file.toPath());}
+            catch (IOException e) {throw new RuntimeException(e);}
+            if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
+            else if (extensionFilter == null) {createZip(zipName, file);}
             return new File(zipName);
         }
 
@@ -110,6 +149,25 @@ public class FileUtilities {
                 while ((count = in.read(b)) > 0) out.write(b, 0, count);
                 in.close();
                 out.close();
+            }
+            catch (IOException e) {throw new RuntimeException(e);}
+        }
+
+        public void createZip(String zipName, List<File> files) {
+            try {
+                Path tmpPath = Path.of("temp");
+                Files.createDirectory(tmpPath);
+                ZipOutputStream out = new ZipOutputStream(new FileOutputStream("zipName.zip"));
+                for (File file : files) {
+                    out.putNextEntry(new ZipEntry(file.getName()));
+                    FileInputStream in = new FileInputStream(file);
+                    byte[] b = new byte[1024];
+                    int count;
+                    while ((count = in.read(b)) > 0) out.write(b, 0, count);
+                    in.close();
+                }
+                out.close();
+                new FileUtilities().deleteDirectory(tmpPath.toFile());
             }
             catch (IOException e) {throw new RuntimeException(e);}
         }
@@ -219,9 +277,7 @@ public class FileUtilities {
         }
 
         public String getElementAttribute(JsonObject attributes, String attributeType){
-
             return attributes.get(attributeType).getAsString();
-
         }
 
         public JSONObject str2json(String inputString){
