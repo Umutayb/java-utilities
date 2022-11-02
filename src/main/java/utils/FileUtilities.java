@@ -81,65 +81,68 @@ public class FileUtilities {
 
     public static class Zip {
         public File compress(String zipName, String directory, String extensionFilter) {
-            zipName = zipName + ".zip";
             File screenshotsDirectory = new File(directory);
             File[] files = screenshotsDirectory.listFiles();
+            List<File> toBeCompressed = new ArrayList<>();
             assert files != null;
+            for (File file : files) {
+                String mediaType;
+                try {mediaType = Files.probeContentType(file.toPath());}
+                catch (IOException e) {throw new RuntimeException(e);}
+                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+            }
+            return createZip(zipName, toBeCompressed);
+        }
+
+        public File compress(String zipName, File[] files, String extensionFilter) {
+            assert files != null;
+            List<File> toBeCompressed = new ArrayList<>();
             for (File file:files) {
                 String mediaType;
                 try {mediaType = Files.probeContentType(file.toPath());}
                 catch (IOException e) {throw new RuntimeException(e);}
-                if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
-                else if (extensionFilter == null) {createZip(zipName, file);}
+                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
             }
-            return new File(zipName);
-        }
-
-        public File compress(String zipName, File[] files, String extensionFilter) {
-            zipName = zipName + ".zip";
-            assert files != null;
-            List<File> toBeCompressed = new ArrayList<>();
-            if (extensionFilter == null) {createZip(zipName, List.of(files));}
-            else {
-                for (File file:files) {
-                    String mediaType;
-                    try {mediaType = Files.probeContentType(file.toPath());}
-                    catch (IOException e) {throw new RuntimeException(e);}
-                    if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
-                }
-                createZip(zipName, toBeCompressed);
-            }
-            return new File(zipName);
+            return createZip(zipName, toBeCompressed);
         }
 
         public File compress(String zipName, List<File> files, String extensionFilter) {
-            zipName = zipName + ".zip";
             assert files != null;
             List<File> toBeCompressed = new ArrayList<>();
-            if (extensionFilter == null) {createZip(zipName, files);}
-            else {
-                for (File file:files) {
-                    String mediaType;
-                    try {mediaType = Files.probeContentType(file.toPath());}
-                    catch (IOException e) {throw new RuntimeException(e);}
-                    if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
-                }
-                createZip(zipName, toBeCompressed);
+            for (File file:files) {
+                String mediaType;
+                try {mediaType = Files.probeContentType(file.toPath());}
+                catch (IOException e) {throw new RuntimeException(e);}
+                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
             }
-            return new File(zipName);
+            return createZip(zipName, toBeCompressed);
         }
 
         public File compress(String zipName, File file, String extensionFilter) {
-            zipName = zipName + ".zip";
             String mediaType;
+            File zip;
             try {mediaType = Files.probeContentType(file.toPath());}
             catch (IOException e) {throw new RuntimeException(e);}
-            if (extensionFilter != null && mediaType.contains(extensionFilter)){createZip(zipName, file);}
-            else if (extensionFilter == null) {createZip(zipName, file);}
-            return new File(zipName);
+            if (mediaType.contains(extensionFilter)){zip = createZip(zipName, file);}
+            else throw new RuntimeException("File does not contain the correct file extension.");
+            return zip;
         }
 
-        public void createZip(String zipName, File file){
+        public File compress(String zipName, File file) {return createZip(zipName, file);}
+
+        public File compress(String zipName, File[] files) {return createZip(zipName, List.of(files));}
+
+        public File compress(String zipName, List<File> files) {return createZip(zipName, files);}
+
+        public File compress(String zipName, String directory) {
+            File screenshotsDirectory = new File(directory);
+            File[] files = screenshotsDirectory.listFiles();
+            assert files != null;
+            return createZip(zipName, List.of(files));
+        }
+
+        public File createZip(String zipName, File file){
+            if (!zipName.contains(".zip")) zipName = zipName + ".zip";
             try {
                 ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipName));
                 FileInputStream in = new FileInputStream(file);
@@ -151,13 +154,15 @@ public class FileUtilities {
                 out.close();
             }
             catch (IOException e) {throw new RuntimeException(e);}
+            return new File(zipName);
         }
 
-        public void createZip(String zipName, List<File> files) {
+        public File createZip(String zipName, List<File> files) {
+            if (!zipName.contains(".zip")) zipName = zipName + ".zip";
             try {
                 Path tmpPath = Path.of("temp");
                 Files.createDirectory(tmpPath);
-                ZipOutputStream out = new ZipOutputStream(new FileOutputStream("zipName.zip"));
+                ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipName));
                 for (File file : files) {
                     out.putNextEntry(new ZipEntry(file.getName()));
                     FileInputStream in = new FileInputStream(file);
@@ -170,6 +175,7 @@ public class FileUtilities {
                 new FileUtilities().deleteDirectory(tmpPath.toFile());
             }
             catch (IOException e) {throw new RuntimeException(e);}
+            return new File(zipName);
         }
     }
 
