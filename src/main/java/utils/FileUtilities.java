@@ -1,5 +1,6 @@
 package utils;
 
+import api_assured.exceptions.JavaUtilitiesException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,6 +30,14 @@ public class FileUtilities {
     static {
         try {properties.load(new FileReader("src/test/resources/test.properties"));}
         catch (Exception exception) {exception.printStackTrace();}
+    }
+
+    public String getAbsolutePath(String relativePath){
+        if (verifyFilePresence(relativePath)) {
+            File file = new File(relativePath);
+            return file.getAbsolutePath().replaceAll("#","%23");
+        }
+        else throw new JavaUtilitiesException("File not found @" + relativePath);
     }
 
     public String getString(String directory, String fileName) {
@@ -70,12 +79,8 @@ public class FileUtilities {
             File file = new File(fileDirectory);
 
             fileIsPresent = file.exists();
-
-        } catch (Exception gamma) {
-
-            gamma.printStackTrace();
-
         }
+        catch (Exception gamma) {gamma.printStackTrace();}
         return fileIsPresent;
     }
 
@@ -89,7 +94,7 @@ public class FileUtilities {
                 String mediaType;
                 try {mediaType = Files.probeContentType(file.toPath());}
                 catch (IOException e) {throw new RuntimeException(e);}
-                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+                if (mediaType != null && mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
             }
             return createZip(zipName, toBeCompressed);
         }
@@ -101,7 +106,7 @@ public class FileUtilities {
                 String mediaType;
                 try {mediaType = Files.probeContentType(file.toPath());}
                 catch (IOException e) {throw new RuntimeException(e);}
-                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+                if (mediaType != null && mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
             }
             return createZip(zipName, toBeCompressed);
         }
@@ -113,7 +118,7 @@ public class FileUtilities {
                 String mediaType;
                 try {mediaType = Files.probeContentType(file.toPath());}
                 catch (IOException e) {throw new RuntimeException(e);}
-                if (mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
+                if (mediaType != null && mediaType.contains(extensionFilter)){toBeCompressed.add(file);}
             }
             return createZip(zipName, toBeCompressed);
         }
@@ -123,7 +128,7 @@ public class FileUtilities {
             File zip;
             try {mediaType = Files.probeContentType(file.toPath());}
             catch (IOException e) {throw new RuntimeException(e);}
-            if (mediaType.contains(extensionFilter)){zip = createZip(zipName, file);}
+            if (mediaType != null && mediaType.contains(extensionFilter)){zip = createZip(zipName, file);}
             else throw new RuntimeException("File does not contain the correct file extension.");
             return zip;
         }

@@ -1,8 +1,7 @@
 package utils;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.ServerSocket;
+import java.net.Socket;
 
 import static resources.Colors.*;
 
@@ -11,24 +10,14 @@ public class SystemUtilities {
 
     public boolean portIsAvailable(int port) {
         log.new Info("Checking availability of port " + PURPLE + port + RESET);
-        ServerSocket ss = null;
-        DatagramSocket ds = null;
-        try {
-            ss = new ServerSocket(port);
-            ss.setReuseAddress(true);
-            ds = new DatagramSocket(port);
-            ds.setReuseAddress(true);
+        try (Socket socket = new Socket("localhost", port)) {
+            log.new Warning("Port is unavailable!");
+            socket.close();
+            return false;
+        }
+        catch (IOException e) {
             log.new Success("Port is available!");
             return true;
         }
-        catch (IOException ignored) {}
-        finally {
-            if (ds != null) ds.close();
-            if (ss != null) {
-                try {ss.close();}
-                catch (IOException ignored) {}
-            }
-        }
-        return false;
     }
 }

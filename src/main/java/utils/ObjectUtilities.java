@@ -20,12 +20,12 @@ public class ObjectUtilities {
         return methodMap;
     }
 
-    public Method getMethod(String methodName, Object object){
+    public Method getMethod(String methodName, Object object) throws NoSuchMethodException {
         for (Method method: object.getClass().getDeclaredMethods()) {
             method.setAccessible(true);
             if (method.getName().equals(methodName)) return method;
         }
-        throw new RuntimeException(
+        throw new NoSuchMethodException (
                 "No method named " + methodName + " could be located in class called" + object.getClass().getName()
         );
     }

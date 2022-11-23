@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class SQLUtilities {
     private final Printer log = new Printer(SQLUtilities.class);
-    private final StringUtilities strUtils = new StringUtilities();
 
     public Connection getConnection(String user, String password, String url, String database) {
         log.new Info("Establishing database connection...");
@@ -37,7 +36,9 @@ public class SQLUtilities {
                 }
                 database.add(row);
             }
-            log.new Success(database.size() + " entries successfully mapped!");
+            if (database.size() == 0) log.new Warning("No entries were found for the given query!");
+            else if (database.size() == 1) log.new Success(database.size() + " entry successfully mapped!");
+            else log.new Success(database.size() + " entries successfully mapped!");
             return database;
         }
         catch (SQLException e) {throw new RuntimeException(e);}

@@ -6,7 +6,7 @@
 
   <groupId>io.github.umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.7</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
@@ -207,7 +207,7 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.7</version>
+        <version>1.6.13</version>
         <extensions>true</extensions>
         <configuration>
           <serverId>ossrh</serverId>
