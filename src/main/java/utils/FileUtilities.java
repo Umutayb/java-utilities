@@ -29,6 +29,13 @@ public class FileUtilities {
 
     static {
         try {properties.load(new FileReader("src/test/resources/test.properties"));}
+        catch (FileNotFoundException notFoundException){
+            try {
+                new File("src/test/resources/test.properties").createNewFile();
+                properties.load(new FileReader("src/test/resources/test.properties"));
+            }
+            catch (IOException e) {throw new RuntimeException(e);}
+        }
         catch (Exception exception) {exception.printStackTrace();}
     }
 
