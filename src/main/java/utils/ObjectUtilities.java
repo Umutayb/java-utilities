@@ -1,8 +1,11 @@
 package utils;
 
+import org.junit.Assert;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +13,48 @@ import java.util.Map;
 public class ObjectUtilities {
 
     static Printer log = new Printer(ObjectUtilities.class);
+
+    public void compareObjects(Object expected, Object actual, String... exceptions){
+
+        Map<String, Object> expectedMap = getFields(expected);
+        Map<String, Object> actualMap = getFields(actual);
+
+        for (String fieldName:expectedMap.keySet()) {
+            if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
+                Assert.assertEquals("Values of the " + fieldName + " fields do not match!",
+                        expectedMap.get(fieldName),
+                        actualMap.get(fieldName)
+                );
+                log.new Success("Match: " + fieldName + " -> " + expectedMap.get(fieldName));
+            }
+        }
+    }
+
+    public boolean objectsMatch(Object expected, Object actual, String... exceptions){
+
+        Map<String, Object> expectedMap = getFields(expected);
+        Map<String, Object> actualMap = getFields(actual);
+
+        try {
+            for (String fieldName:expectedMap.keySet()) {
+                if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
+                    Assert.assertEquals("Values of the " + fieldName + " fields do not match!",
+                            expectedMap.get(fieldName),
+                            actualMap.get(fieldName)
+                    );
+                    log.new Success("Match: " + fieldName + " -> " + expectedMap.get(fieldName));
+                }
+            }
+        }
+        catch (AssertionError error){
+            log.new Warning(error.getMessage());
+            return false;
+        }
+
+        log.new Success("All fields match!");
+
+        return true;
+    }
 
     public Map<String, Method> getMethods(Object object){
         Map<String, Method> methodMap = new HashMap<>();

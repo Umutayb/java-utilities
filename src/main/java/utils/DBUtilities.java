@@ -6,13 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated(since = "1.2.2")
-public class SQLUtilities {
-    private final Printer log = new Printer(SQLUtilities.class);
+public class DBUtilities {
+    private final Printer log = new Printer(DBUtilities.class);
 
-    public Connection getConnection(String user, String password, String url, String database) {
-        log.new Info("Establishing database connection...");
-        if (database!=null) url += ";database=" + database;
+    public Connection getConnection(String user, String password, String url) {
         try {
             Connection connection = DriverManager.getConnection(url,user,password);
             log.new Success("Connection established!");

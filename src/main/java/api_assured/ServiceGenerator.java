@@ -47,12 +47,15 @@ public class ServiceGenerator {
      */
     public <S> S generate(Class<S> serviceClass) {
 
+        boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
+        boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
+
         if (BASE_URL.isEmpty()) BASE_URL = (String) new ObjectUtilities().getFieldValue("BASE_URL", serviceClass);
 
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         HttpLoggingInterceptor headerInterceptor = new HttpLoggingInterceptor();
 
-        if (Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"))){
+        if (detailedLogging){
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
         }
@@ -90,7 +93,8 @@ public class ServiceGenerator {
                                             String.valueOf(Objects.requireNonNull(request.body()).contentType()))
                                     .build();
                     }
-                    log.new Info(("Headers(" + request.headers().size() + "): \n" + request.headers()).trim());
+                    if (printHeaders)
+                        log.new Info(("Headers(" + request.headers().size() + "): \n" + request.headers()).trim());
                     return chain.proceed(request);
                 }).build();
 
