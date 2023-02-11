@@ -13,7 +13,7 @@ public class TerminalUtilities {
 
         log.new Info("Running command: " + command);
 
-        String homeDirectory = System.getProperty("user.home");
+        //String homeDirectory = System.getProperty("user.home");
 
         ProcessBuilder processBuilder = new ProcessBuilder();
         boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");

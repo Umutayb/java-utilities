@@ -21,7 +21,7 @@ public class ObjectUtilities {
 
         for (String fieldName:expectedMap.keySet()) {
             if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
-                Assert.assertEquals("Values of the " + fieldName + " fields do not match!",
+                Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
                         expectedMap.get(fieldName),
                         actualMap.get(fieldName)
                 );
@@ -38,7 +38,7 @@ public class ObjectUtilities {
         try {
             for (String fieldName:expectedMap.keySet()) {
                 if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
-                    Assert.assertEquals("Values of the " + fieldName + " fields do not match!",
+                    Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
                             expectedMap.get(fieldName),
                             actualMap.get(fieldName)
                     );

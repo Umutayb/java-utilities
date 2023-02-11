@@ -23,7 +23,10 @@ import static utils.FileUtilities.properties;
 
 public class ServiceGenerator {
 
-    Headers headers = new Headers.Builder().build();
+    static Headers headers = new Headers.Builder().build();
+    static boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
+    static boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
+    static boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
 
     String BASE_URL = "";
     private final Printer log = new Printer(ServiceGenerator.class);
@@ -47,9 +50,6 @@ public class ServiceGenerator {
      */
     public <S> S generate(Class<S> serviceClass) {
 
-        boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
-        boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
-
         if (BASE_URL.isEmpty()) BASE_URL = (String) new ObjectUtilities().getFieldValue("BASE_URL", serviceClass);
 
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -63,6 +63,7 @@ public class ServiceGenerator {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .addInterceptor(headerInterceptor)
+                .hostnameVerifier((hostname, session) -> !hostnameVerification)
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
@@ -115,5 +116,33 @@ public class ServiceGenerator {
         return retrofit.create(serviceClass);
     }
 
+    public static void setPrintHeaders(boolean printHeaders) {
+        ServiceGenerator.printHeaders = printHeaders;
+    }
+
+    public static void setDetailedLogging(boolean detailedLogging) {
+        ServiceGenerator.detailedLogging = detailedLogging;
+    }
+
+    public static void setHostnameVerification(boolean hostnameVerification) {
+        ServiceGenerator.hostnameVerification = hostnameVerification;
+    }
+
     public void setHeaders(Headers headers){this.headers = headers;}
+
+    public static Headers getHeaders() {
+        return headers;
+    }
+
+    public static boolean isPrintHeaders() {
+        return printHeaders;
+    }
+
+    public static boolean isDetailedLogging() {
+        return detailedLogging;
+    }
+
+    public static boolean isHostnameVerification() {
+        return hostnameVerification;
+    }
 }
