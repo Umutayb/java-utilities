@@ -23,7 +23,7 @@ import static utils.FileUtilities.properties;
 
 public class ServiceGenerator {
 
-    static Headers headers = new Headers.Builder().build();
+    Headers headers = new Headers.Builder().build();
     static boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
     static boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
     static boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
@@ -57,13 +57,12 @@ public class ServiceGenerator {
 
         if (detailedLogging){
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+            headerInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
         }
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .addInterceptor(headerInterceptor)
-                .hostnameVerifier((hostname, session) -> !hostnameVerification)
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
@@ -99,6 +98,8 @@ public class ServiceGenerator {
                     return chain.proceed(request);
                 }).build();
 
+        if (!hostnameVerification) client = new OkHttpClient.Builder(client).hostnameVerifier((hostname, session) -> true).build();
+
         assert BASE_URL != null;
         @SuppressWarnings("deprecation")
         Retrofit retrofit = new Retrofit.Builder()
@@ -130,7 +131,7 @@ public class ServiceGenerator {
 
     public void setHeaders(Headers headers){this.headers = headers;}
 
-    public static Headers getHeaders() {
+    public Headers getHeaders() {
         return headers;
     }
 
