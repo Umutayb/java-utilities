@@ -25,20 +25,6 @@ import static resources.Colors.*;
 @SuppressWarnings("unused")
 public class FileUtilities {
 
-    public static final Properties properties = new Properties();
-
-    static {
-        try {properties.load(new FileReader("src/test/resources/test.properties"));}
-        catch (FileNotFoundException notFoundException){
-            try {
-                new File("src/test/resources/test.properties").createNewFile();
-                properties.load(new FileReader("src/test/resources/test.properties"));
-            }
-            catch (IOException e) {throw new RuntimeException(e);}
-        }
-        catch (Exception exception) {exception.printStackTrace();}
-    }
-
     public String getAbsolutePath(String relativePath){
         if (verifyFilePresence(relativePath)) {
             File file = new File(relativePath);

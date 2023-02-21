@@ -6,7 +6,7 @@
 
   <groupId>io.github.umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>1.2.6</version>
+  <version>1.2.7</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
@@ -37,7 +37,6 @@
     <maven.compiler.version>3.8.0</maven.compiler.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <serenity.version>1.9.12</serenity.version>
     <cucumber.version>4.8.0</cucumber.version>
     <retrofit.version>2.9.0</retrofit.version>
     <okhttp.version>4.9.3</okhttp.version>

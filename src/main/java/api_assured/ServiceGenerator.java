@@ -15,13 +15,15 @@ import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
 import utils.ObjectUtilities;
 import utils.Printer;
+import utils.PropertyUtility;
 
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static utils.FileUtilities.properties;
-
 public class ServiceGenerator {
+
+    static Properties properties = new Properties();
 
     Headers headers = new Headers.Builder().build();
     static boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
@@ -32,15 +34,24 @@ public class ServiceGenerator {
     private final Printer log = new Printer(ServiceGenerator.class);
 
     public ServiceGenerator(Headers headers, String BASE_URL) {
+        properties = PropertyUtility.properties;
         this.BASE_URL = BASE_URL;
         setHeaders(headers);
     }
 
-    public ServiceGenerator(Headers headers) {setHeaders(headers);}
+    public ServiceGenerator(Headers headers) {
+        properties = PropertyUtility.properties;
+        setHeaders(headers);
+    }
 
-    public ServiceGenerator(String BASE_URL) {this.BASE_URL = BASE_URL;}
+    public ServiceGenerator(String BASE_URL) {
+        properties = PropertyUtility.properties;
+        this.BASE_URL = BASE_URL;
+    }
 
-    public ServiceGenerator(){}
+    public ServiceGenerator(){
+        properties = PropertyUtility.properties;
+    }
 
     /**
      * Creates Retrofit Service.

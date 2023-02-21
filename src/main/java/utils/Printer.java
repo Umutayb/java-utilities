@@ -1,15 +1,21 @@
 package utils;
 
 import resources.Colors;
+
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static utils.FileUtilities.properties;
 
 public class Printer extends Colors {
 
+    static Properties properties = new Properties();
+
     private final Logger log;
 
-    public <T> Printer(Class<T> className){log = Logger.getLogger(className.getName());}
+    public <T> Printer(Class<T> className){
+        properties = PropertyUtility.properties;
+        log = Logger.getLogger(className.getName());
+    }
 
     public class Important { public Important(Object text){log(Level.INFO, PURPLE, text);}}
 
