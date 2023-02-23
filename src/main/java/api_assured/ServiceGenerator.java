@@ -1,5 +1,6 @@
 package api_assured;
 
+import jdk.jfr.Description;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ServiceGenerator {
 
-    static Properties properties = new Properties();
+    public static Properties properties = PropertyUtility.properties;
 
     Headers headers = new Headers.Builder().build();
     static boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
@@ -34,24 +35,15 @@ public class ServiceGenerator {
     private final Printer log = new Printer(ServiceGenerator.class);
 
     public ServiceGenerator(Headers headers, String BASE_URL) {
-        properties = PropertyUtility.properties;
         this.BASE_URL = BASE_URL;
         setHeaders(headers);
     }
 
-    public ServiceGenerator(Headers headers) {
-        properties = PropertyUtility.properties;
-        setHeaders(headers);
-    }
+    public ServiceGenerator(Headers headers) {setHeaders(headers);}
 
-    public ServiceGenerator(String BASE_URL) {
-        properties = PropertyUtility.properties;
-        this.BASE_URL = BASE_URL;
-    }
+    public ServiceGenerator(String BASE_URL) {this.BASE_URL = BASE_URL;}
 
-    public ServiceGenerator(){
-        properties = PropertyUtility.properties;
-    }
+    public ServiceGenerator(){}
 
     /**
      * Creates Retrofit Service.

@@ -8,14 +8,11 @@ import java.util.logging.Logger;
 
 public class Printer extends Colors {
 
-    static Properties properties = new Properties();
+    public static Properties properties = PropertyUtility.properties;
 
     private final Logger log;
 
-    public <T> Printer(Class<T> className){
-        properties = PropertyUtility.properties;
-        log = Logger.getLogger(className.getName());
-    }
+    public <T> Printer(Class<T> className){log = Logger.getLogger(className.getName());}
 
     public class Important { public Important(Object text){log(Level.INFO, PURPLE, text);}}
 
