@@ -13,6 +13,9 @@ public class StringUtilities {   //Utility methods
     private final Printer log = new Printer(StringUtilities.class);
     private final ObjectUtilities objectUtils = new ObjectUtilities();
 
+    /**
+     * Basic color codes
+     */
     public enum Color {
         CYAN("CYAN_BOLD"),
         RED("RED"),
@@ -31,17 +34,39 @@ public class StringUtilities {   //Utility methods
         public String getValue() {return value;}
     }
 
+    /**
+     * Highlights a given text
+     * @param color desired color
+     * @param text target text
+     * @return returns the colored text
+     */
     public String highlighted(Color color, Object text){return (objectUtils.getFieldValue(color.getValue(), Colors.class) + text.toString() + RESET);}
 
+    /**
+     * Highlights a given text
+     * @param color desired color
+     * @param text target text
+     * @return -
+     */
     public String highlight(Color color, Object text){return (objectUtils.getFieldValue(color.getValue(), Colors.class) + text.toString() + GRAY);}
 
+    /**
+     * Reverses a given string
+     * @param input target text
+     * @return returns the reversed text
+     */
     public String reverse(String input){
         StringBuilder reversed = new StringBuilder();
         for (int i = 0; i < input.length(); i++) {reversed.append(input.charAt(input.length() - i - 1));}
         return reversed.toString();
     }
 
-    public String firstLetterCapped(String inputString){ //Capitalizes the first letter of the input string
+    /**
+     * Capitalizes the first letter of the input string
+     * @param inputString target text
+     * @return returns the capitalized first letter text
+     */
+    public String firstLetterCapped(String inputString){
 
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
@@ -54,7 +79,12 @@ public class StringUtilities {   //Utility methods
             return null;
     }
 
-    public String firstLetterDeCapped(String inputString){ //Capitalizes the first letter of the input string
+    /**
+     * Decapitalizes the first letter of the input string
+     * @param inputString target text
+     * @return returns the decapitalized text
+     */
+    public String firstLetterDeCapped(String inputString){
 
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
@@ -67,7 +97,12 @@ public class StringUtilities {   //Utility methods
             return null;
     }
 
-    public String cleanText(String inputString){ //Cleans the input string of spaces, numbers etc.
+    /**
+     * Cleans the input string of spaces, numbers, special characters, non-english characters etc.
+     * @param inputString target text
+     * @return returns the cleaned text
+     */
+    public String cleanText(String inputString){
 
         inputString = inputString
                 .replaceAll("\\s", "")                    //Cleans spaces
@@ -81,7 +116,12 @@ public class StringUtilities {   //Utility methods
         return inputString;
     }
 
-    public String normalize(String inputString){ //Replaces non english characters in input string
+    /**
+     * Replaces non-english characters in input string
+     * @param inputString target text
+     * @return returns replaced text
+     */
+    public String normalize(String inputString){
 
         return Normalizer
                 .normalize(inputString, Normalizer.Form.NFD)
@@ -93,16 +133,36 @@ public class StringUtilities {   //Utility methods
                 .replaceAll("[^\\p{ASCII}]", "");
     }
 
-    public String shorten(String inputString, int length) { //Shortens string to the given length
+    /**
+     * Shortens string to the given length
+     * @param inputString target text
+     * @param length desired length
+     * @return returns the shortened text
+     */
+    public String shorten(String inputString, int length) {
 
         return inputString.substring(0, Math.min(inputString.length(), length));
     }
 
-    //Generates random string according to the input rules
+    /**
+     * Generates random text according to the input rules
+     * @param keyword desired keywords
+     * @param length desired length
+     * @param useLetters includes letters if true
+     * @param useNumbers includes numvers if true
+     * @return returns the randomly created text
+     */
     public String generateRandomString(String keyword, int length, boolean useLetters, boolean useNumbers) {
         return keyword + RandomStringUtils.random(length, useLetters, useNumbers);
     }
 
+    /**
+     * Measures distance between two given sections in a text
+     * @param input target text
+     * @param firstKeyword first keyword
+     * @param lastKeyword last keyword
+     * @return returns the distance value
+     */
     public int measureDistanceBetween(String input, String firstKeyword, String lastKeyword){
 
         // Remove any special chars from string
@@ -121,6 +181,11 @@ public class StringUtilities {   //Utility methods
         return distance;
     }
 
+    /**
+     * Turns a given text into a map
+     * @param inputString target text
+     * @return returns the string map (Map<String, String>)
+     */
     public Map<String, String> str2Map(String inputString){
 
         Map<String, String> outputMap = new HashMap<>();

@@ -14,6 +14,12 @@ public class ObjectUtilities {
 
     static Printer log = new Printer(ObjectUtilities.class);
 
+    /**
+     * Compares two given objects matches, not throws an exception if not
+     * @param expected expected object
+     * @param actual actual object
+     * @param exceptions exceptions
+     */
     public void compareObjects(Object expected, Object actual, String... exceptions){
 
         Map<String, Object> expectedMap = getFields(expected);
@@ -30,6 +36,12 @@ public class ObjectUtilities {
         }
     }
 
+    /**
+     * Compares two given objects matches, throws an exception if not
+     * @param expected expected object
+     * @param actual actual object
+     * @param exceptions exceptions
+     */
     public boolean objectsMatch(Object expected, Object actual, String... exceptions){
 
         Map<String, Object> expectedMap = getFields(expected);
@@ -56,6 +68,11 @@ public class ObjectUtilities {
         return true;
     }
 
+    /**
+     *
+     * @param object
+     * @return
+     */
     public Map<String, Method> getMethods(Object object){
         Map<String, Method> methodMap = new HashMap<>();
         for (Method method: object.getClass().getDeclaredMethods()) {
@@ -65,6 +82,13 @@ public class ObjectUtilities {
         return methodMap;
     }
 
+    /**
+     *
+     * @param methodName
+     * @param object
+     * @return
+     * @throws NoSuchMethodException
+     */
     public Method getMethod(String methodName, Object object) throws NoSuchMethodException {
         for (Method method: object.getClass().getDeclaredMethods()) {
             method.setAccessible(true);
@@ -75,6 +99,13 @@ public class ObjectUtilities {
         );
     }
 
+    /**
+     * Acquires a specified field value from a given class
+     * @param fieldName field name
+     * @param inputClass target class
+     * @return returns the field value
+     * @param <T> -
+     */
     public <T> Object getFieldValue(String fieldName, Class<T> inputClass){
         try {
             Field field = inputClass.getDeclaredField(fieldName);
@@ -84,6 +115,12 @@ public class ObjectUtilities {
         catch (IllegalAccessException | NoSuchFieldException exception) {throw new RuntimeException(exception);}
     }
 
+    /**
+     *
+     * @param fieldName
+     * @param inputClass
+     * @return
+     */
     public Object getField(String fieldName, Object inputClass){
         try {
             Field field = inputClass.getClass().getDeclaredField(fieldName);
@@ -93,6 +130,11 @@ public class ObjectUtilities {
         catch (IllegalAccessException | NoSuchFieldException exception) {throw new RuntimeException(exception);}
     }
 
+    /**
+     *
+     * @param inputClass
+     * @return
+     */
     public Map<String,Object> getFields(Object inputClass){
         Map<String,Object> fieldMap = new HashMap<>();
         try {
@@ -105,6 +147,10 @@ public class ObjectUtilities {
         return fieldMap;
     }
 
+    /**
+     *
+     * @param object
+     */
     public void printObjectFields(Object object){
         List<Field> fields = List.of(object.getClass().getDeclaredFields());
         StringBuilder output = new StringBuilder();
@@ -119,6 +165,10 @@ public class ObjectUtilities {
         catch (IllegalAccessException e) {throw new RuntimeException(e);}
     }
 
+    /**
+     *
+     * @param object
+     */
     public void printModelGetterValues(Object object){
         Method[] methods = object.getClass().getDeclaredMethods();
         StringBuilder output = new StringBuilder();

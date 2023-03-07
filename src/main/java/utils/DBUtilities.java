@@ -9,6 +9,13 @@ import java.util.Map;
 public class DBUtilities {
     private final Printer log = new Printer(DBUtilities.class);
 
+    /**
+     *
+     * @param user
+     * @param password
+     * @param url
+     * @return
+     */
     public Connection getConnection(String user, String password, String url) {
         try {
             Connection connection = DriverManager.getConnection(url,user,password);
@@ -18,6 +25,13 @@ public class DBUtilities {
         catch (SQLException e) {throw new RuntimeException(e);}
     }
 
+    /**
+     *
+     * @param connection
+     * @param sqlQuery
+     * @param includeNullValues
+     * @return
+     */
     public List<Map<String, Object>> getResults(Connection connection, String sqlQuery, Boolean includeNullValues){
         log.new Info("Mapping result set...");
         List<Map<String, Object>> database = new ArrayList<>();

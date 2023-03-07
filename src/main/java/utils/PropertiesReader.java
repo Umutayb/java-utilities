@@ -10,6 +10,10 @@ public class PropertiesReader {
 
     private Properties properties;
 
+    /**
+     * Reads a given property
+     * @param propertyFileName property directory
+     */
     public PropertiesReader(String propertyFileName){
         try {
             InputStream inputStream = getClass().getClassLoader()

@@ -9,6 +9,12 @@ public class TerminalUtilities {
 
     private final Printer log = new Printer(TerminalUtilities.class);
 
+    /**
+     * Runs a specified command on terminal
+     * @param command desired command
+     * @throws IOException -
+     * @throws InterruptedException -
+     */
     public void runCommand(String command) throws IOException, InterruptedException {
 
         log.new Info("Running command: " + command);

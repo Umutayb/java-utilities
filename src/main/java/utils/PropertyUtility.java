@@ -9,6 +9,10 @@ import java.util.Properties;
 public class PropertyUtility {
     public static final Properties properties = new Properties();
 
+    /**
+     * Loads given properties
+     * @param path property directory
+     */
     public static void loadProperties(String path){
         try {properties.load(new FileReader(path));}
         catch (FileNotFoundException notFoundException){

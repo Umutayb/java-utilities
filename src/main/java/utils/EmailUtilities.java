@@ -18,6 +18,16 @@ public class EmailUtilities {
     private static final Printer log = new Printer(EmailUtilities.class);
     private String host;
 
+    /**
+     * Sends specified mail
+     * @param subject mail subject
+     * @param content mail content
+     * @param receiver receivers mail address
+     * @param ID senders mail address
+     * @param Password senders mail password
+     * @param attachment mail attachment
+     * @return returns the call response
+     */
     public Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
 
         // Get system properties
@@ -65,6 +75,10 @@ public class EmailUtilities {
         return false;
     }
 
+    /**
+     * Sets a requested host
+     * @param host host name
+     */
     private void setHost(String host){this.host = host;}
 
     public static class Inbox {
@@ -96,6 +110,19 @@ public class EmailUtilities {
             loadInbox(null, null, print, save, saveAttachments);
         }
 
+        /**
+         * mailbox
+         * @param host host name
+         * @param port port name
+         * @param userName mail address
+         * @param password mail password
+         * @param secureCon -
+         * @param filterType -
+         * @param filterKey -
+         * @param print -
+         * @param save -
+         * @param saveAttachments save attachments if true
+         */
         public Inbox(
                 String host,
                 String port,
@@ -116,6 +143,11 @@ public class EmailUtilities {
             loadInbox(filterType, filterKey, print, save, saveAttachments);
         }
 
+        /**
+         *
+         * @param filename
+         * @param messageContent
+         */
         public void saveMessage(String filename, String messageContent){
             log.new Info("Saving email body...");
             try (FileWriter file = new FileWriter("inbox/" + filename + ".html")){
@@ -125,6 +157,14 @@ public class EmailUtilities {
             catch (IOException e) {throw new RuntimeException(e);}
         }
 
+        /**
+         *
+         * @param filterType
+         * @param filterKey
+         * @param print
+         * @param save
+         * @param saveAttachments
+         */
         private void loadInbox(EmailField filterType, String filterKey, Boolean print, Boolean save, Boolean saveAttachments){
             Properties properties = new Properties();
 
@@ -196,6 +236,14 @@ public class EmailUtilities {
             catch (MessagingException exception) {log.new Error(exception.getCause().getMessage(),exception);}
         }
 
+        /**
+         *
+         * @param message
+         * @param index
+         * @param print
+         * @param save
+         * @param saveAttachments
+         */
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments){
             try {
                 String from = message.getFrom()[0].toString();
@@ -230,6 +278,10 @@ public class EmailUtilities {
             catch (MessagingException exception){log.new Error("Could not connect to the message store", exception);}
         }
 
+        /**
+         *
+         * @return
+         */
         public String getConnectionStatus(){
             Properties properties = new Properties();
 
@@ -266,6 +318,11 @@ public class EmailUtilities {
             return isconnected;
         }
 
+        /**
+         *
+         * @param message
+         * @return
+         */
         private String getContent(Message message){
             try {
                 String messageContent = "";
@@ -290,6 +347,12 @@ public class EmailUtilities {
             }
         }
 
+        /**
+         *
+         * @param message
+         * @param saveAttachments
+         * @return
+         */
         private String getAttachments(Message message, Boolean saveAttachments){
             StringBuilder attachments = new StringBuilder();
             try {

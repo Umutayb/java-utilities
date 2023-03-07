@@ -18,6 +18,13 @@ public class TextParser {
         log.new Important(textParser.parse(initialKeyword,finalKeyword,input));
     }
 
+    /**
+     *
+     * @param initialKeyword
+     * @param finalKeyword
+     * @param input
+     * @return
+     */
     public String parse(String initialKeyword, String finalKeyword, String input){
         int firstIndex = 0;
 

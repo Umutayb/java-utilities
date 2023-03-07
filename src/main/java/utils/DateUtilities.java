@@ -10,6 +10,14 @@ public class DateUtilities {
 
     public Calendar getSetDate(String unitType, Integer value){return setDate(getDate(), unitType, value);}
 
+    /**
+     * Create unique a calendar
+     *
+     * @param calendar calendar
+     * @param unitType unit type
+     * @param value date value
+     * @return returns the specified calendar
+     */
     Calendar setDate(Calendar calendar, String unitType, Integer value){
         switch (unitType.toLowerCase()){
             case "day":
