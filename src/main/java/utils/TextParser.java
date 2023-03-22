@@ -15,7 +15,7 @@ public class TextParser {
         log.new Important("Enter the final keyword"); // -
         String finalKeyword = scanner.nextLine();
         scanner.close();
-        log.new Important(textParser.parse(initialKeyword,finalKeyword,input));
+        log.new Plain(textParser.parse(initialKeyword,finalKeyword,input));
     }
 
     public String parse(String initialKeyword, String finalKeyword, String input){

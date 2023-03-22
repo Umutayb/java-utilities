@@ -3,6 +3,7 @@ package utils;
 import resources.Colors;
 
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,28 +15,45 @@ public class Printer extends Colors {
 
     public <T> Printer(Class<T> className){log = Logger.getLogger(className.getName());}
 
-    public class Important { public Important(Object text){log(Level.INFO, PURPLE, text);}}
+    public class Plain { public Plain(CharSequence output) {log(Level.INFO, String.valueOf(output));}}
 
-    public class Info { public Info(Object text) {log(Level.INFO, GRAY, text);}}
+    public class Important {
+        StringJoiner colorCode = new StringJoiner("", PURPLE, RESET);
 
-    public class Success { public Success(Object text){log(Level.INFO, GREEN, text);}}
-
-    public class Warning { public Warning(Object text){log(Level.WARNING, YELLOW, text);}}
-
-    public class Error { public Error(Object text, Exception exception){log(Level.SEVERE, RED, text, exception);}}
-
-    private void log(Level level, String color, Object text){
-        text = (color + text + RESET);
-        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
-            LogUtilities.log.info(text.toString());
-        else log.logp(level, log.getName(), getMethod(), text.toString());
+        public Important(CharSequence output){log(Level.INFO, String.valueOf(colorCode.add(output)));}
     }
 
-    private void log(Level level, String color, Object text, Exception exception){
-        text = (color + text + RESET);
+    public class Info { public Info(CharSequence output) {
+        StringJoiner colorCode = new StringJoiner("", GRAY, RESET);
+
+        log(Level.INFO, String.valueOf(colorCode.add(output)));}
+    }
+
+    public class Success {
+        StringJoiner colorCode = new StringJoiner("", GREEN, RESET);
+        public Success(CharSequence output){log(Level.INFO, String.valueOf(colorCode.add(output)));}
+    }
+
+    public class Warning {
+        StringJoiner colorCode = new StringJoiner("", YELLOW, RESET);
+        public Warning(CharSequence output){log(Level.WARNING, String.valueOf(colorCode.add(output)));}
+    }
+
+    public class Error {
+        StringJoiner colorCode = new StringJoiner("", RED, RESET);
+        public Error(CharSequence output, Exception exception){log(String.valueOf(colorCode.add(output)), exception);}
+    }
+
+    private void log(Level level, String output){
         if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
-            LogUtilities.log.info(text.toString());
-        else log.logp(level, log.getName(), getMethod(), text.toString(), exception);
+            LogUtilities.log.info(output);
+        else log.logp(level, log.getName(), getMethod(), output);
+    }
+
+    private void log(String output, Exception exception){
+        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
+            LogUtilities.log.info(output);
+        else log.logp(Level.SEVERE, log.getName(), getMethod(), output, exception);
     }
 
     private String getMethod(){

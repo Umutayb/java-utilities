@@ -14,6 +14,7 @@ import utils.Printer;
 import utils.StringUtilities;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static resources.Colors.GRAY;
 import static resources.Colors.WHITE_BOLD;
@@ -52,7 +53,7 @@ public abstract class Caller {
             else{
                 log.new Warning("The response code is: " + response.code());
                 if (response.message().length()>0) log.new Warning(response.message());
-                log.new Warning(response.raw());
+                log.new Warning(response.raw().toString());
                 if (printBody) printBody(response);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -87,7 +88,7 @@ public abstract class Caller {
             else{
                 log.new Warning("The response code is: " + response.code());
                 if (response.message().length()>0) log.new Warning(response.message());
-                log.new Warning(response.raw());
+                log.new Warning(response.raw().toString());
                 if (printBody) printBody(response);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -120,7 +121,7 @@ public abstract class Caller {
                 if (response.message().length()>0)
                     log.new Warning(response.message());
                 log.new Warning("The response code is: " + response.code());
-                log.new Warning(response.raw());
+                log.new Warning(response.raw().toString());
 
                 if (strict)
                     Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
@@ -151,7 +152,7 @@ public abstract class Caller {
                 if (response.message().length()>0)
                     log.new Warning(response.message());
                 log.new Warning("The response code is: " + response.code());
-                log.new Warning(response.raw());
+                log.new Warning(response.raw().toString());
 
                 if (strict)
                     Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
@@ -184,7 +185,7 @@ public abstract class Caller {
             }
             else log.new Info("The response body is empty."); // Success response with a null body
         }
-        catch (IOException exception){log.new Warning(exception.getStackTrace());}
+        catch (IOException exception){log.new Warning(Arrays.toString(exception.getStackTrace()));}
     }
 
     static String getMethod(){
