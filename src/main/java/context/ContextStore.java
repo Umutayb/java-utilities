@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings("unused")
 public class ContextStore {
 
     private static final ThreadLocal<ConcurrentHashMap<Object, Object>> map = ThreadLocal.withInitial(ConcurrentHashMap::new);
@@ -20,9 +21,11 @@ public class ContextStore {
         return key != null ? ((ConcurrentHashMap<?, ?>)map.get()).get(key) : null;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static synchronized Set<Object> items() {
         return Collections.unmodifiableSet(((ConcurrentHashMap)map.get()).keySet());
     }
 
-    static synchronized void clear() {((ConcurrentHashMap<?, ?>)map.get()).clear();}
+    @SuppressWarnings({"redundant"})
+    static synchronized void clear() {map.get().clear();}
 }

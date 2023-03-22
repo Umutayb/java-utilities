@@ -20,10 +20,12 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static resources.Colors.*;
+import static utils.StringUtilities.Color.*;
 
 @SuppressWarnings("unused")
 public class FileUtilities {
+
+    StringUtilities strUtils = new StringUtilities();
 
     public String getAbsolutePath(String relativePath){
         if (verifyFilePresence(relativePath)) {
@@ -36,7 +38,7 @@ public class FileUtilities {
     public String getString(String directory, String fileName) {
         try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}
         catch (IOException exception){
-            Assert.fail(YELLOW+fileName+" not found");
+            Assert.fail(strUtils.markup(YELLOW, fileName+" not found!"));
             return null;
         }
     }

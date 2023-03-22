@@ -1,9 +1,8 @@
 package utils;
 
+import static utils.StringUtilities.Color.*;
 import java.io.IOException;
 import java.net.Socket;
-
-import static resources.Colors.*;
 
 public class SystemUtilities {
     Printer log = new Printer(SystemUtilities.class);

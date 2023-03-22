@@ -12,12 +12,10 @@ import retrofit2.Response;
 import utils.FileUtilities;
 import utils.Printer;
 import utils.StringUtilities;
-
 import java.io.IOException;
 import java.util.Arrays;
 
-import static resources.Colors.GRAY;
-import static resources.Colors.WHITE_BOLD;
+import static utils.StringUtilities.Color.*;
 
 @SuppressWarnings("unused")
 public abstract class Caller {
@@ -37,9 +35,9 @@ public abstract class Caller {
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getMethod();
         log.new Info("Performing " +
-                strUtils.highlight(StringUtilities.Color.PALE, call.request().method()) +
+                strUtils.markup(PALE, call.request().method()) +
                 " call for '" +
-                strUtils.highlight(StringUtilities.Color.PALE, serviceName) +
+                strUtils.markup(PALE, serviceName) +
                 "' service on url: " + call.request().url()
         );
         try {
@@ -73,9 +71,9 @@ public abstract class Caller {
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getMethod();
         log.new Info("Performing " +
-                strUtils.highlight(StringUtilities.Color.PALE, call.request().method()) +
+                strUtils.markup(PALE, call.request().method()) +
                 " call for '" +
-                strUtils.highlight(StringUtilities.Color.PALE, serviceName) +
+                strUtils.markup(PALE, serviceName) +
                 "' service on url: " + call.request().url()
         );        try {
             Response<Model> response = call.execute();

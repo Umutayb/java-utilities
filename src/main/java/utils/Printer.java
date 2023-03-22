@@ -1,13 +1,14 @@
 package utils;
 
-import resources.Colors;
-
 import java.util.Properties;
-import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Printer extends Colors {
+import static utils.StringUtilities.Color.*;
+
+public class Printer {
+
+    StringUtilities strUtils = new StringUtilities();
 
     public static Properties properties = PropertyUtility.properties;
 
@@ -18,30 +19,23 @@ public class Printer extends Colors {
     public class Plain { public Plain(CharSequence output) {log(Level.INFO, String.valueOf(output));}}
 
     public class Important {
-        StringJoiner colorCode = new StringJoiner("", PURPLE, RESET);
-
-        public Important(CharSequence output){log(Level.INFO, String.valueOf(colorCode.add(output)));}
+        public Important(CharSequence output){log(Level.INFO, strUtils.highlighted(PURPLE, output));}
     }
 
-    public class Info { public Info(CharSequence output) {
-        StringJoiner colorCode = new StringJoiner("", GRAY, RESET);
-
-        log(Level.INFO, String.valueOf(colorCode.add(output)));}
+    public class Info {
+        public Info(CharSequence output) {log(Level.INFO, strUtils.highlighted(GRAY, output));}
     }
 
     public class Success {
-        StringJoiner colorCode = new StringJoiner("", GREEN, RESET);
-        public Success(CharSequence output){log(Level.INFO, String.valueOf(colorCode.add(output)));}
+        public Success(CharSequence output){log(Level.INFO, strUtils.highlighted(GREEN, output));}
     }
 
     public class Warning {
-        StringJoiner colorCode = new StringJoiner("", YELLOW, RESET);
-        public Warning(CharSequence output){log(Level.WARNING, String.valueOf(colorCode.add(output)));}
+        public Warning(CharSequence output){log(Level.WARNING, strUtils.highlighted(YELLOW, output));}
     }
 
     public class Error {
-        StringJoiner colorCode = new StringJoiner("", RED, RESET);
-        public Error(CharSequence output, Exception exception){log(String.valueOf(colorCode.add(output)), exception);}
+        public Error(CharSequence output, Exception exception){log(strUtils.highlighted(RED, output), exception);}
     }
 
     private void log(Level level, String output){
