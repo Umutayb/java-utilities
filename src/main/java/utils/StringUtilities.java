@@ -12,7 +12,6 @@ import static utils.StringUtilities.Color.*;
 @SuppressWarnings("unused")
 public class StringUtilities {   //Utility methods
 
-    private final Printer log = new Printer(StringUtilities.class);
     private final ObjectUtilities objectUtils = new ObjectUtilities();
 
 
@@ -146,7 +145,7 @@ public class StringUtilities {   //Utility methods
                 else throw new Exception( "Second value of this pair was found to be null");
 
             }
-            catch (Exception gamma){log.new Error(GRAY+gamma.getMessage()+RESET,gamma);}
+            catch (Exception gamma){throw new RuntimeException(GRAY+gamma.getMessage()+RESET,gamma);}
         }
         return outputMap;
     }
