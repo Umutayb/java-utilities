@@ -1,6 +1,5 @@
 package api_assured;
 
-import jdk.jfr.Description;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,14 +21,19 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("unused")
 public class ServiceGenerator {
 
     public static Properties properties = PropertyUtility.properties;
 
     Headers headers = new Headers.Builder().build();
-    static boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
-    static boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
-    static boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
+    boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
+    boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
+    boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
+    int connectionTimeout = Integer.parseInt(properties.getProperty("connection-timeout", "60"));
+    int readTimeout = Integer.parseInt(properties.getProperty("connection-read-timeout", "30"));
+    int writeTimeout = Integer.parseInt(properties.getProperty("connection-write-timeout", "30"));
+
 
     String BASE_URL = "";
     private final Printer log = new Printer(ServiceGenerator.class);
@@ -66,9 +70,9 @@ public class ServiceGenerator {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .addInterceptor(headerInterceptor)
-                .connectTimeout(1, TimeUnit.MINUTES)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(connectionTimeout, TimeUnit.SECONDS)
+                .readTimeout(readTimeout, TimeUnit.SECONDS)
+                .writeTimeout(writeTimeout, TimeUnit.SECONDS)
                 .addNetworkInterceptor(chain -> {
                     Request request = chain.request().newBuilder().build();
                     request = request.newBuilder()
@@ -120,33 +124,71 @@ public class ServiceGenerator {
         return retrofit.create(serviceClass);
     }
 
-    public static void setPrintHeaders(boolean printHeaders) {
-        ServiceGenerator.printHeaders = printHeaders;
+    public ServiceGenerator setPrintHeaders(boolean printHeaders) {
+        this.printHeaders = printHeaders;
+        return this;
     }
 
-    public static void setDetailedLogging(boolean detailedLogging) {
-        ServiceGenerator.detailedLogging = detailedLogging;
+    public ServiceGenerator setDetailedLogging(boolean detailedLogging) {
+        this.detailedLogging = detailedLogging;
+        return this;
     }
 
-    public static void setHostnameVerification(boolean hostnameVerification) {
-        ServiceGenerator.hostnameVerification = hostnameVerification;
+    public ServiceGenerator setHostnameVerification(boolean hostnameVerification) {
+        this.hostnameVerification = hostnameVerification;
+        return this;
     }
 
-    public void setHeaders(Headers headers){this.headers = headers;}
+    public ServiceGenerator setHeaders(Headers headers){
+        this.headers = headers;
+        return this;
+    }
 
     public Headers getHeaders() {
         return headers;
     }
 
-    public static boolean isPrintHeaders() {
+    public boolean isPrintHeaders() {
         return printHeaders;
     }
 
-    public static boolean isDetailedLogging() {
+    public boolean isDetailedLogging() {
         return detailedLogging;
     }
 
-    public static boolean isHostnameVerification() {
+    public boolean isHostnameVerification() {
         return hostnameVerification;
+    }
+
+    public ServiceGenerator setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+        return this;
+    }
+
+    public ServiceGenerator setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+        return this;
+    }
+
+    public ServiceGenerator setWriteTimeout(int writeTimeout) {
+        this.writeTimeout = writeTimeout;
+        return this;
+    }
+
+    public ServiceGenerator setBASE_URL(String BASE_URL) {
+        this.BASE_URL = BASE_URL;
+        return this;
+    }
+
+    public int getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public int getReadTimeout() {
+        return readTimeout;
+    }
+
+    public int getWriteTimeout() {
+        return writeTimeout;
     }
 }
