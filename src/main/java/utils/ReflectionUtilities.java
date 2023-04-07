@@ -144,7 +144,7 @@ public class ReflectionUtilities {
      * @throws ClassNotFoundException throws if class not found
      * @throws NoSuchFieldException throws if file not found
      */
-    private JsonArray getJsonArray(Field field, boolean primitive) throws ClassNotFoundException, NoSuchFieldException {
+    public JsonArray getJsonArray(Field field, boolean primitive) throws ClassNotFoundException, NoSuchFieldException, JavaUtilitiesException {
         JsonArray array = new JsonArray();
         if (!primitive){
             List<JsonObject> list = List.of(
@@ -173,7 +173,7 @@ public class ReflectionUtilities {
      * @throws ClassNotFoundException throws if json process is interrupted
      * @throws JavaUtilitiesException throws if unable to access class fields
      */
-    private <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json) throws NoSuchFieldException, ClassNotFoundException {
+    public <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json) throws NoSuchFieldException, ClassNotFoundException {
         List<Field> fields = List.of(clazz.getFields());
         if (fields.size() == 0) throw new JavaUtilitiesException("Please make sure fields of " + clazz.getSimpleName() + " class are set to public.");
         for (Field field:fields) {
@@ -197,7 +197,7 @@ public class ReflectionUtilities {
      * @param expectedType expected field type
      * @return true or false
      */
-    private boolean isOfType(Field field, String expectedType){
+    public boolean isOfType(Field field, String expectedType){
         return field.getType().getTypeName().contains(expectedType);
     }
 
@@ -206,7 +206,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return field type
      */
-    private String getTypeName(Field field) {
+    public String getTypeName(Field field) {
         ParameterizedType type = (ParameterizedType) field.getGenericType();
         return type.getActualTypeArguments()[0].getTypeName();
     }
@@ -216,7 +216,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return a boolean
      */
-    private boolean isPrimitive(Field field){
+    public boolean isPrimitive(Field field){
         return switch (getTypeName(field)) {
             case "java.lang.Integer",
                     "java.lang.Boolean",
@@ -238,7 +238,7 @@ public class ReflectionUtilities {
      * @return a boolean
      * @param <T> type of the given class
      */
-    private <T> boolean isMemberList(Class<T> clazz, Field field){
+    public <T> boolean isMemberList(Class<T> clazz, Field field){
         List<Field> fields = List.of(clazz.getFields());
         return fields.stream().anyMatch(
                 subField -> subField.getGenericType().getTypeName().equals(field.getGenericType().getTypeName())
