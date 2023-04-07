@@ -11,6 +11,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import utils.FileUtilities;
 import utils.Printer;
+import utils.PropertyUtility;
 import utils.StringUtilities;
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import static utils.StringUtilities.Color.*;
 @SuppressWarnings("unused")
 public abstract class Caller {
 
+    static boolean keepLogs;
     static ObjectMapper objectMapper = new ObjectMapper();
     static StringUtilities strUtils = new StringUtilities();
     static Printer log = new Printer(Caller.class);
@@ -30,22 +32,24 @@ public abstract class Caller {
         objectMapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
         objectMapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        keepLogs = Boolean.parseBoolean(PropertyUtility.properties.getProperty("keep-api-logs", "true"));
     }
 
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
-        String serviceName = getMethod();
-        log.new Info("Performing " +
-                strUtils.markup(PALE, call.request().method()) +
-                " call for '" +
-                strUtils.markup(PALE, serviceName) +
-                "' service on url: " + call.request().url()
+        String serviceName = getRequestMethod();
+        if (keepLogs)
+            log.new Info("Performing " +
+                    strUtils.markup(PALE, call.request().method()) +
+                    " call for '" +
+                    strUtils.markup(PALE, serviceName) +
+                    "' service on url: " + call.request().url()
         );
         try {
             Response<Model> response = call.execute();
 
             if (response.isSuccessful()){
-                log.new Success("The response code is: " + response.code());
-                if (response.message().length()>0) log.new Info(response.message());
+                if (keepLogs) log.new Success("The response code is: " + response.code());
+                if (response.message().length()>0 && keepLogs) log.new Info(response.message());
                 if (printBody) printBody(response);
             }
             else{
@@ -69,18 +73,20 @@ public abstract class Caller {
     }
 
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
-        String serviceName = getMethod();
-        log.new Info("Performing " +
-                strUtils.markup(PALE, call.request().method()) +
-                " call for '" +
-                strUtils.markup(PALE, serviceName) +
-                "' service on url: " + call.request().url()
-        );        try {
+        String serviceName = getRequestMethod();
+        if (keepLogs)
+            log.new Info("Performing " +
+                    strUtils.markup(PALE, call.request().method()) +
+                    " call for '" +
+                    strUtils.markup(PALE, serviceName) +
+                    "' service on url: " + call.request().url()
+            );
+        try {
             Response<Model> response = call.execute();
 
             if (response.isSuccessful()){
-                log.new Success("The response code is: " + response.code());
-                if (response.message().length()>0) log.new Info(response.message());
+                if (keepLogs) log.new Success("The response code is: " + response.code());
+                if (response.message().length()>0 && keepLogs) log.new Info(response.message());
                 if (printBody) printBody(response);
             }
             else{
@@ -186,7 +192,7 @@ public abstract class Caller {
         catch (IOException exception){log.new Warning(Arrays.toString(exception.getStackTrace()));}
     }
 
-    static String getMethod(){
+    private static String getRequestMethod(){
         Throwable dummyException = new Throwable();
         StackTraceElement[] stackTrace = dummyException.getStackTrace();
         // LOGGING-132: use the provided logger name instead of the class name
@@ -197,5 +203,13 @@ public abstract class Caller {
             method = caller.getMethodName();
         }
         return method;
+    }
+
+    public static boolean keepsLogs() {
+        return keepLogs;
+    }
+
+    public static void keepLogs(boolean keepLogs) {
+        Caller.keepLogs = keepLogs;
     }
 }
