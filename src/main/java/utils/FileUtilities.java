@@ -2,6 +2,7 @@ package utils;
 
 import api_assured.exceptions.JavaUtilitiesException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,6 +14,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
