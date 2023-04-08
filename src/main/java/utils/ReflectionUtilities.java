@@ -5,14 +5,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.junit.Assert;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ReflectionUtilities {
 
@@ -144,14 +142,15 @@ public class ReflectionUtilities {
      * @throws ClassNotFoundException throws if class not found
      * @throws NoSuchFieldException throws if file not found
      */
-    private JsonArray getJsonArray(Field field, boolean primitive) throws ClassNotFoundException, NoSuchFieldException {
+    public JsonArray getJsonArray(Field field, boolean primitive, String... exceptions) throws ClassNotFoundException, NoSuchFieldException {
         JsonArray array = new JsonArray();
         if (!primitive){
             List<JsonObject> list = List.of(
                     getJsonObject(Class.forName(
                                     ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].getTypeName()
                             ),
-                            new JsonObject()
+                            new JsonObject(),
+                            exceptions
                     )
             );
             for (JsonObject jsonObject : list) array.add(jsonObject);
@@ -164,28 +163,33 @@ public class ReflectionUtilities {
     }
 
     /**
-     * Generates a json from a given class
-     * @param clazz given class
-     * @param json target json
-     * @return generated json
-     * @param <T> type of the given class
-     * @throws NoSuchFieldException throws if file not found
-     * @throws ClassNotFoundException throws if json process is interrupted
-     * @throws JavaUtilitiesException throws if unable to access class fields
+     * Returns a JsonObject representation of a given class instance, based on the provided JsonObject and
+     * optional list of field exceptions.
+     *
+     * @param clazz The class of the object to be created.
+     * @param json The JsonObject to be used as the basis for the object.
+     * @param exceptions An optional list of field names to be excluded from the object creation.
+     * @return A JsonObject representation of the class instance.
+     * @throws NoSuchFieldException If one of the provided field exceptions does not exist in the class.
+     * @throws ClassNotFoundException If the provided class name cannot be found.
      */
-    private <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json) throws NoSuchFieldException, ClassNotFoundException {
-        List<Field> fields = List.of(clazz.getFields());
-        if (fields.size() == 0) throw new JavaUtilitiesException("Please make sure fields of " + clazz.getSimpleName() + " class are set to public.");
-        for (Field field:fields) {
-            boolean isMember = field.getType().isMemberClass();
-            boolean isList = isOfType(field, "List");
+    public <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException {
+        List<Field> fields = Arrays.stream(clazz.getDeclaredFields())
+                .filter(f -> Modifier.isPublic(f.getModifiers()) || Modifier.isPrivate(f.getModifiers()))
+                .toList();
 
-            if (!isList && !isMember)
-                json.addProperty(field.getName(), field.getType().getName());
-            else if (!isList)
-                json.add(field.getName(), getJsonObject(clazz.getField(field.getName()).getType(), new JsonObject()));
-            else
-                json.add(field.getName(), getJsonArray(field, isPrimitive(field)));
+        for (Field field:fields) {
+            if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(field.getName()))){
+                boolean isMember = field.getType().isMemberClass();
+                boolean isList = isOfType(field, "List");
+
+                if (!isList && !isMember)
+                    json.addProperty(field.getName(), field.getType().getName());
+                else if (!isList)
+                    json.add(field.getName(), getJsonObject(clazz.getField(field.getName()).getType(), new JsonObject(), exceptions));
+                else
+                    json.add(field.getName(), getJsonArray(field, isPrimitive(field)));
+            }
 
         }
         return json;
@@ -197,7 +201,7 @@ public class ReflectionUtilities {
      * @param expectedType expected field type
      * @return true or false
      */
-    private boolean isOfType(Field field, String expectedType){
+    public boolean isOfType(Field field, String expectedType){
         return field.getType().getTypeName().contains(expectedType);
     }
 
@@ -206,7 +210,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return field type
      */
-    private String getTypeName(Field field) {
+    public String getTypeName(Field field) {
         ParameterizedType type = (ParameterizedType) field.getGenericType();
         return type.getActualTypeArguments()[0].getTypeName();
     }
@@ -216,7 +220,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return a boolean
      */
-    private boolean isPrimitive(Field field){
+    public boolean isPrimitive(Field field){
         return switch (getTypeName(field)) {
             case "java.lang.Integer",
                     "java.lang.Boolean",
@@ -238,7 +242,7 @@ public class ReflectionUtilities {
      * @return a boolean
      * @param <T> type of the given class
      */
-    private <T> boolean isMemberList(Class<T> clazz, Field field){
+    public <T> boolean isMemberList(Class<T> clazz, Field field){
         List<Field> fields = List.of(clazz.getFields());
         return fields.stream().anyMatch(
                 subField -> subField.getGenericType().getTypeName().equals(field.getGenericType().getTypeName())
