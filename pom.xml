@@ -6,7 +6,7 @@
 
   <groupId>io.github.umutayb</groupId>
   <artifactId>Utilities</artifactId>
-  <version>1.4.1-SNAPSHOT</version>
+  <version>1.4.1</version>
   <packaging>jar</packaging>
 
   <name>Java-Utilities</name>
