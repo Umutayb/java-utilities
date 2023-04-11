@@ -37,54 +37,76 @@ public class StringUtilities {   //Utility methods
         return String.valueOf(colorFormat.add(text));
     }
 
+    /**
+     * Reverses the input string.
+     *
+     * @param input the string to be reversed
+     * @return the reversed string
+     */
     public String reverse(String input){
         StringBuilder reversed = new StringBuilder();
-        for (int i = 0; i < input.length(); i++) {reversed.append(input.charAt(input.length() - i - 1));}
+        for (int i = 0; i < input.length(); i++) {
+            reversed.append(input.charAt(input.length() - i - 1));
+        }
         return reversed.toString();
     }
 
-    public String firstLetterCapped(String inputString){ //Capitalizes the first letter of the input string
-
+    /**
+     * Capitalizes the first letter of the input string.
+     *
+     * @param inputString the string to be processed
+     * @return the input string with the first letter capitalized, or null if the input string is null
+     */
+    public String firstLetterCapped(String inputString){
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
             String remainingLetters = inputString.substring(1);
             firstLetter = firstLetter.toUpperCase();
-
             return firstLetter + remainingLetters;
         }
-        else
-            return null;
+        else return null;
     }
 
-    public String firstLetterDeCapped(String inputString){ //Capitalizes the first letter of the input string
-
+    /**
+     * Decapitalizes the first letter of the input string.
+     *
+     * @param inputString the string to be processed
+     * @return the input string with the first letter decapitalized, or null if the input string is null
+     */
+    public String firstLetterDeCapped(String inputString){
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
             String remainingLetters = inputString.substring(1);
             firstLetter = firstLetter.toLowerCase();
-
             return firstLetter + remainingLetters;
         }
-        else
-            return null;
+        else return null;
     }
 
-    public String cleanText(String inputString){ //Cleans the input string of spaces, numbers etc.
-
+    /**
+     * Cleans the input string of spaces, numbers, special characters, and non-English characters.
+     *
+     * @param inputString the string to be cleaned
+     * @return the cleaned string, or a randomly generated string if the input string is empty
+     */
+    public String cleanText(String inputString){
         inputString = inputString
                 .replaceAll("\\s", "")                    //Cleans spaces
                 .replaceAll("[0-9]", "")                  //Cleans numbers
                 .replaceAll("[-+^.,'&%/()=\"?!:;_*]*", "") //Cleans special characters
                 .replaceAll("[^\\x00-\\x7F]", "");        //Cleans non english characters
-
         if (inputString.isEmpty())
             inputString = generateRandomString("element",4, true, false);
-
         return inputString;
     }
 
-    public String normalize(String inputString){ //Replaces non english characters in input string
-
+    /**
+     * Replaces non-English characters in the input string with their English equivalents.
+     *
+     * @param inputString the string to be normalized
+     * @return the normalized string
+     */
+    public String normalize(String inputString){
         return Normalizer
                 .normalize(inputString, Normalizer.Form.NFD)
                 .replaceAll("ç", "c")
@@ -95,55 +117,71 @@ public class StringUtilities {   //Utility methods
                 .replaceAll("[^\\p{ASCII}]", "");
     }
 
-    public String shorten(String inputString, int length) { //Shortens string to the given length
-
+    /**
+     * Shortens the input string to the given length.
+     *
+     * @param inputString the string to be shortened
+     * @param length the maximum length of the shortened string
+     * @return the shortened string, or the full input string if it is already shorter than the given length
+     */
+    public String shorten(String inputString, int length) {
         return inputString.substring(0, Math.min(inputString.length(), length));
     }
 
-    //Generates random string according to the input rules
+    /**
+     * Generates a random string of the given length, consisting of letters and/or numbers.
+     *
+     * @param keyword the keyword to be used as a prefix of the random string
+     * @param length the length of the random string
+     * @param useLetters whether to include letters in the random string
+     * @param useNumbers whether to include numbers in the random string
+     * @return the generated random string with the given prefix
+     */
     public String generateRandomString(String keyword, int length, boolean useLetters, boolean useNumbers) {
         return keyword + RandomStringUtils.random(length, useLetters, useNumbers);
     }
 
+    /**
+     * Measures the distance between the first occurrence of two keywords in the input string.
+     *
+     * @param input the input string to be searched
+     * @param firstKeyword the first keyword to search for
+     * @param lastKeyword the second keyword to search for
+     * @return the distance between the first occurrence of the two keywords in the input string, or -1 if either keyword is not found
+     */
     public int measureDistanceBetween(String input, String firstKeyword, String lastKeyword){
-
         // Remove any special chars from string
         final String strOnlyWords = input.replace(",", "").replace(".", "");
-
         final List<String> words = Arrays.asList(strOnlyWords.split(" "));
         final int index1 = words.indexOf(firstKeyword);
         final int index2 = words.indexOf(lastKeyword);
         int distance = -1;
-
         // Check index of two words
         if (index1 != -1 && index2 != - 1) {
             distance = index2 - index1;
         }
-
         return distance;
     }
 
+    /**
+     * Converts a string in the format of key-value pairs to a map.
+     *
+     * @param inputString the input string in the format of key-value pairs
+     * @return a map containing the key-value pairs from the input string
+     * @throws RuntimeException if either the key or value of a pair is null
+     */
     public Map<String, String> str2Map(String inputString){
-
         Map<String, String> outputMap = new HashMap<>();
-
         inputString = inputString.replaceAll("[{}]*", "");
-
         String[] pairs = inputString.split(",");
-
         for(String pair: pairs) {
-
             String[] keyValue = pair.split("=");
-
             try{
                 if (keyValue[0] != null && keyValue[1] != null)
                     outputMap.put(keyValue[0].trim(), keyValue[1].trim());
-
                 else if (keyValue[0] == null)
                     throw new Exception( "First value of this pair was found to be null");
-
                 else throw new Exception( "Second value of this pair was found to be null");
-
             }
             catch (Exception gamma){throw new RuntimeException(GRAY+gamma.getMessage()+RESET,gamma);}
         }

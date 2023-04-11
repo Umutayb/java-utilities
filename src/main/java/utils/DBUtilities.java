@@ -6,9 +6,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Provides utility methods for working with a database.
+ *
+ * @author Umut Ay Bora
+ * @version 1.4.0 (Documented in 1.4.0, released in an earlier version)
+ */
 public class DBUtilities {
     private final Printer log = new Printer(DBUtilities.class);
 
+    /**
+     * Establishes a connection to the database using the provided credentials.
+     *
+     * @param user the username to use for the connection
+     * @param password the password to use for the connection
+     * @param url the URL of the database to connect to
+     * @return a Connection representing the database connection
+     * @throws RuntimeException if there is an error establishing the connection
+     */
     public Connection getConnection(String user, String password, String url) {
         try {
             Connection connection = DriverManager.getConnection(url,user,password);
@@ -18,6 +33,15 @@ public class DBUtilities {
         catch (SQLException e) {throw new RuntimeException(e);}
     }
 
+    /**
+     * Retrieves the results of an SQL query and maps them to a list of maps.
+     *
+     * @param connection the database connection to use for the query
+     * @param sqlQuery the SQL query to execute
+     * @param includeNullValues whether to include null values in the resulting map
+     * @return a list of maps, where each map represents a row in the result set and maps column names to values
+     * @throws RuntimeException if there is an error executing the SQL query
+     */
     public List<Map<String, Object>> getResults(Connection connection, String sqlQuery, Boolean includeNullValues){
         log.new Info("Mapping result set...");
         List<Map<String, Object>> database = new ArrayList<>();

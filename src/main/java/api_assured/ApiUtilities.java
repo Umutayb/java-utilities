@@ -13,7 +13,12 @@ import java.util.Properties;
 public abstract class ApiUtilities extends Caller {
     public static Properties properties = PropertyUtility.properties;
     public StringUtilities strUtils = new StringUtilities();
+    /**
+     * @deprecated This object utility is deprecated since version 1.4.0. "objectUtils" replaced by "reflection"
+     */
+    @Deprecated(since = "1.4.0")
     public ReflectionUtilities objectUtils = new ReflectionUtilities();
+    public ReflectionUtilities reflection = new ReflectionUtilities();
     public NumericUtilities numUtils = new NumericUtilities();
     public Printer log = new Printer(this.getClass());
 
@@ -68,5 +73,4 @@ public abstract class ApiUtilities extends Caller {
         log.new Info("Generating request body from " + file.getName() + " file");
         return RequestBody.create(file, MediaType.parse(mediaType));
     }
-
 }

@@ -6,50 +6,123 @@ import java.util.logging.Logger;
 
 import static utils.StringUtilities.Color.*;
 
+/**
+ * The Printer class is used to log messages with different levels of importance and formatting.
+ * It uses a Logger to log the messages and includes options to save the logs in a file.
+ * The class also includes utility methods for highlighting text with different colors.
+ */
 public class Printer {
 
+    /**
+     * A StringUtilities instance used for highlighting text.
+     */
     StringUtilities strUtils = new StringUtilities();
 
+    /**
+     * A Properties instance used for configuring the Printer.
+     */
     public static Properties properties = PropertyUtility.properties;
 
+    /**
+     * The Logger instance used for logging messages.
+     */
     private final Logger log;
 
-    public <T> Printer(Class<T> className){log = Logger.getLogger(className.getName());}
+    /**
+     * Constructs a new Printer instance with the provided class name.
+     *
+     * @param className The name of the class to associate with the Logger.
+     */
+    public <T> Printer(Class<T> className){
+        log = Logger.getLogger(className.getName());
+    }
 
-    public class Plain { public Plain(CharSequence output) {log(Level.INFO, String.valueOf(output));}}
+    /**
+     * The Plain class is used to log plain text messages with the INFO level.
+     */
+    public class Plain {
+        public Plain(CharSequence output) {
+            log(Level.INFO, String.valueOf(output));
+        }
+    }
 
+    /**
+     * The Important class is used to log important messages with the INFO level and highlighted text.
+     */
     public class Important {
-        public Important(CharSequence output){log(Level.INFO, strUtils.highlighted(PURPLE, output));}
+        public Important(CharSequence output){
+            log(Level.INFO, strUtils.highlighted(PURPLE, output));
+        }
     }
 
+    /**
+     * The Info class is used to log informational messages with the INFO level and highlighted text.
+     */
     public class Info {
-        public Info(CharSequence output) {log(Level.INFO, strUtils.highlighted(GRAY, output));}
+        public Info(CharSequence output) {
+            log(Level.INFO, strUtils.highlighted(GRAY, output));
+        }
     }
 
+    /**
+     * The Success class is used to log success messages with the INFO level and highlighted text.
+     */
     public class Success {
-        public Success(CharSequence output){log(Level.INFO, strUtils.highlighted(GREEN, output));}
+        public Success(CharSequence output){
+            log(Level.INFO, strUtils.highlighted(GREEN, output));
+        }
     }
 
+    /**
+     * The Warning class is used to log warning messages with the WARNING level and highlighted text.
+     */
     public class Warning {
-        public Warning(CharSequence output){log(Level.WARNING, strUtils.highlighted(YELLOW, output));}
+        public Warning(CharSequence output){
+            log(Level.WARNING, strUtils.highlighted(YELLOW, output));
+        }
     }
 
+    /**
+     * The Error class is used to log error messages with the SEVERE level and highlighted text.
+     * It also includes an exception to provide additional information.
+     */
     public class Error {
-        public Error(CharSequence output, Exception exception){log(strUtils.highlighted(RED, output), exception);}
+        public Error(CharSequence output, Exception exception){
+            log(strUtils.highlighted(RED, output), exception);
+        }
     }
 
+    /**
+     * Logs a message with the provided level and output.
+     * If the "save-logs" property is set to true, the message will also be saved in a log file.
+     *
+     * @param level The level of the message (e.g. INFO, WARNING, SEVERE).
+     * @param output The message to log.
+     */
     private void log(Level level, String output){
         if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(level, log.getName(), getMethod(), output);
     }
 
+    /**
+     * Logs a message with the SEVERE level, highlighted output, and an exception.
+     * If the "save-logs" property is set to true, the message will also be saved in a log file.
+     *
+     * @param output The message to log.
+     * @param exception The exception to include in the log.
+     */
     private void log(String output, Exception exception){
         if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(Level.SEVERE, log.getName(), getMethod(), output, exception);
     }
 
+    /**
+     * Returns the name of the method that called the log method.
+     *
+     * @return The name of the calling method.
+     */
     private String getMethod(){
         Throwable dummyException = new Throwable();
         StackTraceElement[] stackTrace = dummyException.getStackTrace();

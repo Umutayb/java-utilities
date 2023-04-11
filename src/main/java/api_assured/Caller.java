@@ -18,14 +18,41 @@ import java.util.Arrays;
 
 import static utils.StringUtilities.Color.*;
 
+/**
+ * This abstract class represents a caller that performs API calls, logs the results and returns objects in response bodies.
+ * It contains methods for performing and getting responses from API calls, as well as a method for printing the response body.
+ * It also has a static boolean variable for keeping logs, an ObjectMapper for JSON serialization and deserialization,
+ * a StringUtilities object for string manipulation, and a Printer object for logging.
+ *
+ * @author Umut Ay Bora
+ * @version 1.4.0 (Documented in 1.4.0, released in an earlier version)
+ */
 @SuppressWarnings("unused")
 public abstract class Caller {
 
+    /**
+     * A static boolean variable that determines whether logs should be kept for API calls.
+     */
     static boolean keepLogs;
+
+    /**
+     * An ObjectMapper object for JSON serialization and deserialization.
+     */
     static ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * A StringUtilities object for string manipulation.
+     */
     static StringUtilities strUtils = new StringUtilities();
+
+    /**
+     * A Printer object for logging.
+     */
     static Printer log = new Printer(Caller.class);
 
+    /**
+     * Constructs a Caller object and initializes the ObjectMapper object and the keepLogs variable.
+     */
     public Caller(){
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         objectMapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
@@ -35,6 +62,15 @@ public abstract class Caller {
         keepLogs = Boolean.parseBoolean(PropertyUtility.properties.getProperty("keep-api-logs", "true"));
     }
 
+    /**
+     * Performs an API call and logs the results.
+     *
+     * @param call the Call object representing the API call
+     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
+     * @param printBody a boolean indicating whether the response body should be printed
+     * @return the Model object representing the response body
+     * @throws FailedCallException if the call is strict and the response is not successful
+     */
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getRequestMethod();
         if (keepLogs)
@@ -72,6 +108,15 @@ public abstract class Caller {
         }
     }
 
+    /**
+     * Gets the response from an API call and logs the results.
+     *
+     * @param call the Call object representing the API call
+     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
+     * @param printBody a boolean indicating whether the response body should be printed
+     * @return the Response object representing the API response
+     * @throws FailedCallException if the call is strict and the response is not successful
+     */
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getRequestMethod();
         if (keepLogs)
@@ -109,6 +154,17 @@ public abstract class Caller {
         }
     }
 
+    /**
+     * Performs an API call and logs the results (deprecated).
+     *
+     * @param call the Call object representing the API call
+     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
+     * @param printBody a boolean indicating whether the response body should be printed
+     * @param serviceName the name of the service being called
+     * @return the Model object representing the response body
+     * @throws FailedCallException if the call is strict and the response is not successful
+     * @deprecated This method is deprecated and will be removed in a future version.
+     */
     @Deprecated
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
         log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
@@ -139,6 +195,17 @@ public abstract class Caller {
         return null;
     }
 
+    /**
+     * Gets the response from an API call and logs the results (deprecated).
+     *
+     * @param call the Call object representing the API call
+     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
+     * @param printBody a boolean indicating whether the response body should be printed
+     * @param serviceName the name of the service being called
+     * @return the Response object representing the API response
+     * @throws FailedCallException if the call is strict and the response is not successful
+     * @deprecated This method is deprecated and will be removed in a future version.
+     */
     @Deprecated
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
         log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
@@ -172,6 +239,12 @@ public abstract class Caller {
         return null;
     }
 
+    /**
+     * Prints the response body of an API call.
+     *
+     * @param response the Response object representing the API response
+     * @throws IOException if there is an error reading the response body
+     */
     static <Model> void printBody(Response<Model> response) throws IOException {
         FileUtilities.Json convert = new FileUtilities.Json();
         String message = "The response body is: \n";
@@ -192,6 +265,11 @@ public abstract class Caller {
         catch (IOException exception){log.new Warning(Arrays.toString(exception.getStackTrace()));}
     }
 
+    /**
+     * Gets the name of the method that called the API.
+     *
+     * @return the name of the method that called the API
+     */
     private static String getRequestMethod(){
         Throwable dummyException = new Throwable();
         StackTraceElement[] stackTrace = dummyException.getStackTrace();
@@ -205,10 +283,20 @@ public abstract class Caller {
         return method;
     }
 
+    /**
+     * Returns whether logs are being kept for API calls.
+     *
+     * @return a boolean indicating whether logs are being kept for API calls
+     */
     public static boolean keepsLogs() {
         return keepLogs;
     }
 
+    /**
+     * Sets whether logs should be kept for API calls.
+     *
+     * @param keepLogs a boolean indicating whether logs should be kept for API calls
+     */
     public static void keepLogs(boolean keepLogs) {
         Caller.keepLogs = keepLogs;
     }
