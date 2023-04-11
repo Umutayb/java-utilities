@@ -1,9 +1,15 @@
 package utils;
 
 import api_assured.exceptions.JavaUtilitiesException;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.Assert;
 
 import java.lang.reflect.*;
@@ -16,6 +22,15 @@ import java.util.stream.Collectors;
 public class ReflectionUtilities {
 
     static Printer log = new Printer(ReflectionUtilities.class);
+    ObjectMapper mapper = new ObjectMapper();
+
+    public ReflectionUtilities(){
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    }
 
     /**
      * Compares two objects and throws an AssertionError if they are not equal.
@@ -26,22 +41,26 @@ public class ReflectionUtilities {
      * @param exceptions the list of exceptions to ignore during comparison
      * @throws AssertionError if the objects are not equal
      */
-    public void compareObjects(Object expected, Object actual, String... exceptions){
+    public <T> void compareObjects(T expected, T actual, String... exceptions){
         try {
-            JsonObject expectedMap = getJsonObject(expected, new JsonObject(), exceptions);
-            JsonObject actualMap = getJsonObject(actual, new JsonObject(), exceptions);
+            String expectedString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expected);
+            String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
+            JsonObject expectedJson = JsonParser.parseString(expectedString).getAsJsonObject();
+            JsonObject actualJson = JsonParser.parseString(actualString).getAsJsonObject();
 
-            for (String fieldName:expectedMap.keySet()) {
+            log.new Important("Expected:" + expectedJson);
+            log.new Important("Actual:" + actualJson);
+            for (String fieldName:expectedJson.keySet()) {
                 if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
                     Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
-                            expectedMap.get(fieldName),
-                            actualMap.get(fieldName)
+                            expectedJson.get(fieldName),
+                            actualJson.get(fieldName)
                     );
-                    log.new Success("Match: " + fieldName + " -> " + expectedMap.get(fieldName));
+                    log.new Success("Match: " + fieldName + " -> " + expectedJson.get(fieldName));
                 }
             }
         }
-        catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+        catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -56,20 +75,22 @@ public class ReflectionUtilities {
      * @return true if the objects match, false otherwise
      */
     public boolean objectsMatch(Object expected, Object actual, String... exceptions){
-        Map<String, Object> expectedMap = getFields(expected);
-        Map<String, Object> actualMap = getFields(actual);
         try {
-            for (String fieldName:expectedMap.keySet()) {
+            String expectedString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expected);
+            String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
+            JsonObject expectedJson = JsonParser.parseString(expectedString).getAsJsonObject();
+            JsonObject actualJson = JsonParser.parseString(actualString).getAsJsonObject();
+            for (String fieldName:expectedJson.keySet()) {
                 if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
                     Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
-                            expectedMap.get(fieldName),
-                            actualMap.get(fieldName)
+                            expectedJson.get(fieldName),
+                            actualJson.get(fieldName)
                     );
-                    log.new Success("Match: " + fieldName + " -> " + expectedMap.get(fieldName));
+                    log.new Success("Match: " + fieldName + " -> " + expectedJson.get(fieldName));
                 }
             }
         }
-        catch (AssertionError error){
+        catch (AssertionError | JsonProcessingException error){
             log.new Warning(error.getMessage());
             return false;
         }
