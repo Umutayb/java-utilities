@@ -13,11 +13,27 @@ import java.util.*;
 @SuppressWarnings("unused")
 public class EmailUtilities {
 
+    /**
+     * Creates a new instance of EmailUtilities with the specified host.
+     *
+     * @param host the hostname of the SMTP server for sending emails
+     */
     public EmailUtilities(String host){setHost(host);}
 
     private static final Printer log = new Printer(EmailUtilities.class);
     private String host;
 
+    /**
+     * Sends an email message with an optional attachment to the specified recipient.
+     *
+     * @param subject the subject of the email
+     * @param content the content of the email
+     * @param receiver the email address of the recipient
+     * @param ID the username for authenticating with the SMTP server
+     * @param Password the password for authenticating with the SMTP server
+     * @param attachment the optional multipart attachment to include in the email
+     * @return true if the email was sent successfully, false otherwise
+     */
     public Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
 
         // Get system properties
@@ -65,6 +81,11 @@ public class EmailUtilities {
         return false;
     }
 
+    /**
+     * Sets the hostname of the SMTP server used for sending emails.
+     *
+     * @param host the hostname of the SMTP server
+     */
     private void setHost(String host){this.host = host;}
 
     public static class Inbox {
@@ -75,10 +96,29 @@ public class EmailUtilities {
         private final String password;
         private final String secureCon;
 
+        /**
+         * List of email messages represented as a list of maps where each map contains email fields as keys
+         * and their corresponding values as values.
+         */
         public List<Map<EmailField,Object>> messages = new ArrayList<>();
 
+        /**
+         * Enumeration of email fields used as keys in the map representation of email messages.
+         */
         public enum EmailField {SUBJECT, SENDER, CONTENT, INDEX, DATE, ATTACHMENTS}
 
+        /**
+         * Constructs a new Inbox object with the specified configuration settings.
+         *
+         * @param host the hostname of the email server
+         * @param port the port number of the email server
+         * @param userName the username for authenticating with the email server
+         * @param password the password for authenticating with the email server
+         * @param secureCon the type of secure connection to use (e.g. "ssl", "tls", "starttls")
+         * @param print a boolean indicating whether to print the inbox contents to the console
+         * @param save a boolean indicating whether to save the inbox contents to a file
+         * @param saveAttachments a boolean indicating whether to save email attachments to files
+         */
         public Inbox(String host,
                      String port,
                      String userName,
@@ -96,6 +136,20 @@ public class EmailUtilities {
             loadInbox(null, null, print, save, saveAttachments);
         }
 
+        /**
+         * Constructs a new Inbox object with the specified configuration settings and inbox filter.
+         *
+         * @param host the hostname of the email server
+         * @param port the port number of the email server
+         * @param userName the username for authenticating with the email server
+         * @param password the password for authenticating with the email server
+         * @param secureCon the type of secure connection to use (e.g. "ssl", "tls", "starttls")
+         * @param filterType the type of inbox filter to apply (e.g. "FROM", "TO", "SUBJECT", "BODY")
+         * @param filterKey the keyword to use for the inbox filter
+         * @param print a boolean indicating whether to print the inbox contents to the console
+         * @param save a boolean indicating whether to save the inbox contents to a file
+         * @param saveAttachments a boolean indicating whether to save email attachments to files
+         */
         public Inbox(
                 String host,
                 String port,
@@ -116,6 +170,14 @@ public class EmailUtilities {
             loadInbox(filterType, filterKey, print, save, saveAttachments);
         }
 
+        /**
+         * Saves an email message body to a file with the given filename in the 'inbox' directory.
+         *
+         * @param filename the name of the file to be created and saved as.
+         * @param messageContent the content of the email message body to be saved.
+         *
+         * @throws RuntimeException if there is an IOException during the file write operation.
+         */
         public void saveMessage(String filename, String messageContent){
             log.new Info("Saving email body...");
             try (FileWriter file = new FileWriter("inbox/" + filename + ".html")){
@@ -125,6 +187,17 @@ public class EmailUtilities {
             catch (IOException e) {throw new RuntimeException(e);}
         }
 
+        /**
+         * Loads email messages from the mailbox, filters them based on the provided criteria, and performs specified actions.
+         *
+         * @param filterType the type of email field to use as a filter. Can be null to skip filtering.
+         * @param filterKey the filter criteria to apply to the selected email field.
+         * @param print whether or not to print the contents of the filtered messages.
+         * @param save whether or not to save the contents of the filtered messages.
+         * @param saveAttachments whether or not to save the attachments of the filtered messages.
+         *
+         * @throws RuntimeException if there is a MessagingException during the process.
+         */
         private void loadInbox(EmailField filterType, String filterKey, Boolean print, Boolean save, Boolean saveAttachments){
             Properties properties = new Properties();
 
@@ -180,6 +253,17 @@ public class EmailUtilities {
             catch (MessagingException exception) {log.new Error(exception.getLocalizedMessage(),exception);}
         }
 
+        /**
+         * Resolves the content and attachments of a provided email message, and adds the message data to the instance's messages list.
+         *
+         * @param message the email message to resolve.
+         * @param index the index of the email message in the mailbox.
+         * @param print whether or not to print the resolved message content and attachments.
+         * @param save whether or not to save the resolved message content.
+         * @param saveAttachments whether or not to save the resolved message attachments.
+         *
+         * @throws Error if there is a MessagingException during the process.
+         */
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments){
             try {
                 String from = message.getFrom()[0].toString();
@@ -214,6 +298,14 @@ public class EmailUtilities {
             catch (MessagingException exception){log.new Error("Could not connect to the message store", exception);}
         }
 
+        /**
+         * Retrieves the current status of the connection.
+         *
+         * @return A string indicating the status of the connection.
+         *         Possible values are:
+         *         - "connected_to_pop3" if the connection to the POP3 server was successful.
+         *         - An error message if there was a problem connecting to the server.
+         */
         public String getConnectionStatus(){
             Properties properties = new Properties();
 
