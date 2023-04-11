@@ -157,30 +157,14 @@ public class EmailUtilities {
                     String selector;
 
                     if (filterType != null){
-                        switch (filterType){
-                            case SUBJECT:
-                                selector = message.getSubject();
-                                break;
-
-                            case SENDER:
-                                selector = message.getFrom()[0].toString();
-                                break;
-
-                            case CONTENT:
-                                selector = getContent(message);
-                                break;
-
-                            case INDEX:
-                                selector = String.valueOf(messages.indexOf(message));
-                                break;
-
-                            case DATE:
-                                selector = String.valueOf(message.getSentDate());
-                                break;
-
-                            default:
-                                throw new EnumConstantNotPresentException(EmailField.class,filterKey);
-                        }
+                        selector = switch (filterType) {
+                            case SUBJECT -> message.getSubject();
+                            case SENDER -> message.getFrom()[0].toString();
+                            case CONTENT -> getContent(message);
+                            case INDEX -> String.valueOf(messages.indexOf(message));
+                            case DATE -> String.valueOf(message.getSentDate());
+                            default -> throw new EnumConstantNotPresentException(EmailField.class, filterKey);
+                        };
 
                         if ((selector.contains(filterKey) || selector.equalsIgnoreCase(filterKey)))
                             resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
@@ -193,7 +177,7 @@ public class EmailUtilities {
                 folderInbox.close(false);
                 store.close();
             }
-            catch (MessagingException exception) {log.new Error(exception.getCause().getMessage(),exception);}
+            catch (MessagingException exception) {log.new Error(exception.getLocalizedMessage(),exception);}
         }
 
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments){
@@ -266,6 +250,13 @@ public class EmailUtilities {
             return isconnected;
         }
 
+        /**
+         * Retrieves the content of the given email message.
+         *
+         * @param message the email message from which to retrieve content
+         * @return the message content, as a String
+         * @throws RuntimeException if there is a problem retrieving the message content
+         */
         private String getContent(Message message){
             try {
                 String messageContent = "";
@@ -290,6 +281,14 @@ public class EmailUtilities {
             }
         }
 
+        /**
+         * Retrieves the attachments from the given email message and optionally saves them to the "inbox/attachments" directory.
+         *
+         * @param message the email message from which to retrieve attachments
+         * @param saveAttachments true if attachments should be saved, false otherwise
+         * @return a comma-separated string of attachment filenames
+         * @throws RuntimeException if there is a problem retrieving or saving attachments
+         */
         private String getAttachments(Message message, Boolean saveAttachments){
             StringBuilder attachments = new StringBuilder();
             try {
