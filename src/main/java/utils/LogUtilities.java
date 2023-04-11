@@ -11,6 +11,11 @@ public class LogUtilities {
 
     public static Logger log = Logger.getGlobal();
 
+    /**
+     * Sets up a logging file with a SimpleFormatter and adds it to the logger's handlers.
+     *
+     * This method is typically called during initialization of the logger.
+     */
     static {
         try {
             SimpleFormatter formatter = new SimpleFormatter();
@@ -35,5 +40,10 @@ public class LogUtilities {
         }).findAny().orElse(null)).getName());
     }
 
+    /**
+     * Constructs a new instance of the LogUtilities class.
+     *
+     * This constructor is typically used to create a new instance of the LogUtilities class.
+     */
     public LogUtilities() {}
 }

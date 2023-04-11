@@ -10,6 +10,11 @@ public class PropertiesReader {
 
     private Properties properties;
 
+    /**
+     * Constructs a new instance of the PropertiesReader class with the specified property file name.
+     *
+     * @param propertyFileName the name of the property file to read
+     */
     public PropertiesReader(String propertyFileName){
         try {
             InputStream inputStream = getClass().getClassLoader()
@@ -20,6 +25,12 @@ public class PropertiesReader {
         catch (IOException exception) {log.new Error(exception.getMessage(), exception);}
     }
 
+    /**
+     * Returns the value of the specified property.
+     *
+     * @param propertyName the name of the property to retrieve the value for
+     * @return the value of the property with the specified name as a String
+     */
     public String getProperty(String propertyName) {
         return this.properties.getProperty(propertyName);
     }

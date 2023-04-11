@@ -303,6 +303,17 @@ public class FileUtilities {
 
     public static class Excel {
         Printer log = new Printer(Excel.class);
+
+        /**
+         * Retrieves a map of Excel sheet data.
+         *
+         * @param directory The directory containing the Excel file.
+         * @param selector  The column label to use as the key for the resulting map.
+         * @return A map containing the Excel sheet data, where each entry has a key of the value in the specified selector column,
+         *         and a value of a map representing a single row of data, with keys representing column labels and values representing
+         *         cell values.
+         * @throws RuntimeException if an IOException occurs while reading the file.
+         */
         public Map<String, Map<String, Object>> getExcelList(String directory, String selector){
             Map<String, Map<String, Object>> excelMap = new HashMap<>();
             try {
@@ -337,6 +348,13 @@ public class FileUtilities {
         private final Printer log = new Printer(Json.class);
         FileUtilities fileUtil = new FileUtilities();
 
+        /**
+         * Saves a JSON object to a file.
+         *
+         * @param inputJson The JSON object to be saved.
+         * @param directory The directory where the file should be saved.
+         * @throws RuntimeException if an exception occurs while writing the file.
+         */
         public void saveJson(JSONObject inputJson, String directory){
             try {
 
@@ -355,6 +373,12 @@ public class FileUtilities {
             catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
         }
 
+        /**
+         * Parses a JSON file located at the given directory and returns it as a JsonObject.
+         *
+         * @param directory The directory where the JSON file is located.
+         * @return The JsonObject representing the JSON file, or null if the file is not found.
+         */
         public JsonObject parseJsonFile(String directory) {
             try {
                 JsonElement object;
@@ -375,6 +399,13 @@ public class FileUtilities {
 
         }
 
+        /**
+         * Parses a JSON file and returns its contents as a JSONObject.
+         *
+         * @param directory the path to the JSON file to be parsed
+         * @return the contents of the JSON file as a JSONObject
+         * @throws RuntimeException if an IOException or ParseException occurs during parsing
+         */
         public JSONObject parseJSONFile(String directory) {
             try {
                 FileReader fileReader = new FileReader(directory);
@@ -386,6 +417,14 @@ public class FileUtilities {
             catch (IOException | ParseException e) {throw new RuntimeException(e);}
         }
 
+        /**
+         * Returns a JsonObject from the given JsonObject by the specified key.
+         *
+         * @param json the JsonObject to retrieve the nested JsonObject from
+         * @param key the key of the nested JsonObject to retrieve
+         * @return the nested JsonObject with the specified key
+         * @throws NullPointerException if the JsonObject retrieved by the specified key is null
+         */
         public JsonObject getJsonObject(JsonObject json, String key){
 
             JsonObject jsonObject = json.get(key).getAsJsonObject();
@@ -395,10 +434,23 @@ public class FileUtilities {
             return jsonObject;
         }
 
+        /**
+         * Returns a String representation of the attribute value with the specified attribute type.
+         *
+         * @param attributes the JsonObject containing the attributes to retrieve from
+         * @param attributeType the type of the attribute to retrieve
+         * @return the value of the attribute with the specified type as a String
+         */
         public String getElementAttribute(JsonObject attributes, String attributeType){
             return attributes.get(attributeType).getAsString();
         }
 
+        /**
+         * Parses a given input string into a JSONObject.
+         *
+         * @param inputString the input string to be parsed into a JSONObject
+         * @return the JSONObject representation of the input string
+         */
         public JSONObject str2json(String inputString){
             JSONObject object = null;
             try {
@@ -411,6 +463,12 @@ public class FileUtilities {
             return object;
         }
 
+        /**
+         * Formats a given JSON string into a more human-readable form.
+         *
+         * @param json the JSON string to be formatted
+         * @return the formatted JSON string
+         */
         public String formatJsonString(String json) {
             ObjectMapper mapper = new ObjectMapper();
             try {

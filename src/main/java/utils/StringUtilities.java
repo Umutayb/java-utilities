@@ -217,6 +217,9 @@ public class StringUtilities {   //Utility methods
         return input;
     }
 
+    /**
+     * An enumeration of colors used to represent different color values.
+     */
     public enum Color {
         RESET( "\033[0m"),      // Text Reset
 
@@ -302,8 +305,18 @@ public class StringUtilities {   //Utility methods
 
         private final String value;
 
+        /**
+         * Constructs a new instance of the Color class with the specified color value.
+         *
+         * @param value the color value to assign to the new instance
+         */
         Color(String value){this.value = value;}
 
+        /**
+         * Returns the value of this Color instance.
+         *
+         * @return the color value of this instance as a String
+         */
         public String getValue() {return value;}
     }
 }
