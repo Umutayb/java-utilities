@@ -13,10 +13,7 @@ import com.google.gson.JsonParser;
 import org.junit.Assert;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReflectionUtilities {
@@ -47,22 +44,87 @@ public class ReflectionUtilities {
             String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
             JsonObject expectedJson = JsonParser.parseString(expectedString).getAsJsonObject();
             JsonObject actualJson = JsonParser.parseString(actualString).getAsJsonObject();
-
-            log.new Important("Expected:" + expectedJson);
-            log.new Important("Actual:" + actualJson);
-            for (String fieldName:expectedJson.keySet()) {
-                if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
-                    Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
-                            expectedJson.get(fieldName),
-                            actualJson.get(fieldName)
-                    );
-                    log.new Success("Match: " + fieldName + " -> " + expectedJson.get(fieldName));
-                }
-            }
+            compareJson(expectedJson, actualJson, exceptions);
         }
         catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Compares two JSON objects and throws an assertion error if they do not match.
+     *
+     * @param expectedJson The expected JSON object.
+     * @param actualJson The actual JSON object.
+     * @param exceptions Optional field names to exclude from comparison.
+     *
+     * @throws AssertionError if the JSON objects do not match.
+     */
+    public void compareJson(JsonObject expectedJson, JsonObject actualJson, String... exceptions){
+        Set<String> keySet = expectedJson.keySet().stream().filter(key -> !Arrays.asList(exceptions).contains(key)).collect(Collectors.toSet());
+        for (String fieldName:keySet) {
+            if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
+                boolean isObject = expectedJson.get(fieldName).isJsonObject();
+                boolean isArray = expectedJson.get(fieldName).isJsonArray();
+                boolean isPrimitive = expectedJson.get(fieldName).isJsonPrimitive();
+
+                if (isObject){
+                    compareJson(
+                            expectedJson.get(fieldName).getAsJsonObject(),
+                            actualJson.get(fieldName).getAsJsonObject(),
+                            exceptions
+                    );
+                }
+                else if (isArray){
+                    compareJsonArray(
+                            expectedJson.get(fieldName).getAsJsonArray(),
+                            actualJson.get(fieldName).getAsJsonArray(),
+                            exceptions
+                    );
+                }
+                else if (isPrimitive)
+                    Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
+                            expectedJson.get(fieldName),
+                            actualJson.get(fieldName)
+                    );
+                else throw new RuntimeException("Could not determine field (" + expectedJson.get(fieldName) + ") type!");
+            }
+            log.new Success("Match: " + fieldName + " -> " + actualJson.get(fieldName));
+        }
+    }
+
+    /**
+     * Compares two JSON arrays and throws an Assertion Error if they are not identical.
+     *
+     * @param expectedJson the expected JSON array
+     * @param actualJson the actual JSON array to be compared with the expected JSON array
+     * @param exceptions optional list of JSON object keys to be excluded from the comparison
+     * @throws AssertionError if the arrays are not identical
+     */
+    public void compareJsonArray(JsonArray expectedJson, JsonArray actualJson, String... exceptions){
+        log.new Info("Comparing json arrays...");
+        for (int index = 0; index <= expectedJson.size() - 1; index++) {
+            if (expectedJson.get(index).isJsonObject()){
+                compareJson(
+                        expectedJson.get(index).getAsJsonObject(),
+                        actualJson.get(index).getAsJsonObject(),
+                        exceptions
+                );
+            }
+            else if (expectedJson.get(index).isJsonArray()){
+                compareJsonArray(
+                        expectedJson.get(index).getAsJsonArray(),
+                        actualJson.get(index).getAsJsonArray(),
+                        exceptions
+                );
+            }
+            else
+                Assert.assertEquals("Array elements do not match!",
+                        expectedJson.get(index),
+                        actualJson.get(index)
+                );
+        }
+        log.new Success("Json arrays are identical!");
     }
 
     /**
@@ -80,15 +142,7 @@ public class ReflectionUtilities {
             String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
             JsonObject expectedJson = JsonParser.parseString(expectedString).getAsJsonObject();
             JsonObject actualJson = JsonParser.parseString(actualString).getAsJsonObject();
-            for (String fieldName:expectedJson.keySet()) {
-                if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
-                    Assert.assertEquals("Values of the '" + fieldName + "' fields do not match!",
-                            expectedJson.get(fieldName),
-                            actualJson.get(fieldName)
-                    );
-                    log.new Success("Match: " + fieldName + " -> " + expectedJson.get(fieldName));
-                }
-            }
+            compareJson(expectedJson, actualJson, exceptions);
         }
         catch (AssertionError | JsonProcessingException error){
             log.new Warning(error.getMessage());
@@ -245,27 +299,24 @@ public class ReflectionUtilities {
      * @throws NoSuchFieldException throws if file not found
      */
     public JsonArray getJsonArray(Field field, boolean primitive, String... exceptions) throws ClassNotFoundException, NoSuchFieldException {
-        try {
-            JsonArray array = new JsonArray();
-            if (!primitive){
-                List<JsonObject> list = List.of(
-                        getJsonObject(field,
-                                new JsonObject(),
-                                exceptions
-                        )
-                );
-                for (JsonObject jsonObject : list) array.add(jsonObject);
-            }
-            else {
-                List<String> list = List.of(getTypeName(field));
-                for (String jsonObject : list) array.add(jsonObject);
-            }
-            return array;
+        JsonArray array = new JsonArray();
+        if (!primitive){
+            List<JsonObject> list = List.of(
+                    getJsonObject(
+                             Class.forName(
+                                     ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].getTypeName()
+                             ),
+                            new JsonObject(),
+                            exceptions
+                    )
+            );
+            for (JsonObject jsonObject : list) array.add(jsonObject);
         }
-        catch (IllegalAccessException illegalAccessException){
-            log.new Error(illegalAccessException.getLocalizedMessage(), illegalAccessException);
-            return null;
+        else {
+            List<String> list = List.of(getTypeName(field));
+            for (String jsonObject : list) array.add(jsonObject);
         }
+        return array;
     }
 
     /**
@@ -287,13 +338,12 @@ public class ReflectionUtilities {
             if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(field.getName()))){
                 boolean isMember = field.getType().isMemberClass();
                 boolean isList = isOfType(field, "List");
-
-                if (!isList && !isMember)
-                    json.addProperty(field.getName(), field.getType().getName());
-                else if (!isList)
+                if (isMember)
                     json.add(field.getName(), getJsonObject(field.getType(), new JsonObject(), exceptions));
-                else
+                else if (isList)
                     json.add(field.getName(), getJsonArray(field, isPrimitive(field)));
+                else
+                    json.addProperty(field.getName(), field.getType().getName());
             }
 
         }
@@ -311,7 +361,7 @@ public class ReflectionUtilities {
      * @throws NoSuchFieldException If one of the provided field exceptions does not exist in the class.
      * @throws ClassNotFoundException If the provided class name cannot be found.
      */
-    public <T> JsonObject getJsonObject(T object, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+    public <T> JsonObject getJsonFromObject(T object, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
         List<Field> fields = List.of(object.getClass().getDeclaredFields());
 
         for (Field field:fields) {
@@ -320,12 +370,12 @@ public class ReflectionUtilities {
                 boolean isMember = field.getType().isMemberClass();
                 boolean isList = isOfType(field, "List");
 
-                if (!isList && !isMember)
-                    json.add(field.getName(), (JsonElement) field.get(object));
-                else if (!isList)
-                    json.add(field.getName(), getJsonObject(field, new JsonObject(), exceptions));
-                else
+                if (isMember)
+                    json.add(field.getName(), getJsonFromObject(field, new JsonObject(), exceptions));
+                else if (isList)
                     json.add(field.getName(), getJsonArray(field, isPrimitive(field)));
+                else
+                    json.add(field.getName(), (JsonElement) field.get(object));
             }
         }
         return json;
