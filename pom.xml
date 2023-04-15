@@ -29,10 +29,10 @@
     </developer>
 
     <developer>
-    <name>Egecan Şen</name>
-    <email>benegecansen@gmail.com</email>
-    <organizationUrl>https://github.com/egecansen</organizationUrl>
-  </developer>
+      <name>Egecan Şen</name>
+      <email>benegecansen@gmail.com</email>
+      <organizationUrl>https://github.com/egecansen</organizationUrl>
+    </developer>
   </developers>
 
   <properties>
