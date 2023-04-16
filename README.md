@@ -4,7 +4,7 @@
 
 ```xml
 <dependencies>
-    <!-- Framework -->
+    <!-- Utilities -->
     <dependency>
         <groupId>io.github.umutayb</groupId>
         <artifactId>Utilities</artifactId>
