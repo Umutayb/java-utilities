@@ -355,7 +355,32 @@ public class FileUtilities {
          * @param directory The directory where the file should be saved.
          * @throws RuntimeException if an exception occurs while writing the file.
          */
-        public void saveJson(JSONObject inputJson, String directory){
+        public void saveJSON(JSONObject inputJson, String directory){
+            try {
+
+                FileWriter file = new FileWriter(directory);
+
+                ObjectMapper mapper = new ObjectMapper();
+
+                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
+
+                if(file.toString().isEmpty()) file.write(String.valueOf(json));
+                else file.append(String.valueOf(json));
+
+                file.close();
+
+            }
+            catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
+        }
+
+        /**
+         * Saves a Json object to a file.
+         *
+         * @param inputJson The JSON object to be saved.
+         * @param directory The directory where the file should be saved.
+         * @throws RuntimeException if an exception occurs while writing the file.
+         */
+        public void saveJson(JsonObject inputJson, String directory){
             try {
 
                 FileWriter file = new FileWriter(directory);
