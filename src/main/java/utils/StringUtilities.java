@@ -89,7 +89,6 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be converted to camel case
      * @return the input string in camel case format
      */
-
     public String camelCase(String inputString){
         inputString = inputString.replaceAll("-", " ").replaceAll("_", " ").trim();
         while (inputString.contains(" ")){
