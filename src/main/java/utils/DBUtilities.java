@@ -27,7 +27,7 @@ public class DBUtilities {
     public Connection getConnection(String user, String password, String url) {
         try {
             Connection connection = DriverManager.getConnection(url,user,password);
-            log.new Success("Connection established!");
+            log.success("Connection established!");
             return connection;
         }
         catch (SQLException e) {throw new RuntimeException(e);}
@@ -43,7 +43,7 @@ public class DBUtilities {
      * @throws RuntimeException if there is an error executing the SQL query
      */
     public List<Map<String, Object>> getResults(Connection connection, String sqlQuery, Boolean includeNullValues){
-        log.new Info("Mapping result set...");
+        log.info("Mapping result set...");
         List<Map<String, Object>> database = new ArrayList<>();
         try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(sqlQuery);
@@ -58,9 +58,9 @@ public class DBUtilities {
                 }
                 database.add(row);
             }
-            if (database.size() == 0) log.new Warning("No entries were found for the given query!");
-            else if (database.size() == 1) log.new Success(database.size() + " entry successfully mapped!");
-            else log.new Success(database.size() + " entries successfully mapped!");
+            if (database.size() == 0) log.warning("No entries were found for the given query!");
+            else if (database.size() == 1) log.success(database.size() + " entry successfully mapped!");
+            else log.success(database.size() + " entries successfully mapped!");
             return database;
         }
         catch (SQLException e) {throw new RuntimeException(e);}

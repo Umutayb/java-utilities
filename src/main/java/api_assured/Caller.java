@@ -74,7 +74,7 @@ public abstract class Caller {
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getRequestMethod();
         if (keepLogs)
-            log.new Info("Performing " +
+            log.info("Performing " +
                     strUtils.markup(PALE, call.request().method()) +
                     " call for '" +
                     strUtils.markup(PALE, serviceName) +
@@ -84,14 +84,14 @@ public abstract class Caller {
             Response<Model> response = call.execute();
 
             if (response.isSuccessful()){
-                if (keepLogs) log.new Success("The response code is: " + response.code());
-                if (response.message().length()>0 && keepLogs) log.new Info(response.message());
+                if (keepLogs) log.success("The response code is: " + response.code());
+                if (response.message().length()>0 && keepLogs) log.info(response.message());
                 if (printBody) printBody(response);
             }
             else{
-                log.new Warning("The response code is: " + response.code());
-                if (response.message().length()>0) log.new Warning(response.message());
-                log.new Warning(response.raw().toString());
+                log.warning("The response code is: " + response.code());
+                if (response.message().length()>0) log.warning(response.message());
+                log.warning(response.raw().toString());
                 if (printBody) printBody(response);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -101,7 +101,7 @@ public abstract class Caller {
         }
         catch (IOException exception) {
             if (strict){
-                log.new Error(exception.getLocalizedMessage(), exception);
+                log.error(exception.getLocalizedMessage(), exception);
                 throw new FailedCallException("The call performed for " + serviceName + " has failed.");
             }
             else return null;
@@ -120,7 +120,7 @@ public abstract class Caller {
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
         String serviceName = getRequestMethod();
         if (keepLogs)
-            log.new Info("Performing " +
+            log.info("Performing " +
                     strUtils.markup(PALE, call.request().method()) +
                     " call for '" +
                     strUtils.markup(PALE, serviceName) +
@@ -130,14 +130,14 @@ public abstract class Caller {
             Response<Model> response = call.execute();
 
             if (response.isSuccessful()){
-                if (keepLogs) log.new Success("The response code is: " + response.code());
-                if (response.message().length()>0 && keepLogs) log.new Info(response.message());
+                if (keepLogs) log.success("The response code is: " + response.code());
+                if (response.message().length()>0 && keepLogs) log.info(response.message());
                 if (printBody) printBody(response);
             }
             else{
-                log.new Warning("The response code is: " + response.code());
-                if (response.message().length()>0) log.new Warning(response.message());
-                log.new Warning(response.raw().toString());
+                log.warning("The response code is: " + response.code());
+                if (response.message().length()>0) log.warning(response.message());
+                log.warning(response.raw().toString());
                 if (printBody) printBody(response);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -147,7 +147,7 @@ public abstract class Caller {
         }
         catch (IOException exception) {
             if (strict){
-                log.new Error(exception.getLocalizedMessage(), exception);
+                log.error(exception.getLocalizedMessage(), exception);
                 throw new FailedCallException("The call performed for " + serviceName + " has failed.");
             }
             else return null;
@@ -167,21 +167,21 @@ public abstract class Caller {
      */
     @Deprecated
     protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
-        log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
+        log.info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
         try {
             Response<Model> response = call.execute();
 
             if (printBody) printBody(response);
 
             if (response.isSuccessful()){
-                if (response.message().length()>0) log.new Info(response.message());
-                log.new Success("The response code is: " + response.code());
+                if (response.message().length()>0) log.info(response.message());
+                log.success("The response code is: " + response.code());
             }
             else{
                 if (response.message().length()>0)
-                    log.new Warning(response.message());
-                log.new Warning("The response code is: " + response.code());
-                log.new Warning(response.raw().toString());
+                    log.warning(response.message());
+                log.warning("The response code is: " + response.code());
+                log.warning(response.raw().toString());
 
                 if (strict)
                     Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
@@ -189,7 +189,7 @@ public abstract class Caller {
             return response.body();
         }
         catch (IOException exception) {
-            log.new Error(exception.getLocalizedMessage(),exception);
+            log.error(exception.getLocalizedMessage(),exception);
             Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
         }
         return null;
@@ -208,7 +208,7 @@ public abstract class Caller {
      */
     @Deprecated
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
-        log.new Info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
+        log.info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
         try {
             Response<Model> response = call.execute();
 
@@ -216,14 +216,14 @@ public abstract class Caller {
 
             if (response.isSuccessful()){
                 if (response.message().length()>0)
-                    log.new Info(response.message());
-                log.new Success("The response code is: " + response.code());
+                    log.info(response.message());
+                log.success("The response code is: " + response.code());
             }
             else{
                 if (response.message().length()>0)
-                    log.new Warning(response.message());
-                log.new Warning("The response code is: " + response.code());
-                log.new Warning(response.raw().toString());
+                    log.warning(response.message());
+                log.warning("The response code is: " + response.code());
+                log.warning(response.raw().toString());
 
                 if (strict)
                     Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
@@ -232,7 +232,7 @@ public abstract class Caller {
         }
         catch (IOException exception) {
             if (strict){
-                log.new Error(exception.getLocalizedMessage(), exception);
+                log.error(exception.getLocalizedMessage(), exception);
                 Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
             }
         }
@@ -250,19 +250,19 @@ public abstract class Caller {
         String message = "The response body is: \n";
         try {
             if (response.body() != null) // Success response with a non-null body
-                log.new Info(message + objectMapper.valueToTree(response.body()).toPrettyString());
+                log.info(message + objectMapper.valueToTree(response.body()).toPrettyString());
 
             else if (response.errorBody() != null){ // Error response with a non-null body
                 String errorMessage = response.errorBody().string();
                 JSONObject responseJSON = convert.str2json(errorMessage);
                 if (responseJSON!=null)
-                    log.new Warning(message + objectMapper.valueToTree(responseJSON).toPrettyString());
+                    log.warning(message + objectMapper.valueToTree(responseJSON).toPrettyString());
                 else // Success response with a non-null & non-json body
-                    log.new Warning(message + errorMessage);
+                    log.warning(message + errorMessage);
             }
-            else log.new Info("The response body is empty."); // Success response with a null body
+            else log.info("The response body is empty."); // Success response with a null body
         }
-        catch (IOException exception){log.new Warning(Arrays.toString(exception.getStackTrace()));}
+        catch (IOException exception){log.warning(Arrays.toString(exception.getStackTrace()));}
     }
 
     /**

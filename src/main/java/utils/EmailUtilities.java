@@ -72,12 +72,12 @@ public class EmailUtilities {
             if (attachment!=null)
                 message.setContent(attachment);
 
-            log.new Info("Sending...");
+            log.info("Sending...");
             Transport.send(message);// Send message
-            log.new Success("Sent message successfully!");
+            log.success("Sent message successfully!");
             return true;
         }
-        catch (MessagingException mex) {log.new Error(mex.getMessage(), mex);}
+        catch (MessagingException mex) {log.error(mex.getMessage(), mex);}
         return false;
     }
 
@@ -179,10 +179,10 @@ public class EmailUtilities {
          * @throws RuntimeException if there is an IOException during the file write operation.
          */
         public void saveMessage(String filename, String messageContent){
-            log.new Info("Saving email body...");
+            log.info("Saving email body...");
             try (FileWriter file = new FileWriter("inbox/" + filename + ".html")){
                 file.write(String.valueOf(messageContent));
-                log.new Info("Saved as \"" + filename + ".html\"");
+                log.info("Saved as \"" + filename + ".html\"");
             }
             catch (IOException e) {throw new RuntimeException(e);}
         }
@@ -214,14 +214,14 @@ public class EmailUtilities {
             //----------------------------------------
 
             try {
-                log.new Info("Connecting please wait....");
+                log.info("Connecting please wait....");
                 Store store = session.getStore("pop3");
                 store.connect(userName, password);
                 Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_ONLY);
-                log.new Info("Connected to mail via "+host);
+                log.info("Connected to mail via "+host);
                 // opens the inbox folder
-                log.new Info("Getting inbox..");
+                log.info("Getting inbox..");
 
                 // fetches new messages from server
                 List<Message> messages = List.of(folderInbox.getMessages());
@@ -245,12 +245,12 @@ public class EmailUtilities {
 
                     else resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
-                log.new Info("You have "+this.messages.size()+" new mails in your inbox");
+                log.info("You have "+this.messages.size()+" new mails in your inbox");
                 // disconnect
                 folderInbox.close(false);
                 store.close();
             }
-            catch (MessagingException exception) {log.new Error(exception.getLocalizedMessage(),exception);}
+            catch (MessagingException exception) {log.error(exception.getLocalizedMessage(),exception);}
         }
 
         /**
@@ -285,17 +285,17 @@ public class EmailUtilities {
                 this.messages.add(messageMap);
 
                 if (print){
-                    log.new Info("Message #" + index);
-                    log.new Info("From: " + from);
-                    log.new Info("Subject: " + subject);
-                    log.new Info("Sent Date: " + sentDate);
-                    log.new Info("Message: " + messageContent);
-                    if (attachments.length()>0) log.new Info("Attachments: " + attachments);
+                    log.info("Message #" + index);
+                    log.info("From: " + from);
+                    log.info("Subject: " + subject);
+                    log.info("Sent Date: " + sentDate);
+                    log.info("Message: " + messageContent);
+                    if (attachments.length()>0) log.info("Attachments: " + attachments);
                 }
 
                 if (save) saveMessage("message#" + index, messageContent);
             }
-            catch (MessagingException exception){log.new Error("Could not connect to the message store", exception);}
+            catch (MessagingException exception){log.error("Could not connect to the message store", exception);}
         }
 
         /**
@@ -322,21 +322,21 @@ public class EmailUtilities {
             String isconnected="";
             try {
                 // connects to the message store
-                log.new Info("Connecting please wait....");
+                log.info("Connecting please wait....");
                 Store store = session.getStore("pop3");
                 store.connect(userName, password);
                 isconnected = "connected_to_pop3";
-                log.new Info("Is Connected: "+isconnected);
-                log.new Info("Connected to mail via "+host);
+                log.info("Is Connected: "+isconnected);
+                log.info("Connected to mail via "+host);
             }
             catch (NoSuchProviderException ex) {
                 String ex1 ="No provider for pop3.";
-                log.new Warning(ex1);
+                log.warning(ex1);
                 return ex1;
             }
             catch (MessagingException ex) {
                 String ex2 = "Could not connect to the message store";
-                log.new Warning("Could not connect to the message store");
+                log.warning("Could not connect to the message store");
                 return ex2;
             }
             return isconnected;
@@ -368,7 +368,7 @@ public class EmailUtilities {
                 return messageContent;
             }
             catch (MessagingException | IOException e) {
-                log.new Error(e.getMessage(),e);
+                log.error(e.fillInStackTrace().getLocalizedMessage(), e);
                 throw new RuntimeException(e);
             }
         }
@@ -405,7 +405,7 @@ public class EmailUtilities {
                 return attachments.toString();
             }
             catch (MessagingException | IOException e) {
-                log.new Error(e.getMessage(),e);
+                log.error(e.fillInStackTrace().getLocalizedMessage(), e);
                 throw new RuntimeException(e);
             }
         }

@@ -40,6 +40,7 @@ public class Printer {
     /**
      * The Plain class is used to log plain text messages with the INFO level.
      */
+    @Deprecated(since = "1.4.3")
     public class Plain {
         public Plain(CharSequence output) {
             log(Level.INFO, String.valueOf(output));
@@ -49,6 +50,7 @@ public class Printer {
     /**
      * The Important class is used to log important messages with the INFO level and highlighted text.
      */
+    @Deprecated(since = "1.4.3")
     public class Important {
         public Important(CharSequence output){
             log(Level.INFO, strUtils.highlighted(PURPLE, output));
@@ -58,6 +60,7 @@ public class Printer {
     /**
      * The Info class is used to log informational messages with the INFO level and highlighted text.
      */
+    @Deprecated(since = "1.4.3")
     public class Info {
         public Info(CharSequence output) {
             log(Level.INFO, strUtils.highlighted(GRAY, output));
@@ -67,6 +70,7 @@ public class Printer {
     /**
      * The Success class is used to log success messages with the INFO level and highlighted text.
      */
+    @Deprecated(since = "1.4.3")
     public class Success {
         public Success(CharSequence output){
             log(Level.INFO, strUtils.highlighted(GREEN, output));
@@ -76,6 +80,7 @@ public class Printer {
     /**
      * The Warning class is used to log warning messages with the WARNING level and highlighted text.
      */
+    @Deprecated(since = "1.4.3")
     public class Warning {
         public Warning(CharSequence output){
             log(Level.WARNING, strUtils.highlighted(YELLOW, output));
@@ -86,10 +91,61 @@ public class Printer {
      * The Error class is used to log error messages with the SEVERE level and highlighted text.
      * It also includes an exception to provide additional information.
      */
+    @Deprecated(since = "1.4.3")
     public class Error {
         public Error(CharSequence output, Exception exception){
             log(strUtils.highlighted(RED, output), exception);
         }
+    }
+
+    public void plain(CharSequence output){
+        log(Level.INFO, String.valueOf(output));
+    }
+
+    /**
+     * Logs a message at the INFO level with the given output using the default logger and highlights the message with the specified color.
+     *
+     * @param output the message to be logged
+     */
+    public void info(CharSequence output){
+        log(Level.INFO, strUtils.highlighted(GRAY, output));
+    }
+
+    /**
+     * Logs an important message at the INFO level with the given output using the default logger and highlights the message with the specified color.
+     *
+     * @param output the message to be logged
+     */
+    public void important(CharSequence output){
+        log(Level.INFO, strUtils.highlighted(PURPLE, output));
+    }
+
+    /**
+     * Logs a success message at the INFO level with the given output using the default logger and highlights the message with the specified color.
+     *
+     * @param output the message to be logged
+     */
+    public void success(CharSequence output){
+        log(Level.INFO, strUtils.highlighted(GREEN, output));
+    }
+
+    /**
+     * Logs a warning message at the WARNING level with the given output using the default logger and highlights the message with the specified color.
+     *
+     * @param output the message to be logged
+     */
+    public void warning(CharSequence output){
+        log(Level.WARNING, strUtils.highlighted(YELLOW, output));
+    }
+
+    /**
+     * Logs an error message at the ERROR level with the given output and exception using the default logger and highlights the message with the specified color.
+     *
+     * @param output the message to be logged
+     * @param exception the exception to be logged
+     */
+    public void error(CharSequence output, Exception exception){
+        log(strUtils.highlighted(RED, output), exception);
     }
 
     /**
