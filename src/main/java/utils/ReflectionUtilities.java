@@ -89,7 +89,7 @@ public class ReflectionUtilities {
                     );
                 else throw new RuntimeException("Could not determine field (" + expectedJson.get(fieldName) + ") type!");
             }
-            log.new Success("Match: " + fieldName + " -> " + actualJson.get(fieldName));
+            log.success("Match: " + fieldName + " -> " + actualJson.get(fieldName));
         }
     }
 
@@ -102,7 +102,7 @@ public class ReflectionUtilities {
      * @throws AssertionError if the arrays are not identical
      */
     public void compareJsonArray(JsonArray expectedJson, JsonArray actualJson, String... exceptions){
-        log.new Info("Comparing json arrays...");
+        log.info("Comparing json arrays...");
         for (int index = 0; index <= expectedJson.size() - 1; index++) {
             if (expectedJson.get(index).isJsonObject()){
                 compareJson(
@@ -124,7 +124,7 @@ public class ReflectionUtilities {
                         actualJson.get(index)
                 );
         }
-        log.new Success("Json arrays are identical!");
+        log.success("Json arrays are identical!");
     }
 
     /**
@@ -145,10 +145,10 @@ public class ReflectionUtilities {
             compareJson(expectedJson, actualJson, exceptions);
         }
         catch (AssertionError | JsonProcessingException error){
-            log.new Warning(error.getMessage());
+            log.warning(error.getMessage());
             return false;
         }
-        log.new Success("All fields match!");
+        log.success("All fields match!");
         return true;
     }
 
@@ -267,7 +267,7 @@ public class ReflectionUtilities {
                 String fieldName = new StringUtilities().firstLetterCapped(field.getName());
                 output.append("\n").append(fieldName).append(" : ").append(field.get(object));
             }
-            log.new Important("\nFields: " + output);
+            log.important("\nFields: " + output);
         }
         catch (IllegalAccessException e) {throw new RuntimeException(e);}
     }
@@ -286,7 +286,7 @@ public class ReflectionUtilities {
                     String fieldName = new StringUtilities().firstLetterCapped(method.getName().replaceAll("get", ""));
                     output.append("\n").append(fieldName).append(" : ").append(method.invoke(object));
                 }
-            log.new Important("\nFields: " + output);
+            log.important("\nFields: " + output);
         }
         catch (InvocationTargetException | IllegalAccessException e) {throw new RuntimeException(e);}
     }

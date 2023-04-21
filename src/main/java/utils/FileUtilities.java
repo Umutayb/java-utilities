@@ -2,7 +2,6 @@ package utils;
 
 import api_assured.exceptions.JavaUtilitiesException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -14,8 +13,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -330,7 +327,7 @@ public class FileUtilities {
                                     rowMap.put(labels.get(i), sheet.getRow(y).getCell(i).getNumericCellValue());
                             case STRING ->    //field that represents string cell type
                                     rowMap.put(labels.get(i), sheet.getRow(y).getCell(i).getStringCellValue());
-                            default -> log.new Warning("Empty cell labeled: " + labels.get(i));
+                            default -> log.warning("Empty cell labeled: " + labels.get(i));
                         }
                     }
                     excelMap.put((String) rowMap.get(selector), rowMap);
@@ -355,7 +352,32 @@ public class FileUtilities {
          * @param directory The directory where the file should be saved.
          * @throws RuntimeException if an exception occurs while writing the file.
          */
-        public void saveJson(JSONObject inputJson, String directory){
+        public void saveJSON(JSONObject inputJson, String directory){
+            try {
+
+                FileWriter file = new FileWriter(directory);
+
+                ObjectMapper mapper = new ObjectMapper();
+
+                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
+
+                if(file.toString().isEmpty()) file.write(String.valueOf(json));
+                else file.append(String.valueOf(json));
+
+                file.close();
+
+            }
+            catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
+        }
+
+        /**
+         * Saves a Json object to a file.
+         *
+         * @param inputJson The JSON object to be saved.
+         * @param directory The directory where the file should be saved.
+         * @throws RuntimeException if an exception occurs while writing the file.
+         */
+        public void saveJson(JsonObject inputJson, String directory){
             try {
 
                 FileWriter file = new FileWriter(directory);
@@ -458,7 +480,7 @@ public class FileUtilities {
                 object = (JSONObject) parser.parse(inputString);
             }
             catch (Exception gamma){
-                //log.new Warning(gamma.fillInStackTrace());
+                //log.warning(gamma.fillInStackTrace());
             }
             return object;
         }

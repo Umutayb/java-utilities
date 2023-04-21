@@ -31,7 +31,7 @@ public abstract class ApiUtilities extends Caller {
      */
     public MultipartBody.Part getMultipartFromFile(File file, String name) {
         RequestBody body = getRequestBodyFromFile(file);
-        log.new Info("Creating multipart from " + file.getName() + " file");
+        log.info("Creating multipart from " + file.getName() + " file");
         return MultipartBody.Part.createFormData(name, file.getName(), body);
     }
 
@@ -45,7 +45,7 @@ public abstract class ApiUtilities extends Caller {
      */
     public MultipartBody.Part getMultipartFromFile(File file, String name, String mediaType) {
         RequestBody body = getRequestBodyFromFile(file, mediaType);
-        log.new Info("Creating multipart from " + file.getName() + " file");
+        log.info("Creating multipart from " + file.getName() + " file");
         return MultipartBody.Part.createFormData(name, file.getName(), body);
     }
 
@@ -70,7 +70,7 @@ public abstract class ApiUtilities extends Caller {
      * @return returns the RequestBody
      */
     public RequestBody getRequestBodyFromFile(File file, String mediaType) {
-        log.new Info("Generating request body from " + file.getName() + " file");
+        log.info("Generating request body from " + file.getName() + " file");
         return RequestBody.create(file, MediaType.parse(mediaType));
     }
 }

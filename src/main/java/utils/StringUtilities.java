@@ -12,9 +12,6 @@ import static utils.StringUtilities.Color.*;
 @SuppressWarnings("unused")
 public class StringUtilities {   //Utility methods
 
-    private final ObjectUtilities objectUtils = new ObjectUtilities();
-
-
     /**
      * Highlights a given text with a specified color (resets to plain)
      *
@@ -81,6 +78,26 @@ public class StringUtilities {   //Utility methods
             return firstLetter + remainingLetters;
         }
         else return null;
+    }
+
+    /**
+     * Converts a string to camel case format by removing hyphens and underscores and capitalizing the first letter of each word after the first.
+     *
+     * @param inputString the string to be converted to camel case
+     * @return the input string in camel case format
+     */
+    public String camelCase(String inputString){
+        inputString = inputString.replaceAll("-", " ").replaceAll("_", " ").trim();
+        while (inputString.contains(" ")){
+            int spaceIndex = inputString.indexOf(" ");
+            String toBeReplaced = String.valueOf(inputString.charAt(spaceIndex + 1));
+            inputString = inputString
+                    .replaceFirst(
+                            String.valueOf(inputString.charAt(spaceIndex)) + inputString.charAt(spaceIndex + 1),
+                            toBeReplaced.toUpperCase()
+                    );
+        }
+        return inputString;
     }
 
     /**

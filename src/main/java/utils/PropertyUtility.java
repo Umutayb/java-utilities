@@ -39,4 +39,8 @@ public class PropertyUtility {
             exception.printStackTrace();
         }
     }
+
+    protected static String getProperty(String key){
+        return properties.getProperty(key);
+    }
 }

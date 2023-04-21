@@ -164,7 +164,7 @@ public class ServiceGenerator {
                                     .build();
                     }
                     if (printHeaders)
-                        log.new Info(("Headers(" + request.headers().size() + "): \n" + request.headers()).trim());
+                        log.info(("Headers(" + request.headers().size() + "): \n" + request.headers()).trim());
                     return chain.proceed(request);
                 }).build();
 

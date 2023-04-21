@@ -14,14 +14,14 @@ public class TextParser {
         Printer log = new Printer(TextParser.class);
         TextParser textParser = new TextParser();
         Scanner scanner = new Scanner(System.in);
-        log.new Important("Enter the input");
+        log.important("Enter the input");
         String input = scanner.nextLine(); // "ajsKAagq5J3w._CoolButton-sg-j3yaG3 a3TGb"
-        log.new Important("Enter the first keyword"); //._
+        log.important("Enter the first keyword"); //._
         String initialKeyword = scanner.nextLine();
-        log.new Important("Enter the final keyword"); // -
+        log.important("Enter the final keyword"); // -
         String finalKeyword = scanner.nextLine();
         scanner.close();
-        log.new Plain(textParser.parse(initialKeyword,finalKeyword,input));
+        log.plain(textParser.parse(initialKeyword,finalKeyword,input));
     }
 
     /**

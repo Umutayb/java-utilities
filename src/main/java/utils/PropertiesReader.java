@@ -22,7 +22,7 @@ public class PropertiesReader {
             this.properties = new Properties();
             this.properties.load(inputStream);
         }
-        catch (IOException exception) {log.new Error(exception.getMessage(), exception);}
+        catch (IOException exception) {log.error(exception.getMessage(), exception);}
     }
 
     /**
