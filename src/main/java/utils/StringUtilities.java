@@ -12,9 +12,6 @@ import static utils.StringUtilities.Color.*;
 @SuppressWarnings("unused")
 public class StringUtilities {   //Utility methods
 
-    private final ObjectUtilities objectUtils = new ObjectUtilities();
-
-
     /**
      * Highlights a given text with a specified color (resets to plain)
      *
