@@ -13,6 +13,17 @@ import static utils.StringUtilities.Color.*;
 public class StringUtilities {   //Utility methods
 
     /**
+     * Returns true if the input is null or empty after trimming, false otherwise.
+     *
+     * @param <String> input String (can be of any type)
+     * @param input the input to check for blankness
+     * @return true if the input is null or empty after trimming, false otherwise
+     */
+    public static <String> boolean isBlank(String input){
+        return !(input != null && !input.toString().trim().isEmpty());
+    }
+
+    /**
      * Highlights a given text with a specified color (resets to plain)
      *
      * @param color target color
