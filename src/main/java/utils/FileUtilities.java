@@ -473,7 +473,7 @@ public class FileUtilities {
          * @param inputString the input string to be parsed into a JSONObject
          * @return the JSONObject representation of the input string
          */
-        public JSONObject str2json(String inputString){
+        public JSONObject str2JSON(String inputString){
             JSONObject object = null;
             try {
                 JSONParser parser = new JSONParser();
@@ -483,6 +483,16 @@ public class FileUtilities {
                 //log.warning(gamma.fillInStackTrace());
             }
             return object;
+        }
+
+        /**
+         * Parses a given input string into a JsonObject.
+         *
+         * @param inputString the input string to be parsed into a JsonObject
+         * @return the JsonObject representation of the input string
+         */
+        public JsonElement str2json(String inputString){
+            return JsonParser.parseString(inputString);
         }
 
         /**

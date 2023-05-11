@@ -63,7 +63,7 @@ public class ReflectionUtilities {
     public void compareJson(JsonObject expectedJson, JsonObject actualJson, String... exceptions){
         Set<String> keySet = expectedJson.keySet().stream().filter(key -> !Arrays.asList(exceptions).contains(key)).collect(Collectors.toSet());
         for (String fieldName:keySet) {
-            if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(fieldName))){
+            if (Arrays.asList(exceptions).contains(fieldName) && expectedJson.get(fieldName) != null){
                 boolean isObject = expectedJson.get(fieldName).isJsonObject();
                 boolean isArray = expectedJson.get(fieldName).isJsonArray();
                 boolean isPrimitive = expectedJson.get(fieldName).isJsonPrimitive();
@@ -88,8 +88,8 @@ public class ReflectionUtilities {
                             actualJson.get(fieldName)
                     );
                 else throw new RuntimeException("Could not determine field (" + expectedJson.get(fieldName) + ") type!");
+                log.success("Match: " + fieldName + " -> " + actualJson.get(fieldName));
             }
-            log.success("Match: " + fieldName + " -> " + actualJson.get(fieldName));
         }
     }
 
@@ -148,7 +148,7 @@ public class ReflectionUtilities {
             log.warning(error.getMessage());
             return false;
         }
-        log.success("All fields match!");
+        finally {log.success("All fields match!");}
         return true;
     }
 
