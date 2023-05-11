@@ -3,13 +3,13 @@ package api_assured;
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.json.simple.JSONObject;
 import org.junit.Assert;
+import records.Pair;
 import retrofit2.Call;
 import retrofit2.Response;
-import utils.FileUtilities;
 import utils.Printer;
 import utils.PropertyUtility;
 import utils.StringUtilities;
@@ -63,15 +63,29 @@ public abstract class Caller {
     }
 
     /**
-     * Performs an API call and logs the results.
+     * Performs the given call and processes the response. This method provides advanced error handling capabilities.
      *
-     * @param call the Call object representing the API call
-     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
-     * @param printBody a boolean indicating whether the response body should be printed
-     * @return the Model object representing the response body
-     * @throws FailedCallException if the call is strict and the response is not successful
+     * @param call The call to be executed. This is a retrofit2.Call object, which represents a request that has been prepared for execution.
+     * @param strict If true, throws a FailedCallException when the call fails or the response is not successful. If false, returns null in these cases.
+     * @param printBody If true, prints the body of the response. This may be useful for debugging purposes.
+     * @param errorModels Varargs parameter. Each ErrorModel class is used to try to parse the error response if the call was not successful.
+     *
+     * @return A ResponseType object. If the call was successful, this is the body of the response. If the call was not successful and strict is false, this may be a parsed error response, or null if parsing the error response failed.
+     *
+     * @throws FailedCallException If strict is true and the call failed or the response was not successful.
+     *
+     * @param <SuccessModel> The type of the successful response body.
+     * @param <ErrorModel> The type of the error response body.
+     * @param <ResponseType> The type of the return value of this method. This is either SuccessModel or ErrorModel.
      */
-    protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody){
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    protected static <SuccessModel, ErrorModel, ResponseType> ResponseType perform(
+            Call<SuccessModel> call,
+            Boolean strict,
+            Boolean printBody,
+            Class<ErrorModel>... errorModels){
+
         String serviceName = getRequestMethod();
         if (keepLogs)
             log.info("Performing " +
@@ -79,25 +93,35 @@ public abstract class Caller {
                     " call for '" +
                     strUtils.markup(PALE, serviceName) +
                     "' service on url: " + call.request().url()
-        );
+            );
         try {
-            Response<Model> response = call.execute();
+            Response<SuccessModel> response = call.execute();
 
             if (response.isSuccessful()){
                 if (keepLogs) log.success("The response code is: " + response.code());
                 if (response.message().length()>0 && keepLogs) log.info(response.message());
-                if (printBody) printBody(response);
+                if (printBody) printBody(response, getResponseString(response));
+                return (ResponseType) response.body();
             }
             else{
                 log.warning("The response code is: " + response.code());
                 if (response.message().length()>0) log.warning(response.message());
                 log.warning(response.raw().toString());
-                if (printBody) printBody(response);
+                String errorString = getResponseString(response);
+                if (printBody) printBody(response, errorString);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
                 );
+                else {
+                    ResponseType result;
+
+                    for (Class<ErrorModel> errorModel:errorModels) {
+                        try {return (ResponseType) objectMapper.readValue(errorString, errorModel);}
+                        catch (JsonProcessingException ignored){}
+                    }
+                    return null;
+                }
             }
-            return response.body();
         }
         catch (IOException exception) {
             if (strict){
@@ -132,18 +156,87 @@ public abstract class Caller {
             if (response.isSuccessful()){
                 if (keepLogs) log.success("The response code is: " + response.code());
                 if (response.message().length()>0 && keepLogs) log.info(response.message());
-                if (printBody) printBody(response);
+                if (printBody) printBody(response, getResponseString(response));
             }
             else{
                 log.warning("The response code is: " + response.code());
                 if (response.message().length()>0) log.warning(response.message());
                 log.warning(response.raw().toString());
-                if (printBody) printBody(response);
+                if (printBody) printBody(response, getResponseString(response));
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
                 );
             }
             return response;
+        }
+        catch (IOException exception) {
+            if (strict){
+                log.error(exception.getLocalizedMessage(), exception);
+                throw new FailedCallException("The call performed for " + serviceName + " has failed.");
+            }
+            else return null;
+        }
+    }
+
+    /**
+     * Executes the given call and returns a Pair containing the response and potential error model.
+     * This method provides advanced error handling capabilities.
+     *
+     * @param call The call to be executed. This is a retrofit2.Call object, which represents a request that has been prepared for execution.
+     * @param strict If true, throws a FailedCallException when the call fails or the response is not successful. If false, returns null in these cases.
+     * @param printBody If true, prints the body of the response. This may be useful for debugging purposes.
+     * @param errorModels Varargs parameter. Each ErrorModel class is used to try to parse the error response if the call was not successful.
+     *
+     * @return A Pair object with the SuccessModel response as the first element and ErrorModel as the second element. If the call was successful, the second element is null.
+     * If the call was not successful and strict is false, the second element may be a parsed error response, or null if parsing the error response failed.
+     *
+     * @throws FailedCallException If strict is true and the call failed or the response was not successful.
+     *
+     * @param <SuccessModel> The type of the successful response body.
+     * @param <ErrorModel> The type of the error response body.
+     */
+    @SafeVarargs
+    protected static <SuccessModel, ErrorModel> Pair<Response<SuccessModel>, ErrorModel> getResponse(
+            Call<SuccessModel> call,
+            Boolean strict,
+            Boolean printBody,
+            Class<ErrorModel>... errorModels){
+
+        String serviceName = getRequestMethod();
+        if (keepLogs)
+            log.info("Performing " +
+                    strUtils.markup(PALE, call.request().method()) +
+                    " call for '" +
+                    strUtils.markup(PALE, serviceName) +
+                    "' service on url: " + call.request().url()
+            );
+        try {
+            Response<SuccessModel> response = call.execute();
+
+            if (response.isSuccessful()){
+                if (keepLogs) log.success("The response code is: " + response.code());
+                if (response.message().length()>0 && keepLogs) log.info(response.message());
+                if (printBody) printBody(response, getResponseString(response));
+                return new Pair<>(response, null);
+            }
+            else{
+                log.warning("The response code is: " + response.code());
+                if (response.message().length()>0) log.warning(response.message());
+                log.warning(response.raw().toString());
+                String errorString = getResponseString(response);
+                if (printBody) printBody(response, errorString);
+                if (strict) throw new FailedCallException(
+                        "The strict call performed for " + serviceName + " service returned response code " + response.code()
+                );
+                else
+                    for (Class<ErrorModel> errorModel:errorModels)
+                        return new Pair<>(
+                                response,
+                                objectMapper.readValue(errorString, errorModel)
+                        );
+
+            }
+            return null;
         }
         catch (IOException exception) {
             if (strict){
@@ -171,7 +264,7 @@ public abstract class Caller {
         try {
             Response<Model> response = call.execute();
 
-            if (printBody) printBody(response);
+            if (printBody) printBody(response, getResponseString(response));
 
             if (response.isSuccessful()){
                 if (response.message().length()>0) log.info(response.message());
@@ -212,7 +305,7 @@ public abstract class Caller {
         try {
             Response<Model> response = call.execute();
 
-            if (printBody) printBody(response);
+            if (printBody) printBody(response, getResponseString(response));
 
             if (response.isSuccessful()){
                 if (response.message().length()>0)
@@ -240,29 +333,44 @@ public abstract class Caller {
     }
 
     /**
-     * Prints the response body of an API call.
+     * Prints the body of the response. This method provides log information based on the type of the response.
      *
-     * @param response the Response object representing the API response
-     * @throws IOException if there is an error reading the response body
+     * @param response The response whose body to print. This is a retrofit2.Response object.
+     * @param body The body of the response as a string. This is used to generate the log message.
+     *
+     * @param <Model> The type of the response body. This could be the type of successful response body or an error response body.
      */
-    static <Model> void printBody(Response<Model> response) throws IOException {
-        FileUtilities.Json convert = new FileUtilities.Json();
-        String message = "The response body is: \n";
+    static <Model> void printBody(Response<Model> response, String body) {
         try {
+            String message = "The response body is: \n";
             if (response.body() != null) // Success response with a non-null body
-                log.info(message + objectMapper.valueToTree(response.body()).toPrettyString());
-
-            else if (response.errorBody() != null){ // Error response with a non-null body
-                String errorMessage = response.errorBody().string();
-                JSONObject responseJSON = convert.str2json(errorMessage);
-                if (responseJSON!=null)
-                    log.warning(message + objectMapper.valueToTree(responseJSON).toPrettyString());
-                else // Success response with a non-null & non-json body
-                    log.warning(message + errorMessage);
-            }
+                log.info(message + body);
+            else if (response.errorBody() != null) // Error response with a non-null body
+                log.warning(message + objectMapper.readTree(body).toPrettyString());
             else log.info("The response body is empty."); // Success response with a null body
         }
+        catch (JsonProcessingException e) {throw new RuntimeException(e);}
+    }
+
+    /**
+     * Converts the body of the response to a string. This method handles both successful and error responses.
+     *
+     * @param response The response whose body to convert to a string. This is a retrofit2.Response object.
+     *
+     * @return The body of the response as a string. If the body of the response or the error body could not be converted to a string,
+     * this method returns null.
+     *
+     * @param <Model> The type of the response body. This could be the type of a successful response body or an error response body.
+     */
+    static <Model> String getResponseString(Response<Model> response){
+        try {
+            if (response.body() != null) // Success response with a non-null body
+                return new ObjectMapper().valueToTree(response.body()).toPrettyString();
+            else if (response.errorBody() != null) // Error response with a non-null error body
+                return response.errorBody().string();
+        }
         catch (IOException exception){log.warning(Arrays.toString(exception.getStackTrace()));}
+        return null;
     }
 
     /**
