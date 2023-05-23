@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.util.Properties;
 
 public abstract class ApiUtilities extends Caller {
-    public static Properties properties = PropertyUtility.properties;
+    public static Properties properties = PropertyUtility.getProperties();
     public StringUtilities strUtils = new StringUtilities();
     /**
      * @deprecated This object utility is deprecated since version 1.4.0. "objectUtils" replaced by "reflection"

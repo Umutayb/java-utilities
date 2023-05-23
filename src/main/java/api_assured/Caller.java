@@ -59,7 +59,7 @@ public abstract class Caller {
         objectMapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
         objectMapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        keepLogs = Boolean.parseBoolean(PropertyUtility.properties.getProperty("keep-api-logs", "true"));
+        keepLogs = Boolean.parseBoolean(PropertyUtility.getProperty("keep-api-logs", "true"));
     }
 
     /**

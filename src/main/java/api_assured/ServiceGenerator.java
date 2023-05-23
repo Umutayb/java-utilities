@@ -34,7 +34,7 @@ public class ServiceGenerator {
     /**
      * The properties object containing the configuration properties.
      */
-    public static Properties properties = PropertyUtility.properties;
+    public static Properties properties = PropertyUtility.getProperties();
 
     /**
      * The headers object containing the headers to be added to the requests.
