@@ -21,7 +21,7 @@ public class Printer {
     /**
      * A Properties instance used for configuring the Printer.
      */
-    public static Properties properties = PropertyUtility.properties;
+    public static Properties properties = PropertyUtility.getProperties();
 
     /**
      * The Logger instance used for logging messages.

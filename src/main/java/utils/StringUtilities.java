@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import java.text.Normalizer;
 import java.util.*;
 
-import static utils.PropertyUtility.properties;
 import static utils.StringUtilities.Color.*;
 
 @SuppressWarnings("unused")
@@ -240,7 +239,7 @@ public class StringUtilities {   //Utility methods
         }
         else if (input.contains("PROPERTY-")){
             String propertyName = parser.parse("PROPERTY-", null, input);
-            input = properties.getProperty(propertyName, "NULL");
+            input = PropertyUtility.getProperty(propertyName, "NULL");
         }
         return input;
     }
