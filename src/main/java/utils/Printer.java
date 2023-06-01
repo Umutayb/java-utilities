@@ -19,11 +19,6 @@ public class Printer {
     StringUtilities strUtils = new StringUtilities();
 
     /**
-     * A Properties instance used for configuring the Printer.
-     */
-    public static Properties properties = PropertyUtility.getProperties();
-
-    /**
      * The Logger instance used for logging messages.
      */
     private final Logger log;
@@ -156,7 +151,7 @@ public class Printer {
      * @param output The message to log.
      */
     private void log(Level level, String output){
-        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
+        if (Boolean.parseBoolean(PropertyUtility.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(level, log.getName(), getMethod(), output);
     }
@@ -169,7 +164,7 @@ public class Printer {
      * @param exception The exception to include in the log.
      */
     private void log(String output, Exception exception){
-        if (Boolean.parseBoolean(properties.getProperty("save-logs", "false")))
+        if (Boolean.parseBoolean(PropertyUtility.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(Level.SEVERE, log.getName(), getMethod(), output, exception);
     }
