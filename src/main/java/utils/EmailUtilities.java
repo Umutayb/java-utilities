@@ -192,9 +192,9 @@ public class EmailUtilities {
          *
          * @param filterType the type of email field to use as a filter. Can be null to skip filtering.
          * @param filterKey the filter criteria to apply to the selected email field.
-         * @param print whether or not to print the contents of the filtered messages.
-         * @param save whether or not to save the contents of the filtered messages.
-         * @param saveAttachments whether or not to save the attachments of the filtered messages.
+         * @param print whether to print the contents of the filtered messages.
+         * @param save whether to save the contents of the filtered messages.
+         * @param saveAttachments whether to save the attachments of the filtered messages.
          *
          * @throws RuntimeException if there is a MessagingException during the process.
          */

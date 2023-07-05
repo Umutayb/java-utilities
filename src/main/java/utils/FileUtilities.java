@@ -1,7 +1,10 @@
 package utils;
 
 import api_assured.exceptions.JavaUtilitiesException;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -357,12 +360,10 @@ public class FileUtilities {
 
                 FileWriter file = new FileWriter(directory);
 
-                ObjectMapper mapper = new ObjectMapper();
+                String JSON = MappingUtilities.Json.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
 
-                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
-
-                if(file.toString().isEmpty()) file.write(String.valueOf(json));
-                else file.append(String.valueOf(json));
+                if(file.toString().isEmpty()) file.write(String.valueOf(JSON));
+                else file.append(String.valueOf(JSON));
 
                 file.close();
 
@@ -381,10 +382,11 @@ public class FileUtilities {
             try {
 
                 FileWriter file = new FileWriter(directory);
+                ObjectMapper mapper = MappingUtilities.Json.mapper;
+                mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+                mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
-                ObjectMapper mapper = new ObjectMapper();
-
-                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
+                String json = MappingUtilities.Json.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inputJson);
 
                 if(file.toString().isEmpty()) file.write(String.valueOf(json));
                 else file.append(String.valueOf(json));

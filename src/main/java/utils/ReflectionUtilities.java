@@ -19,15 +19,7 @@ import java.util.stream.Collectors;
 public class ReflectionUtilities {
 
     static Printer log = new Printer(ReflectionUtilities.class);
-    ObjectMapper mapper = new ObjectMapper();
-
-    public ReflectionUtilities(){
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    }
+    static ObjectMapper mapper = MappingUtilities.Json.mapper;
 
     /**
      * Compares two objects and throws an AssertionError if they are not equal.
