@@ -1,18 +1,12 @@
 package api_assured;
 
 import api_assured.exceptions.FailedCallException;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Assert;
 import records.Pair;
 import retrofit2.Call;
 import retrofit2.Response;
-import utils.Printer;
-import utils.PropertyUtility;
-import utils.StringUtilities;
+import utils.*;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -36,11 +30,6 @@ public abstract class Caller {
     static boolean keepLogs;
 
     /**
-     * An ObjectMapper object for JSON serialization and deserialization.
-     */
-    static ObjectMapper objectMapper = new ObjectMapper();
-
-    /**
      * A StringUtilities object for string manipulation.
      */
     static StringUtilities strUtils = new StringUtilities();
@@ -54,11 +43,6 @@ public abstract class Caller {
      * Constructs a Caller object and initializes the ObjectMapper object and the keepLogs variable.
      */
     public Caller(){
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        objectMapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
-        objectMapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
-        objectMapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
-        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         keepLogs = Boolean.parseBoolean(PropertyUtility.getProperty("keep-api-logs", "true"));
     }
 
@@ -116,7 +100,7 @@ public abstract class Caller {
                     ResponseType result;
 
                     for (Class<ErrorModel> errorModel:errorModels) {
-                        try {return (ResponseType) objectMapper.readValue(errorString, errorModel);}
+                        try {return (ResponseType) MappingUtilities.Json.mapper.readValue(errorString, errorModel);}
                         catch (JsonProcessingException ignored){}
                     }
                     return null;
@@ -232,7 +216,7 @@ public abstract class Caller {
                     for (Class<ErrorModel> errorModel:errorModels)
                         return new Pair<>(
                                 response,
-                                objectMapper.readValue(errorString, errorModel)
+                                MappingUtilities.Json.mapper.readValue(errorString, errorModel)
                         );
 
             }
@@ -346,7 +330,7 @@ public abstract class Caller {
             if (response.body() != null) // Success response with a non-null body
                 log.info(message + body);
             else if (response.errorBody() != null) // Error response with a non-null body
-                log.warning(message + objectMapper.readTree(body).toPrettyString());
+                log.warning(message + MappingUtilities.Json.mapper.readTree(body).toPrettyString());
             else log.info("The response body is empty."); // Success response with a null body
         }
         catch (JsonProcessingException e) {throw new RuntimeException(e);}
@@ -365,7 +349,7 @@ public abstract class Caller {
     static <Model> String getResponseString(Response<Model> response){
         try {
             if (response.body() != null) // Success response with a non-null body
-                return new ObjectMapper().valueToTree(response.body()).toPrettyString();
+                return MappingUtilities.Json.mapper.valueToTree(response.body()).toPrettyString();
             else if (response.errorBody() != null) // Error response with a non-null error body
                 return response.errorBody().string();
         }

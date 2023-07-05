@@ -13,6 +13,7 @@ import retrofit2.converter.protobuf.ProtoConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
+import utils.MappingUtilities;
 import utils.Printer;
 import utils.PropertyUtility;
 import utils.ReflectionUtilities;
@@ -55,6 +56,11 @@ public class ServiceGenerator {
      * A boolean indicating whether to verify the hostname in the requests.
      */
     boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
+
+    /**
+     * A boolean indicating whether to print request body in the outgoing requests.
+     */
+    boolean printRequestBody = Boolean.parseBoolean(properties.getProperty("print-request-body", "false"));
 
     /**
      * Connection timeout in seconds.
@@ -162,6 +168,13 @@ public class ServiceGenerator {
                                             "Content-Type",
                                             String.valueOf(Objects.requireNonNull(request.body()).contentType()))
                                     .build();
+
+                        if (printRequestBody) {
+                            assert request.body() != null;
+                            String requestBody = MappingUtilities.Json.mapper.valueToTree(request.body()).toPrettyString();
+                            String outgoingRequestLog = "The request body is: \n" + requestBody;
+                            log.info(outgoingRequestLog);
+                        }
                     }
                     if (printHeaders)
                         log.info(("Headers(" + request.headers().size() + "): \n" + request.headers()).trim());
@@ -217,6 +230,17 @@ public class ServiceGenerator {
      */
     public ServiceGenerator setHostnameVerification(boolean hostnameVerification) {
         this.hostnameVerification = hostnameVerification;
+        return this;
+    }
+
+    /**
+     * Sets whether to print request bodies in the outgoing requests.
+     *
+     * @param printRequestBody A boolean indicating whether to print request bodies in the outgoing requests.
+     * @return The updated ServiceGenerator object.
+     */
+    public ServiceGenerator setPrintRequestBody(boolean printRequestBody) {
+        this.printRequestBody = printRequestBody;
         return this;
     }
 
