@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class MappingUtilities {
 
+    /**
+     * Visibility settings are applied to allow the mapper to access and serialize/deserialize all fields, while ignoring getters, setters, and creators.
+     * The FAIL_ON_EMPTY_BEANS serialization feature is disabled, which prevents the mapper from throwing an exception when encountering empty beans (objects without any properties).
+     */
     public static class Json {
         public static ObjectMapper mapper = new ObjectMapper();
 
