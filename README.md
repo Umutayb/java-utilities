@@ -35,12 +35,11 @@ Add the following maven dependencies to your pom.xml file
 </dependencies>
 ```
 
-### License
-
-This project is licensed under the MIT License.
-
 ### Acknowledgments
 
 - This project was inspired by the common tasks and functionalities that Java developers frequently encounter in their projects.
 - We would like to thank the open-source community for their contributions and the Java language developers for providing a powerful and flexible platform.
 
+### License
+
+This project is licensed under the MIT License.
