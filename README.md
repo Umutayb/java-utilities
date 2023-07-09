@@ -37,7 +37,7 @@ Add the following maven dependencies to your pom.xml file
 
 ### License
 
-This project is licensed under the MIT License. Feel free to use the utility classes and functions in your own projects, modify them, or distribute them as needed.
+This project is licensed under the MIT License.
 
 ### Acknowledgments
 
