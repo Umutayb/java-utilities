@@ -45,7 +45,9 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <cucumber.version>4.8.0</cucumber.version>
     <retrofit.version>2.9.0</retrofit.version>
+    <lombok.version>1.18.26</lombok.version>
     <okhttp.version>4.9.3</okhttp.version>
+
   </properties>
 
   <dependencyManagement>
@@ -116,6 +118,15 @@
       <groupId>com.squareup.retrofit2</groupId>
       <artifactId>converter-wire</artifactId>
       <version>${retrofit.version}</version>
+    </dependency>
+
+
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Apache -->
