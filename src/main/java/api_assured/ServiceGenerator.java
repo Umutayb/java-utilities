@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static utils.MappingUtilities.Json.getJsonString;
 import static utils.MappingUtilities.Json.mapper;
 
 /**
@@ -179,8 +180,7 @@ public class ServiceGenerator {
                                 String bodyString = buffer.readString(UTF_8);
                                 try {
                                     Object jsonObject = mapper.readValue(bodyString, Object.class);
-                                    String outgoingRequestLog = "The request body is: \n" +
-                                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+                                    String outgoingRequestLog = "The request body is: \n" + getJsonString(jsonObject);
                                     log.info(outgoingRequestLog);
                                 }
                                 catch (IOException ignored) {
