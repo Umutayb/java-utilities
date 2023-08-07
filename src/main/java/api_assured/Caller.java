@@ -62,7 +62,7 @@ public abstract class Caller {
      *
      * @param <SuccessModel> The type of the successful response body.
      * @param <ErrorModel> The type of the error response body.
-     * @param <ResponseType> The type of the return value of this method. This is either SuccessModel or ErrorModel.
+     * @param <ResponseType> The type of the return value in this method. This is either SuccessModel or ErrorModel.
      */
     @SuppressWarnings("unchecked")
     protected static <SuccessModel, ErrorModel, ResponseType> ResponseType perform(
@@ -121,11 +121,12 @@ public abstract class Caller {
      * Clones and logs the given response.
      *
      * @param <T>         The type of the response body.
-     * @param response    The original response to clone and log.
+     * @param call        The original call to execute and log.
      * @param printBody   Flag to indicate whether the response body should be logged.
      * @return            A new cloned response object.
      */
-    private static <T> Response<T> cloneResponse(Response<T> response, boolean printBody) throws IOException {
+    private static <T> Response<T> getResponse(Call<T> call, boolean printBody) throws IOException {
+        Response<T> response = call.execute();
         if (response.isSuccessful()) {
             T body = response.body();
             if (keepLogs) log.success("The response code is: " + response.code());
@@ -134,19 +135,28 @@ public abstract class Caller {
             return Response.success(body, response.headers());
         }
         else {
-            Object errorObject = getErrorObject(response);
+            Object errorBody = getErrorObject(response);
             log.warning("The response code is: " + response.code());
             if (response.message().length()>0) log.warning(response.message());
-            if (printBody) log.warning("The error body is: \n" + getJsonString(errorObject));
-            if (response.errorBody() != null)
-                return Response.error(response.errorBody(), response.raw());
-            else {
-                log.warning("Error body is empty!");
-                return null;
-            }
+            if (printBody) log.warning("The error body is: \n" + getJsonString(errorBody));
+            return response;
         }
     }
 
+    /**
+     * Extracts the error object from the given response and attempts to deserialize it into the specified model.
+     * <p>
+     * The method tries to read the error content from the response and then deserialize it into a generic model type.
+     * If the deserialization fails or other issues occur while processing the error content, a runtime exception is thrown.
+     * </p>
+     *
+     * @param <Model> The generic type representing the desired structure of the error object.
+     * @param response The response containing the potential error data.
+     * @return A deserialized error object instance of type {@code Model}.
+     * @throws RuntimeException if there's an issue processing the error content or deserializing it.
+     *
+     * @see MappingUtilities.Json#fromJsonString(String, Class)
+     */
     @SuppressWarnings("unchecked")
     private static <Model> Model getErrorObject(Response<?> response){
         assert response.errorBody() != null;
@@ -188,7 +198,7 @@ public abstract class Caller {
     private static <Model> Response<Model> call(Call<Model> call, boolean strict, boolean printBody, String serviceName){
         try {
             printCallSpecifications(call, serviceName);
-            Response<Model> response = cloneResponse(call.execute(), printBody);
+            Response<Model> response = getResponse(call, printBody);
             if (strict && !Objects.requireNonNull(response).isSuccessful())
                 throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -198,6 +208,24 @@ public abstract class Caller {
         catch (IOException e) {throw new RuntimeException(e);}
     }
 
+    /**
+     * Attempts to extract and deserialize the error model from the given response using the specified error models.
+     * <p>
+     * The method iterates through the provided error models, trying to deserialize the error content of the response
+     * to each one until a successful deserialization is found or all error models have been tested.
+     * If none of the error models match, a runtime exception is thrown.
+     * </p>
+     *
+     * @param <ErrorModel> The generic type representing the expected error model structure.
+     * @param response The response containing the potential error data.
+     * @param errorModels Varargs array of error model classes to attempt deserialization.
+     * @return A deserialized error model instance of type {@code ErrorModel} if a match is found.
+     * @throws RuntimeException if none of the provided error models match the error content of the response.
+     *
+     * @see MappingUtilities.Json#fromJsonString(String, Class)
+     * @see MappingUtilities.Json#getJsonStringFor(Object)
+     * @see #getErrorObject(Response)
+     */
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorModel(Response<?> response, Class<?>... errorModels){
         for (Class<?> errorModel:errorModels){
