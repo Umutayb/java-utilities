@@ -4,6 +4,7 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okio.Buffer;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -13,13 +14,14 @@ import retrofit2.converter.protobuf.ProtoConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
-import utils.MappingUtilities;
-import utils.Printer;
-import utils.PropertyUtility;
-import utils.ReflectionUtilities;
+import utils.*;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static utils.MappingUtilities.Json.mapper;
 
 /**
  * The ServiceGenerator class is responsible for generating Retrofit Service based on the provided service class
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class ServiceGenerator {
 
     /**
-     * The properties object containing the configuration properties.
+     * The property object containing the configuration properties.
      */
     public static Properties properties = PropertyUtility.getProperties();
 
@@ -170,10 +172,22 @@ public class ServiceGenerator {
                                     .build();
 
                         if (printRequestBody) {
-                            assert request.body() != null;
-                            String requestBody = MappingUtilities.Json.mapper.valueToTree(request.body()).toPrettyString();
-                            String outgoingRequestLog = "The request body is: \n" + requestBody;
-                            log.info(outgoingRequestLog);
+                            Request cloneRequest = request.newBuilder().build();
+                            if (cloneRequest.body()!= null){
+                                Buffer buffer = new Buffer();
+                                cloneRequest.body().writeTo(buffer);
+                                String bodyString = buffer.readString(UTF_8);
+                                try {
+                                    Object jsonObject = mapper.readValue(bodyString, Object.class);
+                                    String outgoingRequestLog = "The request body is: \n" +
+                                            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
+                                    log.info(outgoingRequestLog);
+                                }
+                                catch (IOException ignored) {
+                                    log.warning("Could not log request body!\nBody: " + bodyString);
+                                }
+                            }
+                            else log.warning("Request body is null!");
                         }
                     }
                     if (printHeaders)
@@ -199,6 +213,8 @@ public class ServiceGenerator {
                 .build();
         return retrofit.create(serviceClass);
     }
+
+
 
     /**
      * Sets whether to log the headers in the requests.

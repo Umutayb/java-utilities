@@ -20,6 +20,8 @@ public class MappingUtilities {
             mapper.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE);
             mapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+            mapper.configure(SerializationFeature.CLOSE_CLOSEABLE, false);
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
         }
     }
 }

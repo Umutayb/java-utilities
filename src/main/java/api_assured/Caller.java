@@ -2,14 +2,11 @@ package api_assured;
 
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Assert;
 import records.Pair;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
 import java.io.IOException;
-import java.util.Arrays;
-
 import static utils.StringUtilities.Color.*;
 
 /**
@@ -80,19 +77,20 @@ public abstract class Caller {
             );
         try {
             Response<SuccessModel> response = call.execute();
+            okhttp3.Response okHttpResponse = response.raw().newBuilder().build();
 
-            if (response.isSuccessful()){
-                if (keepLogs) log.success("The response code is: " + response.code());
-                if (response.message().length()>0 && keepLogs) log.info(response.message());
-                if (printBody) printBody(response, getResponseString(response));
+            if (okHttpResponse.isSuccessful()){
+                if (keepLogs) log.success("The response code is: " + okHttpResponse.code());
+                if (okHttpResponse.message().length()>0 && keepLogs) log.info(okHttpResponse.message());
+                if (printBody) printBody(okHttpResponse);
                 return (ResponseType) response.body();
             }
             else{
                 log.warning("The response code is: " + response.code());
                 if (response.message().length()>0) log.warning(response.message());
                 log.warning(response.raw().toString());
-                String errorString = getResponseString(response);
-                if (printBody) printBody(response, errorString);
+                String errorString = getResponseString(okHttpResponse);
+                if (printBody) printBody(okHttpResponse);
                 if (strict) throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
                 );
@@ -136,19 +134,20 @@ public abstract class Caller {
             );
         try {
             Response<Model> response = call.execute();
+            okhttp3.Response okHttpResponse = response.raw().newBuilder().build();
 
-            if (response.isSuccessful()){
-                if (keepLogs) log.success("The response code is: " + response.code());
-                if (response.message().length()>0 && keepLogs) log.info(response.message());
-                if (printBody) printBody(response, getResponseString(response));
+            if (okHttpResponse.isSuccessful()){
+                if (keepLogs) log.success("The response code is: " + okHttpResponse.code());
+                if (okHttpResponse.message().length()>0 && keepLogs) log.info(okHttpResponse.message());
+                if (printBody) printBody(okHttpResponse);
             }
             else{
-                log.warning("The response code is: " + response.code());
-                if (response.message().length()>0) log.warning(response.message());
-                log.warning(response.raw().toString());
-                if (printBody) printBody(response, getResponseString(response));
+                log.warning("The response code is: " + okHttpResponse.code());
+                if (okHttpResponse.message().length()>0) log.warning(okHttpResponse.message());
+                log.warning(okHttpResponse.toString());
+                if (printBody) printBody(okHttpResponse);
                 if (strict) throw new FailedCallException(
-                        "The strict call performed for " + serviceName + " service returned response code " + response.code()
+                        "The strict call performed for " + serviceName + " service returned response code " + okHttpResponse.code()
                 );
             }
             return response;
@@ -196,28 +195,35 @@ public abstract class Caller {
             );
         try {
             Response<SuccessModel> response = call.execute();
+            okhttp3.Response okHttpResponse = response.raw().newBuilder().build();
 
-            if (response.isSuccessful()){
-                if (keepLogs) log.success("The response code is: " + response.code());
-                if (response.message().length()>0 && keepLogs) log.info(response.message());
-                if (printBody) printBody(response, getResponseString(response));
+            if (okHttpResponse.isSuccessful()){
+                if (keepLogs) log.success("The response code is: " + okHttpResponse.code());
+                if (okHttpResponse.message().length()>0 && keepLogs) log.info(okHttpResponse.message());
+                if (printBody) printBody(okHttpResponse);
                 return new Pair<>(response, null);
             }
             else{
                 log.warning("The response code is: " + response.code());
-                if (response.message().length()>0) log.warning(response.message());
-                log.warning(response.raw().toString());
-                String errorString = getResponseString(response);
-                if (printBody) printBody(response, errorString);
+                if (okHttpResponse.message().length()>0) log.warning(okHttpResponse.message());
+                log.warning(okHttpResponse.toString());
+                String errorString = getResponseString(okHttpResponse);
+                if (printBody) printBody(okHttpResponse);
                 if (strict) throw new FailedCallException(
-                        "The strict call performed for " + serviceName + " service returned response code " + response.code()
+                        "The strict call performed for " + serviceName + " service returned response code " + okHttpResponse.code()
                 );
                 else
-                    for (Class<ErrorModel> errorModel:errorModels)
-                        return new Pair<>(
-                                response,
-                                MappingUtilities.Json.mapper.readValue(errorString, errorModel)
-                        );
+                    for (Class<ErrorModel> errorModel:errorModels){
+                        Pair<Response<SuccessModel>, ErrorModel> pair;
+                        try {
+                            pair = new Pair<>(
+                                    response,
+                                    MappingUtilities.Json.mapper.readValue(errorString, errorModel)
+                            );
+                        }
+                        catch (JsonProcessingException e) {throw new RuntimeException(e);}
+                        return pair;
+                    }
 
             }
             return null;
@@ -232,108 +238,16 @@ public abstract class Caller {
     }
 
     /**
-     * Performs an API call and logs the results (deprecated).
-     *
-     * @param call the Call object representing the API call
-     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
-     * @param printBody a boolean indicating whether the response body should be printed
-     * @param serviceName the name of the service being called
-     * @return the Model object representing the response body
-     * @throws FailedCallException if the call is strict and the response is not successful
-     * @deprecated This method is deprecated and will be removed in a future version.
-     */
-    @Deprecated
-    protected static <Model> Model perform(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
-        log.info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
-        try {
-            Response<Model> response = call.execute();
-
-            if (printBody) printBody(response, getResponseString(response));
-
-            if (response.isSuccessful()){
-                if (response.message().length()>0) log.info(response.message());
-                log.success("The response code is: " + response.code());
-            }
-            else{
-                if (response.message().length()>0)
-                    log.warning(response.message());
-                log.warning("The response code is: " + response.code());
-                log.warning(response.raw().toString());
-
-                if (strict)
-                    Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
-            }
-            return response.body();
-        }
-        catch (IOException exception) {
-            log.error(exception.getLocalizedMessage(),exception);
-            Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
-        }
-        return null;
-    }
-
-    /**
-     * Gets the response from an API call and logs the results (deprecated).
-     *
-     * @param call the Call object representing the API call
-     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
-     * @param printBody a boolean indicating whether the response body should be printed
-     * @param serviceName the name of the service being called
-     * @return the Response object representing the API response
-     * @throws FailedCallException if the call is strict and the response is not successful
-     * @deprecated This method is deprecated and will be removed in a future version.
-     */
-    @Deprecated
-    protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody, String serviceName) {
-        log.info("Performing " + call.request().method() + " call for '" + serviceName + "' service on url: " + call.request().url());
-        try {
-            Response<Model> response = call.execute();
-
-            if (printBody) printBody(response, getResponseString(response));
-
-            if (response.isSuccessful()){
-                if (response.message().length()>0)
-                    log.info(response.message());
-                log.success("The response code is: " + response.code());
-            }
-            else{
-                if (response.message().length()>0)
-                    log.warning(response.message());
-                log.warning("The response code is: " + response.code());
-                log.warning(response.raw().toString());
-
-                if (strict)
-                    Assert.fail("The strict call performed for " + serviceName + " service returned response code " + response.code());
-            }
-            return response;
-        }
-        catch (IOException exception) {
-            if (strict){
-                log.error(exception.getLocalizedMessage(), exception);
-                Assert.fail("The call performed for " + serviceName + " failed for an unknown reason.");
-            }
-        }
-        return null;
-    }
-
-    /**
      * Prints the body of the response. This method provides log information based on the type of the response.
      *
      * @param response The response whose body to print. This is a retrofit2.Response object.
-     * @param body The body of the response as a string. This is used to generate the log message.
      *
-     * @param <Model> The type of the response body. This could be the type of successful response body or an error response body.
      */
-    static <Model> void printBody(Response<Model> response, String body) {
-        try {
-            String message = "The response body is: \n";
-            if (response.body() != null) // Success response with a non-null body
-                log.info(message + body);
-            else if (response.errorBody() != null) // Error response with a non-null body
-                log.warning(message + MappingUtilities.Json.mapper.readTree(body).toPrettyString());
-            else log.info("The response body is empty."); // Success response with a null body
-        }
-        catch (JsonProcessingException e) {throw new RuntimeException(e);}
+    static void printBody(okhttp3.Response response) {
+        String message = "The response body is: \n";
+        if (response.body() != null) // Success response with a non-null body
+            log.info(message + getResponseString(response));
+        else log.info("The response body is empty."); // Success response with a null body
     }
 
     /**
@@ -344,17 +258,9 @@ public abstract class Caller {
      * @return The body of the response as a string. If the body of the response or the error body could not be converted to a string,
      * this method returns null.
      *
-     * @param <Model> The type of the response body. This could be the type of a successful response body or an error response body.
      */
-    static <Model> String getResponseString(Response<Model> response){
-        try {
-            if (response.body() != null) // Success response with a non-null body
-                return MappingUtilities.Json.mapper.valueToTree(response.body()).toPrettyString();
-            else if (response.errorBody() != null) // Error response with a non-null error body
-                return response.errorBody().string();
-        }
-        catch (IOException exception){log.warning(Arrays.toString(exception.getStackTrace()));}
-        return null;
+    static String getResponseString(okhttp3.Response response){
+        return MappingUtilities.Json.mapper.valueToTree(response.body()).toPrettyString();
     }
 
     /**
