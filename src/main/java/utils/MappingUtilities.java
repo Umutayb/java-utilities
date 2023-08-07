@@ -6,7 +6,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import static utils.MappingUtilities.Json.mapper;
+
 public class MappingUtilities {
+
+    /**
+     * Converts a Json string representation of an object into a Java object of the specified type.
+     *
+     * @param <T> The type of the object.
+     * @param objectString The JSON string representation of the object.
+     * @param type The Class object of the type T.
+     * @return The Java object of type T converted from the JSON string.
+     * @throws RuntimeException If a JSON processing error occurs.
+     */
+    public static <T> T stringToObject(String objectString, Class<T> type) {
+        try {return mapper.readValue(objectString, type);}
+        catch (JsonProcessingException e) {throw new RuntimeException(e);}
+    }
 
     /**
      * Visibility settings are applied to allow the mapper to access and serialize/deserialize all fields, while ignoring getters, setters, and creators.
