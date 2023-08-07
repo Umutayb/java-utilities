@@ -154,12 +154,11 @@ public abstract class Caller {
      *
      * @see MappingUtilities.Json#fromJsonString(String, Class)
      */
-    private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel){
+    private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel) throws JsonProcessingException {
         assert response.errorBody() != null;
         try (Buffer errorBuffer = response.errorBody().source().getBuffer().clone()) {
             return fromJsonString(errorBuffer.readString(StandardCharsets.UTF_8), errorModel);
         }
-        catch (JsonProcessingException e) {throw new RuntimeException(e);}
     }
 
     /**
