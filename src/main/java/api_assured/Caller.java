@@ -3,7 +3,6 @@ package api_assured;
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import okio.Buffer;
-import records.Pair;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
