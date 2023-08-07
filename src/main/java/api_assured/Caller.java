@@ -164,6 +164,28 @@ public abstract class Caller {
     }
 
     /**
+     * Extracts the error object from the given response and attempts to deserialize it into the specified model.
+     * <p>
+     * The method tries to read the error content from the response and then deserialize it into a generic model type.
+     * If the deserialization fails or other issues occur while processing the error content, a runtime exception is thrown.
+     * </p>
+     *
+     * @param <ErrorModel> The generic type representing the desired structure of the error object.
+     * @param response The response containing the potential error data.
+     * @return A deserialized error object instance of type {@code Model}.
+     * @throws RuntimeException if there's an issue processing the error content or deserializing it.
+     *
+     * @see MappingUtilities.Json#fromJsonString(String, Class)
+     */
+    private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel){
+        assert response.errorBody() != null;
+        try (Buffer errorBuffer = response.errorBody().source().getBuffer().clone()) {
+            return fromJsonString(errorBuffer.readString(StandardCharsets.UTF_8), errorModel);
+        }
+        catch (JsonProcessingException e) {throw new RuntimeException(e);}
+    }
+
+    /**
      * Logs the HTTP method, service name, and URL for a given call if logging is enabled.
      *
      * @param <T>          The type of the response body.
