@@ -60,17 +60,16 @@ public abstract class Caller {
      * @throws FailedCallException If strict is true and the call failed or the response was not successful.
      *
      * @param <SuccessModel> The type of the successful response body.
-     * @param <ErrorModel> The type of the error response body.
      * @param <ReturnType> The type of the return value in this method. This is either SuccessModel or ErrorModel.
      */
     @SuppressWarnings("unchecked")
-    protected static <SuccessModel, ErrorModel, ReturnType> ReturnType perform(
+    protected static <SuccessModel, ReturnType> ReturnType perform(
             Call<SuccessModel> call,
             Boolean strict,
             Boolean printBody,
             Class<?>... errorModels){
-        Response<ReturnType> response = (Response<ReturnType>) call(call, strict, printBody, getRequestMethod());
-        return response.isSuccessful() ? response.body() : getErrorBody(response, errorModels);
+        Response<?> response = call(call, strict, printBody, getRequestMethod());
+        return response.isSuccessful() ? (ReturnType) response.body() : getErrorBody(response, errorModels);
     }
 
     /**
