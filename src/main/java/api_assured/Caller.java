@@ -61,16 +61,15 @@ public abstract class Caller {
      *
      * @param <SuccessModel> The type of the successful response body.
      * @param <ErrorModel> The type of the error response body.
-     * @param <ResponseType> The type of the return value in this method. This is either SuccessModel or ErrorModel.
+     * @param <ReturnType> The type of the return value in this method. This is either SuccessModel or ErrorModel.
      */
-    @SafeVarargs
     @SuppressWarnings("unchecked")
-    protected static <SuccessModel, ErrorModel, ResponseType> ResponseType perform(
+    protected static <SuccessModel, ErrorModel, ReturnType> ReturnType perform(
             Call<SuccessModel> call,
             Boolean strict,
             Boolean printBody,
-            Class<ErrorModel>... errorModels){
-        Response<ResponseType> response = (Response<ResponseType>) call(call, strict, printBody, getRequestMethod());
+            Class<?>... errorModels){
+        Response<ReturnType> response = (Response<ReturnType>) call(call, strict, printBody, getRequestMethod());
         return response.isSuccessful() ? response.body() : getErrorModel(response, errorModels);
     }
 
