@@ -1,6 +1,7 @@
+import com.fasterxml.jackson.core.JsonProcessingException;
 import models.Pet;
 import org.junit.Test;
-import utils.MappingUtilities;
+import static utils.MappingUtilities.Json.*;
 import utils.Printer;
 
 public class AppTest {
@@ -13,9 +14,9 @@ public class AppTest {
     }
 
     @Test
-    public void stringToObjectTest() {
-        Pet pet = MappingUtilities.stringToObject("{\"id\" : null, \"category\" : {\"id\" : null, \"name\" : \"Cats\"},\"name\" : \"Whiskers\", \"photoUrls\" : [ \"https://example.com/cat.jpg\" ],\"tags\" : [ {\"id\" : 123456789, \"name\" : \"Furry\"}, {\"id\" : 987654321, \"name\" : \"Playful\"} ],\"status\" : \"Available\"}", Pet.class);
-        System.out.println(pet);
+    public void stringToObjectTest() throws JsonProcessingException {
+        Pet pet = fromJsonString("{\"id\" : null, \"category\" : {\"id\" : null, \"name\" : \"Cats\"},\"name\" : \"Whiskers\", \"photoUrls\" : [ \"https://example.com/cat.jpg\" ],\"tags\" : [ {\"id\" : 123456789, \"name\" : \"Furry\"}, {\"id\" : 987654321, \"name\" : \"Playful\"} ],\"status\" : \"Available\"}", Pet.class);
+        System.out.println(getJsonStringFor(pet));
     }
 
 }
