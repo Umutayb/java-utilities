@@ -132,35 +132,12 @@ public abstract class Caller {
             return Response.success(body, response.headers());
         }
         else {
-            Object errorBody = getErrorObject(response);
+            Object errorBody = getErrorObject(response, Object.class);
             log.warning("The response code is: " + response.code());
             if (response.message().length()>0) log.warning(response.message());
             if (printBody) log.warning("The error body is: \n" + getJsonString(errorBody));
             return response;
         }
-    }
-
-    /**
-     * Extracts the error object from the given response and attempts to deserialize it into the specified model.
-     * <p>
-     * The method tries to read the error content from the response and then deserialize it into a generic model type.
-     * If the deserialization fails or other issues occur while processing the error content, a runtime exception is thrown.
-     * </p>
-     *
-     * @param <Model> The generic type representing the desired structure of the error object.
-     * @param response The response containing the potential error data.
-     * @return A deserialized error object instance of type {@code Model}.
-     * @throws RuntimeException if there's an issue processing the error content or deserializing it.
-     *
-     * @see MappingUtilities.Json#fromJsonString(String, Class)
-     */
-    @SuppressWarnings("unchecked")
-    private static <Model> Model getErrorObject(Response<?> response){
-        assert response.errorBody() != null;
-        try (Buffer errorBuffer = response.errorBody().source().getBuffer().clone()) {
-            return (Model) fromJsonString(errorBuffer.readString(StandardCharsets.UTF_8), Object.class);
-        }
-        catch (JsonProcessingException e) {throw new RuntimeException(e);}
     }
 
     /**
@@ -243,13 +220,13 @@ public abstract class Caller {
      *
      * @see MappingUtilities.Json#fromJsonString(String, Class)
      * @see MappingUtilities.Json#getJsonStringFor(Object)
-     * @see #getErrorObject(Response)
+     * @see #getErrorObject(Response, Class)
      */
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorBody(Response<?> response, Class<?>... errorModels){
         for (Class<?> errorModel:errorModels){
             try {
-                return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response)), errorModel);
+                return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response, errorModel)), errorModel);
             }
             catch (JsonProcessingException ignored) {}
         }
