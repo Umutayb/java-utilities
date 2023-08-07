@@ -105,15 +105,15 @@ public abstract class Caller {
      * @param <SuccessModel> The type of the successful response body.
      * @param <ErrorModel> The type of the error response body.
      */
-    protected static <SuccessModel, ErrorModel> Pair<Response<SuccessModel>, ErrorModel> getResponse(
+    protected static <SuccessModel, ErrorModel> ResponsePair<Response<SuccessModel>, ErrorModel> getResponse(
             Call<SuccessModel> call,
             Boolean strict,
             Boolean printBody,
             Class<?>... errorModels
     ){
         Response<SuccessModel> response = call(call, strict, printBody, getRequestMethod());
-        if (response.isSuccessful()) return new Pair<>(response, null);
-        else return new Pair<>(response, getErrorModel(response, errorModels));
+        if (response.isSuccessful()) return new ResponsePair<>(response, null);
+        else return new ResponsePair<>(response, getErrorModel(response, errorModels));
 
     }
 
