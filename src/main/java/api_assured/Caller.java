@@ -112,10 +112,11 @@ public abstract class Caller {
             Class<?>... errorModels
     ){
         Response<SuccessModel> response = call(call, strict, printBody, getRequestMethod());
-        if (response.isSuccessful()) return new ResponsePair<>(response, null);
-        else return new ResponsePair<>(response, getErrorModel(response, errorModels));
-
+        return response.isSuccessful() ?
+                new ResponsePair<>(response, null) :
+                new ResponsePair<>(response, getErrorModel(response, errorModels));
     }
+
 
     /**
      * Clones and logs the given response.
