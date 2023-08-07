@@ -70,7 +70,7 @@ public abstract class Caller {
             Boolean printBody,
             Class<?>... errorModels){
         Response<ReturnType> response = (Response<ReturnType>) call(call, strict, printBody, getRequestMethod());
-        return response.isSuccessful() ? response.body() : getErrorModel(response, errorModels);
+        return response.isSuccessful() ? response.body() : getErrorBody(response, errorModels);
     }
 
     /**
@@ -112,7 +112,7 @@ public abstract class Caller {
         Response<SuccessModel> response = call(call, strict, printBody, getRequestMethod());
         return response.isSuccessful() ?
                 new ResponsePair<>(response, null) :
-                new ResponsePair<>(response, getErrorModel(response, errorModels));
+                new ResponsePair<>(response, getErrorBody(response, errorModels));
     }
 
     /**
@@ -225,7 +225,7 @@ public abstract class Caller {
      * @see #getErrorObject(Response)
      */
     @SuppressWarnings("unchecked")
-    private static <ErrorModel> ErrorModel getErrorModel(Response<?> response, Class<?>... errorModels){
+    private static <ErrorModel> ErrorModel getErrorBody(Response<?> response, Class<?>... errorModels){
         for (Class<?> errorModel:errorModels){
             try {
                 return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response)), errorModel);
