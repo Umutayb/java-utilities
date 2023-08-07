@@ -115,8 +115,7 @@ public abstract class Caller {
                 new ResponsePair<>(response, null) :
                 new ResponsePair<>(response, getErrorModel(response, errorModels));
     }
-
-
+    
     /**
      * Clones and logs the given response.
      *
