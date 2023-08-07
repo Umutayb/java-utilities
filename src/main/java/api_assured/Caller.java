@@ -201,7 +201,9 @@ public abstract class Caller {
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorModel(Response<?> response, Class<?>... errorModels){
         for (Class<?> errorModel:errorModels){
-            try {return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response)), errorModel);}
+            try {
+                return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response)), errorModel);
+            }
             catch (JsonProcessingException ignored) {}
         }
         throw new RuntimeException("Error models did not match the error body!");
