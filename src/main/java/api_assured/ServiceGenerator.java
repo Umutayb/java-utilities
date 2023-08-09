@@ -222,7 +222,7 @@ public class ServiceGenerator {
      * @param printHeaders A boolean indicating whether to log the headers in the requests.
      * @return The updated ServiceGenerator object.
      */
-    public ServiceGenerator setPrintHeaders(boolean printHeaders) {
+    public ServiceGenerator printHeaders(boolean printHeaders) {
         this.printHeaders = printHeaders;
         return this;
     }
@@ -233,7 +233,7 @@ public class ServiceGenerator {
      * @param detailedLogging A boolean indicating whether to log detailed information in the requests.
      * @return The updated ServiceGenerator object.
      */
-    public ServiceGenerator setDetailedLogging(boolean detailedLogging) {
+    public ServiceGenerator detailedLogging(boolean detailedLogging) {
         this.detailedLogging = detailedLogging;
         return this;
     }
@@ -244,7 +244,7 @@ public class ServiceGenerator {
      * @param hostnameVerification A boolean indicating whether to verify the hostname in the requests.
      * @return The updated ServiceGenerator object.
      */
-    public ServiceGenerator setHostnameVerification(boolean hostnameVerification) {
+    public ServiceGenerator hostnameVerification(boolean hostnameVerification) {
         this.hostnameVerification = hostnameVerification;
         return this;
     }
@@ -252,11 +252,11 @@ public class ServiceGenerator {
     /**
      * Sets whether to print request bodies in the outgoing requests.
      *
-     * @param printRequestBody A boolean indicating whether to print request bodies in the outgoing requests.
+     * @param logRequestBody A boolean indicating whether to print request bodies in the outgoing requests.
      * @return The updated ServiceGenerator object.
      */
-    public ServiceGenerator setPrintRequestBody(boolean printRequestBody) {
-        this.printRequestBody = printRequestBody;
+    public ServiceGenerator setRequestLogging(boolean logRequestBody) {
+        this.printRequestBody = logRequestBody;
         return this;
     }
 
