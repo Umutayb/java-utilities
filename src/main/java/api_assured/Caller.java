@@ -132,10 +132,10 @@ public abstract class Caller {
             return Response.success(body, response.headers());
         }
         else {
-            Object errorBody = getErrorObject(response, Object.class);
             log.warning("The response code is: " + response.code());
             if (response.message().length()>0) log.warning(response.message());
-            if (printBody) log.warning("The error body is: \n" + getJsonString(errorBody));
+            if (response.errorBody() != null && printBody)
+                log.warning("The error body is: \n" + getJsonString(getErrorObject(response, Object.class)));
             return response;
         }
     }
