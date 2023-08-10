@@ -162,7 +162,7 @@ public abstract class Caller {
         try (Buffer errorBuffer = response.errorBody().source().getBuffer().clone()) {
             String bodyString = errorBuffer.readString(StandardCharsets.UTF_8);
             if (!StringUtilities.isBlank(bodyString))
-                return fromJsonString(errorBuffer.readString(StandardCharsets.UTF_8), errorModel);
+                return fromJsonString(bodyString, errorModel);
             else
                 return null;
         }
