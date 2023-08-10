@@ -32,7 +32,7 @@ public class TextParser {
      * @param input the input string to be parsed
      * @return the substring between the two keywords, or null if either keyword is not found in the input string
      */
-    public String parse(String initialKeyword, String finalKeyword, String input){
+    public static String parse(String initialKeyword, String finalKeyword, String input){
         int firstIndex = 0;
         Scanner scanner = new Scanner(input);
         while (scanner.hasNextLine()) {

@@ -19,7 +19,7 @@ public class StringUtilities {   //Utility methods
      * @return true if the input is null or empty after trimming, false otherwise
      */
     public static <String> boolean isBlank(String input){
-        return !(input != null && !input.toString().trim().isEmpty());
+        return !(input != null && !input.toString().trim().isEmpty() && !input.toString().isBlank());
     }
 
     /**
