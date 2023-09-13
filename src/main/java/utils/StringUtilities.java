@@ -222,23 +222,23 @@ public class StringUtilities {   //Utility methods
      * @return value depending on the context (could be from ContextStore, Properties, Random etc)
      */
     public String contextCheck(@NotNull String input){
-        TextParser parser = new TextParser();
         if (input.contains("CONTEXT-"))
-            input = ContextStore.get(parser.parse("CONTEXT-", null, input)).toString();
+            input = ContextStore.get(TextParser.parse("CONTEXT-", null, input));
         else if (input.contains("RANDOM-")){
             boolean useLetters = input.contains("LETTER");
             boolean useNumbers = input.contains("NUMBER");
             String keyword = "";
-            if (input.contains("KEYWORD")) keyword = parser.parse("-K=", "-", input);
-            int length = Integer.parseInt(parser.parse("-L=", null, input));
+            if (input.contains("KEYWORD")) keyword = TextParser.parse("-K=", "-", input);
+            String lengthString = TextParser.parse("-L=", null, input);
+            int length = lengthString == null ? 5 : Integer.parseInt(Objects.requireNonNull(lengthString));
             input = generateRandomString(keyword, length, useLetters, useNumbers);
         }
         else if (input.contains("UPLOAD-")){
-            String relativePath = parser.parse("UPLOAD-", null, input);
+            String relativePath = TextParser.parse("UPLOAD-", null, input);
             input = new FileUtilities().getAbsolutePath(relativePath);
         }
         else if (input.contains("PROPERTY-")){
-            String propertyName = parser.parse("PROPERTY-", null, input);
+            String propertyName = TextParser.parse("PROPERTY-", null, input);
             input = PropertyUtility.getProperty(propertyName, "NULL");
         }
         return input;
