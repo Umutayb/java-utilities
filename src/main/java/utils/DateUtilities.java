@@ -1,5 +1,6 @@
 package utils;
 
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
 
 
@@ -65,5 +66,16 @@ public class DateUtilities {
                 break;
         }
         return calendar;
+    }
+
+    public String changeMonthFormat (String abbreviatedMonth){
+        DateFormatSymbols symbols = new DateFormatSymbols();
+        String[] monthNames = symbols.getMonths();
+        for (String monthName : monthNames) {
+            if (monthName.startsWith(abbreviatedMonth)) {
+                return monthName;
+            }
+        }
+        return abbreviatedMonth;
     }
 }
