@@ -1,4 +1,4 @@
-package models;
+package petstore.models;
 
 
 import lombok.Data;

@@ -9,8 +9,8 @@ import utils.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
 import static utils.MappingUtilities.Json.*;
+import static utils.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
 
 /**
@@ -57,7 +57,7 @@ public abstract class Caller {
      *
      * @return A ResponseType object. If the call was successful, this is the body of the response. If the call was not successful and strict is false, this may be a parsed error response, or null if parsing the error response failed.
      *
-     * @throws FailedCallException If strict is true and the call failed or the response was not successful.
+     * @throws FailedCallException If strict is true, and the call failed or the response was not successful.
      *
      * @param <SuccessModel> The type of the successful response body.
      * @param <ReturnType> The type of the return value in this method. This is either SuccessModel or ErrorModel.
@@ -68,7 +68,7 @@ public abstract class Caller {
             Boolean strict,
             Boolean printBody,
             Class<?>... errorModels){
-        Response<?> response = call(call, strict, printBody, getRequestMethod());
+        Response<?> response = call(call, strict, printBody, getPreviousMethodName());
         return response.isSuccessful() ? (ReturnType) response.body() : getErrorBody(response, errorModels);
     }
 
@@ -82,7 +82,20 @@ public abstract class Caller {
      * @throws FailedCallException if the call is strict and the response is not successful
      */
     protected static <Model> Response<Model> getResponse(Call<Model> call, Boolean strict, Boolean printBody){
-        return call(call, strict, printBody, getRequestMethod());
+        return call(call, strict, printBody, getPreviousMethodName());
+    }
+
+    /**
+     * Gets the response from an API call and logs the results.
+     *
+     * @param call the Call object representing the API call
+     * @param strict a boolean indicating whether the call should be strict (i.e. throw an exception if the response is not successful)
+     * @param printBody a boolean indicating whether the response body should be printed
+     * @return the Response object representing the API response
+     * @throws FailedCallException if the call is strict and the response is not successful
+     */
+    protected static <Model> Response<Model> getResponse(String serviceName, Call<Model> call, Boolean strict, Boolean printBody){
+        return call(call, strict, printBody, serviceName);
     }
 
     /**
@@ -108,7 +121,7 @@ public abstract class Caller {
             Boolean printBody,
             Class<?>... errorModels
     ){
-        Response<SuccessModel> response = call(call, strict, printBody, getRequestMethod());
+        Response<SuccessModel> response = call(call, strict, printBody, getPreviousMethodName());
         return response.isSuccessful() ?
                 new ResponsePair<>(response, null) :
                 new ResponsePair<>(response, getErrorBody(response, errorModels));
@@ -237,24 +250,6 @@ public abstract class Caller {
             catch (JsonProcessingException ignored) {}
         }
         throw new RuntimeException("Error models did not match the error body!");
-    }
-
-    /**
-     * Gets the name of the method that called the API.
-     *
-     * @return the name of the method that called the API
-     */
-    private static String getRequestMethod(){
-        Throwable dummyException = new Throwable();
-        StackTraceElement[] stackTrace = dummyException.getStackTrace();
-        // LOGGING-132: use the provided logger name instead of the class name
-        String method = stackTrace[0].getMethodName();
-        // Caller will be the third element
-        if( stackTrace.length > 2 ) {
-            StackTraceElement caller = stackTrace[2];
-            method = caller.getMethodName();
-        }
-        return method;
     }
 
     /**

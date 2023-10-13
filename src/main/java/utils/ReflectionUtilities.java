@@ -1,25 +1,60 @@
 package utils;
 
-import api_assured.exceptions.JavaUtilitiesException;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import api_assured.Caller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.Assert;
+import retrofit2.Call;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ReflectionUtilities {
 
     static Printer log = new Printer(ReflectionUtilities.class);
     static ObjectMapper mapper = MappingUtilities.Json.mapper;
+
+    /**
+     * Iteratively invokes a specified method on a class and checks a condition until the condition is met
+     * or a timeout is reached.
+     *
+     * @param timeoutInSeconds The time limit (in seconds) for the iteration.
+     * @param parent The class containing the method to be invoked.
+     * @param methodName The name of the method to invoke.
+     * @param args The arguments to pass to the method when invoked.
+     * @param <T> The type of the parent class.
+     * @return True if the condition is met within the specified timeout; otherwise, false.
+     * @throws RuntimeException if an exception occurs during method invocation.
+     */
+    public static <T> boolean iterativeConditionalInvocation(
+            int timeoutInSeconds,
+            Class<T> parent,
+            String methodName,
+            Object... args) {
+        boolean condition;
+        long startingTime = System.currentTimeMillis();
+        int interval = (int) Math.pow(timeoutInSeconds, 0.5);
+        log.info("Iterating at " + interval + " second intervals.");
+        try {
+            do {
+                Method method = getMethod(methodName, parent);
+                condition = Boolean.parseBoolean(String.valueOf(method.invoke(parent, args)));
+                if (condition) break;
+                TimeUnit.SECONDS.sleep(interval);
+            }
+            while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
+        }
+        catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | InterruptedException exception) {
+            throw new RuntimeException(exception);
+        }
+        return condition;
+    }
 
     /**
      * Compares two objects and throws an AssertionError if they are not equal.
@@ -30,7 +65,7 @@ public class ReflectionUtilities {
      * @param exceptions the list of exceptions to ignore during comparison
      * @throws AssertionError if the objects are not equal
      */
-    public <T> void compareObjects(T expected, T actual, String... exceptions){
+    public static <T> void compareObjects(T expected, T actual, String... exceptions){
         try {
             String expectedString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expected);
             String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
@@ -52,7 +87,7 @@ public class ReflectionUtilities {
      *
      * @throws AssertionError if the JSON objects do not match.
      */
-    public void compareJson(JsonObject expectedJson, JsonObject actualJson, String... exceptions){
+    public static void compareJson(JsonObject expectedJson, JsonObject actualJson, String... exceptions){
         Set<String> keySet = expectedJson.keySet().stream().filter(key -> !Arrays.asList(exceptions).contains(key))
                 .collect(Collectors.toSet());
         for (String fieldName:keySet) {
@@ -97,7 +132,7 @@ public class ReflectionUtilities {
      * @param exceptions optional list of JSON object keys to be excluded from the comparison
      * @throws AssertionError if the arrays are not identical
      */
-    public void compareJsonArray(JsonArray expectedJson, JsonArray actualJson, String... exceptions){
+    public static void compareJsonArray(JsonArray expectedJson, JsonArray actualJson, String... exceptions){
         log.info("Comparing json arrays...");
         for (int index = 0; index <= expectedJson.size() - 1; index++) {
             if (expectedJson.get(index).isJsonObject()){
@@ -132,7 +167,7 @@ public class ReflectionUtilities {
      * @param exceptions the list of exceptions to ignore during comparison
      * @return true if the objects match, false otherwise
      */
-    public boolean objectsMatch(Object expected, Object actual, String... exceptions){
+    public static boolean objectsMatch(Object expected, Object actual, String... exceptions){
         try {
             String expectedString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expected);
             String actualString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
@@ -154,7 +189,7 @@ public class ReflectionUtilities {
      * @param object the object whose methods are to be retrieved
      * @return a Map of method names to Method objects
      */
-    public Map<String, Method> getMethods(Object object){
+    public static Map<String, Method> getMethods(Object object){
         Map<String, Method> methodMap = new HashMap<>();
         for (Method method: object.getClass().getDeclaredMethods()) {
             method.setAccessible(true);
@@ -171,13 +206,13 @@ public class ReflectionUtilities {
      * @return the Method object that represents the method with the specified name
      * @throws NoSuchMethodException if no method with the specified name could be located in the given object's class
      */
-    public Method getMethod(String methodName, Object object) throws NoSuchMethodException {
-        for (Method method: object.getClass().getDeclaredMethods()) {
+    public static <T> Method getMethod(String methodName, Class<T> object) throws NoSuchMethodException {
+        for (Method method: object.getDeclaredMethods()) {
             method.setAccessible(true);
             if (method.getName().equals(methodName)) return method;
         }
         throw new NoSuchMethodException (
-                "No method named " + methodName + " could be located in class called" + object.getClass().getName()
+                "No method named " + methodName + " could be located in class called" + object.getName()
         );
     }
 
@@ -188,7 +223,7 @@ public class ReflectionUtilities {
      * @return The value of the field with the given field name and input class.
      * @throws RuntimeException If the field cannot be accessed or does not exist.
      */
-    public <T> Object getFieldValue(String fieldName, Class<T> inputClass){
+    public static <T> Object getFieldValue(String fieldName, Class<T> inputClass){
         try {
             Field field = inputClass.getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -204,7 +239,7 @@ public class ReflectionUtilities {
      * @return The value of the field with the given field name and input object.
      * @throws RuntimeException If the field cannot be accessed or does not exist.
      */
-    public Object getField(String fieldName, Object inputObject){
+    public static Object getField(String fieldName, Object inputObject){
         try {
             Field field = inputObject.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -219,7 +254,7 @@ public class ReflectionUtilities {
      * @return A map containing the names and values of all the fields in the input class.
      * @throws RuntimeException If any of the fields cannot be accessed.
      */
-    public <T> Map<String, Object> getFields(Class<T> inputClass){
+    public static <T> Map<String, Object> getFields(Class<T> inputClass){
         Map<String, Object> fieldMap = new HashMap<>();
         try {
             for (Field field:inputClass.getDeclaredFields()) {
@@ -237,7 +272,7 @@ public class ReflectionUtilities {
      * @return A map containing the names and values of all the fields in the input class.
      * @throws RuntimeException If any of the fields cannot be accessed.
      */
-    public Map<String, Object> getFields(Object inputObject){
+    public static Map<String, Object> getFields(Object inputObject){
         Map<String,Object> fieldMap = new HashMap<>();
         try {
             for (Field field:inputObject.getClass().getDeclaredFields()) {
@@ -254,7 +289,7 @@ public class ReflectionUtilities {
      *
      * @param object the object whose fields are to be printed
      */
-    public void printObjectFields(Object object){
+    public static void printObjectFields(Object object){
         List<Field> fields = List.of(object.getClass().getDeclaredFields());
         StringBuilder output = new StringBuilder();
         try {
@@ -273,7 +308,7 @@ public class ReflectionUtilities {
      *
      * @param object the object whose getter methods are to be printed
      */
-    public void printModelGetterValues(Object object){
+    public static void printModelGetterValues(Object object){
         Method[] methods = object.getClass().getDeclaredMethods();
         StringBuilder output = new StringBuilder();
         try {
@@ -294,7 +329,7 @@ public class ReflectionUtilities {
      * @throws ClassNotFoundException throws if class not found
      * @throws NoSuchFieldException throws if file not found
      */
-    public JsonArray getJsonArray(Field field, boolean primitive, String... exceptions) throws ClassNotFoundException, NoSuchFieldException {
+    public static JsonArray getJsonArray(Field field, boolean primitive, String... exceptions) throws ClassNotFoundException, NoSuchFieldException {
         JsonArray array = new JsonArray();
         if (!primitive){
             List<JsonObject> list = List.of(
@@ -326,7 +361,7 @@ public class ReflectionUtilities {
      * @throws NoSuchFieldException If one of the provided field exceptions does not exist in the class.
      * @throws ClassNotFoundException If the provided class name cannot be found.
      */
-    public <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException {
+    public static <T> JsonObject getJsonObject(Class<T> clazz, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException {
         List<Field> fields = List.of(clazz.getDeclaredFields());
 
         for (Field field:fields) {
@@ -357,7 +392,7 @@ public class ReflectionUtilities {
      * @throws NoSuchFieldException If one of the provided field exceptions does not exist in the class.
      * @throws ClassNotFoundException If the provided class name cannot be found.
      */
-    public <T> JsonObject getJsonFromObject(T object, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+    public static <T> JsonObject getJsonFromObject(T object, JsonObject json, String... exceptions) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
         List<Field> fields = List.of(object.getClass().getDeclaredFields());
 
         for (Field field:fields) {
@@ -383,7 +418,7 @@ public class ReflectionUtilities {
      * @param expectedType expected field type
      * @return true or false
      */
-    public boolean isOfType(Field field, String expectedType){
+    public static boolean isOfType(Field field, String expectedType){
         return field.getType().getTypeName().contains(expectedType);
     }
 
@@ -392,7 +427,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return field type
      */
-    public String getTypeName(Field field) {
+    public static String getTypeName(Field field) {
         ParameterizedType type = (ParameterizedType) field.getGenericType();
         return type.getActualTypeArguments()[0].getTypeName();
     }
@@ -402,7 +437,7 @@ public class ReflectionUtilities {
      * @param field target field
      * @return a boolean
      */
-    public boolean isPrimitive(Field field){
+    public static boolean isPrimitive(Field field){
         return switch (getTypeName(field)) {
             case "java.lang.Integer",
                     "java.lang.Boolean",
@@ -424,10 +459,20 @@ public class ReflectionUtilities {
      * @return a boolean
      * @param <T> type of the given class
      */
-    public <T> boolean isMemberList(Class<T> clazz, Field field){
+    public static <T> boolean isMemberList(Class<T> clazz, Field field){
         List<Field> fields = List.of(clazz.getFields());
         return fields.stream().anyMatch(
                 subField -> subField.getGenericType().getTypeName().equals(field.getGenericType().getTypeName())
         );
+    }
+
+    /**
+     * Retrieves the name of the method that called the current method.
+     *
+     * @return A string representing the name of the calling method.
+     */
+    public static String getPreviousMethodName() {
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        return stackTrace.length > 2 ? stackTrace[2].getMethodName() : null;
     }
 }

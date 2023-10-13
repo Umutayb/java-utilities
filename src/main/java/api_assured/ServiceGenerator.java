@@ -16,8 +16,9 @@ import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
 import utils.*;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -30,55 +31,65 @@ import static utils.MappingUtilities.Json.mapper;
  * and base URL.
  *
  * @author Umut Ay Bora
- * @version 1.4.0 (Documented in 1.4.0, released in an earlier version)
+ * @version 1.4.0 (Documented in 1.4.0, released in 1.0.0 earlier version)
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ServiceGenerator {
 
     /**
-     * The property object containing the configuration properties.
-     */
-    public static Properties properties = PropertyUtility.getProperties();
-
-    /**
-     * The headers object containing the headers to be added to the requests.
+     * The header object containing the headers to be added to the requests.
      */
     Headers headers = new Headers.Builder().build();
 
     /**
      * A boolean indicating whether to log the headers in the requests.
      */
-    boolean printHeaders = Boolean.parseBoolean(properties.getProperty("log-headers", "true"));
+    boolean printHeaders = Boolean.parseBoolean(PropertyUtility.getProperty("log-headers", "true"));
 
     /**
      * A boolean indicating whether to log detailed information in the requests.
      */
-    boolean detailedLogging = Boolean.parseBoolean(properties.getProperty("detailed-logging", "false"));
+    boolean detailedLogging = Boolean.parseBoolean(PropertyUtility.getProperty("detailed-logging", "false"));
 
     /**
      * A boolean indicating whether to verify the hostname in the requests.
      */
-    boolean hostnameVerification = Boolean.parseBoolean(properties.getProperty("verify-hostname", "true"));
+    boolean hostnameVerification = Boolean.parseBoolean(PropertyUtility.getProperty("verify-hostname", "true"));
 
     /**
      * A boolean indicating whether to print request body in the outgoing requests.
      */
-    boolean printRequestBody = Boolean.parseBoolean(properties.getProperty("print-request-body", "false"));
+    boolean printRequestBody = Boolean.parseBoolean(PropertyUtility.getProperty("print-request-body", "false"));
 
     /**
      * Connection timeout in seconds.
      */
-    int connectionTimeout = Integer.parseInt(properties.getProperty("connection-timeout", "60"));
+    int connectionTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-timeout", "60"));
 
     /**
      * Read timeout in seconds.
      */
-    int readTimeout = Integer.parseInt(properties.getProperty("connection-read-timeout", "30"));
+    int readTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-read-timeout", "30"));
 
     /**
      * Write timeout in seconds.
      */
-    int writeTimeout = Integer.parseInt(properties.getProperty("connection-write-timeout", "30"));
+    int writeTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-write-timeout", "30"));
+
+    /**
+     * Proxy host. (default: null)
+     */
+    String proxyHost = PropertyUtility.getProperty("proxy-host", null);
+
+    /**
+     * Proxy port (default: 8888)
+     */
+    int proxyPort = Integer.parseInt(PropertyUtility.getProperty("proxy-port", "8888"));
+
+    /**
+     * Use proxy?
+     */
+    boolean useProxy = proxyHost != null;
 
     /**
      * The base URL for the service.
@@ -195,7 +206,14 @@ public class ServiceGenerator {
                     return chain.proceed(request);
                 }).build();
 
-        if (!hostnameVerification) client = new OkHttpClient.Builder(client).hostnameVerifier((hostname, session) -> true).build();
+        if (!hostnameVerification)
+            client = new OkHttpClient.Builder(client).hostnameVerifier((hostname, session) -> true).build();
+
+        if (useProxy)
+            client = new OkHttpClient.Builder(client)
+                    .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)))
+                    .build();
+
 
         assert BASE_URL != null;
         @SuppressWarnings("deprecation")
