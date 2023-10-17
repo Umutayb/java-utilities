@@ -142,7 +142,7 @@ public abstract class Caller {
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && response.message().length()>0) log.info(response.message());
             if (printBody) log.info("The response body is: \n" + getJsonString(body));
-            return Response.success(body, response.headers());
+            return Response.success(body, response.raw());
         }
         else {
             log.warning("The response code is: " + response.code());
@@ -152,7 +152,7 @@ public abstract class Caller {
                 String errorLog = errorBody.equals("null") ? "The error body is empty." : "The error body is: \n" + errorBody;
                 log.warning(errorLog);
             }
-            return response;
+            return Response.error(response.errorBody(), response.raw());
         }
     }
 
@@ -201,7 +201,6 @@ public abstract class Caller {
     /**
      * Executes the given call, logs the response or error, and optionally throws an exception for non-successful responses.
      *
-     * @param <Model>      The type of the response body.
      * @param call         The call object to execute.
      * @param strict       Flag to indicate whether an exception should be thrown for non-successful responses.
      * @param printBody    Flag to indicate whether the response body should be logged.
@@ -210,10 +209,14 @@ public abstract class Caller {
      * @throws RuntimeException      If there's an I/O error during call execution.
      * @throws FailedCallException   If the call is strict and the response is not successful.
      */
-    private static <Model> Response<Model> call(Call<Model> call, boolean strict, boolean printBody, String serviceName){
+    private static <ResponseModel> Response<ResponseModel> call(
+            Call<ResponseModel> call,
+            boolean strict,
+            boolean printBody,
+            String serviceName){
         try {
             printCallSpecifications(call, serviceName);
-            Response<Model> response = getResponse(call, printBody);
+            Response<ResponseModel> response = getResponse(call, printBody);
             if (strict && !Objects.requireNonNull(response).isSuccessful())
                 throw new FailedCallException(
                         "The strict call performed for " + serviceName + " service returned response code " + response.code()
@@ -249,7 +252,7 @@ public abstract class Caller {
             }
             catch (JsonProcessingException ignored) {}
         }
-        throw new RuntimeException("Error models did not match the error body!");
+        throw new RuntimeException("Error model(s) did not match the error body!");
     }
 
     /**

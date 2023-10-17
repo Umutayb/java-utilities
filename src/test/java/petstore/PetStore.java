@@ -2,10 +2,8 @@ package petstore;
 
 import api_assured.ApiUtilities;
 import api_assured.ServiceGenerator;
-import context.ContextStore;
 import petstore.models.Pet;
 import retrofit2.Call;
-import retrofit2.Response;
 import utils.StringUtilities;
 import java.util.List;
 
