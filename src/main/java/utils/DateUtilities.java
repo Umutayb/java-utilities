@@ -1,7 +1,13 @@
 package utils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
-
+import java.util.Date;
 
 public class DateUtilities {
 
@@ -65,5 +71,66 @@ public class DateUtilities {
                 break;
         }
         return calendar;
+    }
+
+    /**
+     * Parses a date string with the specified input format and reformats it into a new string
+     * with the specified output format.
+     *
+     * @param dateString The date string to be reformatted.
+     * @param inputFormat The format of the input date string.
+     * @param outputFormat The format to which the date string should be reformatted.
+     * @return A string representing the reformatted date.
+     */
+    public static String reformatDateString(String dateString, String inputFormat, String outputFormat) {
+        SimpleDateFormat inputFormatter = new SimpleDateFormat(inputFormat);
+        SimpleDateFormat outputFormatter = new SimpleDateFormat(outputFormat);
+        try {
+            Date date = inputFormatter.parse(dateString);
+            return outputFormatter.format(date);
+        }
+        catch (ParseException e) {
+            e.printStackTrace();
+            return null; // Return null in case of a parsing error
+        }
+    }
+
+    /**
+     * Parses a date string with the specified input format and reformats it into a new string
+     * with the specified output format.
+     *
+     * @param dateString The date string to be reformatted.
+     * @param inputFormat The format of the input date string.
+     * @param outputFormat The format to which the date string should be reformatted.
+     * @return A string representing the reformatted date.
+     */
+    public static LocalDateTime reformatLocalDateTime(String dateString, String inputFormat, String outputFormat) {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern(inputFormat);
+        LocalDateTime inputDate = LocalDateTime.parse(dateString, inputFormatter);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern(outputFormat);
+        return LocalDateTime.parse(inputDate.toString(), outputFormatter);
+    }
+
+    /**
+     * Parses a date string with the specified input format and reformats it into a new string
+     * with the specified output format.
+     *
+     * @param dateString The date string to be reformatted.
+     * @return A string representing the reformatted date.
+     */
+    public static LocalDate getLocalDate(String dateString, String dateFormat) {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        return LocalDate.parse(dateString, inputFormatter);
+    }
+
+    /**
+     * Calculates the number of days between two LocalDate objects.
+     *
+     * @param startDate The starting LocalDate.
+     * @param endDate The ending LocalDate.
+     * @return The number of days between the startDate and endDate.
+     */
+    public static long countDaysBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return ChronoUnit.DAYS.between(startDate, endDate);
     }
 }
