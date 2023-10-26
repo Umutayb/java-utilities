@@ -40,8 +40,8 @@ public abstract class ApiUtilities extends Caller {
     /**
      * Converts file to multipart
      *
-     * @param file target file
-     * @param name desired name for the multipart
+     * @param file      target file
+     * @param name      desired name for the multipart
      * @param mediaType desired media type
      * @return returns the multipart
      */
@@ -59,15 +59,18 @@ public abstract class ApiUtilities extends Caller {
      */
     public RequestBody getRequestBodyFromFile(File file) {
         String mediaType;
-        try {mediaType = Files.probeContentType(file.toPath());}
-        catch (IOException e) {throw new RuntimeException(e);}
+        try {
+            mediaType = Files.probeContentType(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return getRequestBodyFromFile(file, mediaType);
     }
 
     /**
      * Converts file to RequestBody
      *
-     * @param file target file
+     * @param file      target file
      * @param mediaType desired media type
      * @return returns the RequestBody
      */
@@ -80,9 +83,9 @@ public abstract class ApiUtilities extends Caller {
      * Monitors the response code of a network call within a specified time limit.
      *
      * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
-     * @param expectedCode The expected HTTP response code to be matched.
-     * @param call The network call to monitor.
-     * @param <SuccessModel> The type of the expected response model.
+     * @param expectedCode     The expected HTTP response code to be matched.
+     * @param call             The network call to monitor.
+     * @param <SuccessModel>   The type of the expected response model.
      */
     public <SuccessModel> void monitorResponseCode(
             int timeoutInSeconds,
@@ -105,14 +108,15 @@ public abstract class ApiUtilities extends Caller {
      * Monitors the response code of a network call within a specified time limit.
      *
      * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
-     * @param expectedCode The expected HTTP response code to be matched.
-     * @param call The network call to monitor.
-     * @param <SuccessModel> The type of the expected response model.
+     * @param expectedCode     The expected HTTP response code to be matched.
+     * @param call             The network call to monitor.
+     * @param <SuccessModel>   The type of the expected response model.
      */
     public <SuccessModel> Response<SuccessModel> getResponseForCode(
             int timeoutInSeconds,
             int expectedCode,
-            Call<SuccessModel> call
+            Call<SuccessModel> call,
+            boolean printLastCallBody
     ) {
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
@@ -122,19 +126,53 @@ public abstract class ApiUtilities extends Caller {
                 expectedCode,
                 call,
                 false,
-                false
+                false,
+                printLastCallBody
         );
         Assert.assertTrue("Response code did not match the expected code " + expectedCode + " within " + timeoutInSeconds + " seconds!", codeMatch);
         return ContextStore.get("monitorResponseCodeResponse");
     }
 
     /**
+     * Monitors the response field value for compliance with the expected value.
+     *
+     * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
+     * @param expectedValue    The expected value to be matched.
+     * @param call             The network call to monitor.
+     * @param <SuccessModel>   The type of the expected response model.
+     */
+    public <SuccessModel> Response<SuccessModel> monitorFieldValueFromResponse(
+            int timeoutInSeconds,
+            String expectedValue,
+            Call<SuccessModel> call,
+            String fieldName,
+            boolean printLastCallBody
+    ) {
+        boolean codeMatch = ReflectionUtilities.iterativeConditionalInvocation(
+                timeoutInSeconds,
+                ApiUtilities.class,
+                "fieldValueMatch",
+                getPreviousMethodName(),
+                expectedValue,
+                call,
+                false,
+                false,
+                fieldName,
+                printLastCallBody
+        );
+        Assert.assertTrue(strUtils.highlighted(StringUtilities.Color.BLUE, fieldName) + " did not match the expected value "
+                + strUtils.highlighted(StringUtilities.Color.BLUE, expectedValue) + " within "
+                + strUtils.highlighted(StringUtilities.Color.BLUE, String.valueOf(timeoutInSeconds)) + " seconds!", codeMatch);
+        return ContextStore.get("monitorFieldValueResponse");
+    }
+
+    /**
      * Checks if the HTTP response code of a network call matches the expected code.
      *
-     * @param expectedCode The expected HTTP response code to match.
-     * @param call The network call to inspect.
-     * @param strict If true, perform strict checking of the response code.
-     * @param printBody If true, print the response body.
+     * @param expectedCode   The expected HTTP response code to match.
+     * @param call           The network call to inspect.
+     * @param strict         If true, perform strict checking of the response code.
+     * @param printBody      If true, print the response body.
      * @param <SuccessModel> The type of the expected response model.
      * @return True if the response code matches the expected code; otherwise, false.
      */
@@ -143,15 +181,56 @@ public abstract class ApiUtilities extends Caller {
             int expectedCode,
             Call<SuccessModel> call,
             Boolean strict,
-            Boolean printBody){
+            Boolean printBody,
+            Boolean printLastCallBody) {
         Printer log = new Printer(ApiUtilities.class);
         boolean condition;
         Call<?> callClone = call.clone();
         Response<?> response = getResponse(serviceName, callClone, strict, printBody);
         condition = response.code() == expectedCode;
         if (condition) {
+            if (printLastCallBody) {
+                log.info("Response body: " + MappingUtilities.Json.getJsonStringFor(response.body()));
+            }
             log.success("Status code verified as " + expectedCode + "!");
             ContextStore.put("monitorResponseCodeResponse", response);
+        }
+        return condition;
+    }
+
+    /**
+     * Checks if the field value of response body matches the expected value.
+     *
+     * @param expectedValue  The expected field value to match.
+     * @param call           The network call to inspect.
+     * @param strict         If true, perform strict checking of the response code.
+     * @param printBody      If true, print the response body.
+     * @param <SuccessModel> The type of the expected response model.
+     * @return True if the field value matches the expected value; otherwise, false.
+     */
+
+    static <SuccessModel> boolean fieldValueMatch(
+            String serviceName,
+            String expectedValue,
+            Call<SuccessModel> call,
+            boolean strict,
+            boolean printBody,
+            String fieldName,
+            boolean printLastCallBody
+    ) {
+        Printer log = new Printer(ApiUtilities.class);
+        boolean condition;
+        Call<SuccessModel> callClone = call.clone();
+        Response<SuccessModel> response = getResponse(serviceName, callClone, strict, printBody);
+        SuccessModel responseBody = response.body();
+        if (responseBody == null) return false;
+        condition = ReflectionUtilities.getField(fieldName, responseBody).toString().equals(expectedValue);
+        if (condition) {
+            if (printLastCallBody) {
+                log.info("Response body: " + MappingUtilities.Json.getJsonStringFor(response.body()));
+            }
+            log.success(fieldName + " is verified as " + expectedValue + "!");
+            ContextStore.put("monitorFieldValueResponse", response);
         }
         return condition;
     }
