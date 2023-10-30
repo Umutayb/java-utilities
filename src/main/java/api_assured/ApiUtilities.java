@@ -105,12 +105,13 @@ public abstract class ApiUtilities extends Caller {
     }
 
     /**
-     * Monitors the response code of a network call within a specified time limit.
+     * Monitors the response code of a network call within a specified time limit, print the response body of the last successful call.
      *
      * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
      * @param expectedCode     The expected HTTP response code to be matched.
      * @param call             The network call to monitor.
      * @param <SuccessModel>   The type of the expected response model.
+     * @param printLastCallBody If true, print the response body for successful call.
      */
     public <SuccessModel> Response<SuccessModel> getResponseForCode(
             int timeoutInSeconds,
@@ -134,12 +135,40 @@ public abstract class ApiUtilities extends Caller {
     }
 
     /**
-     * Monitors the response field value for compliance with the expected value.
+     * Monitors the response code of a network call within a specified time limit, not print the response body.
+     *
+     * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
+     * @param expectedCode     The expected HTTP response code to be matched.
+     * @param call             The network call to monitor.
+     * @param <SuccessModel>   The type of the expected response model.
+     */
+    public <SuccessModel> Response<SuccessModel> getResponseForCode(
+            int timeoutInSeconds,
+            int expectedCode,
+            Call<SuccessModel> call
+    ) {
+        boolean codeMatch = iterativeConditionalInvocation(
+                timeoutInSeconds,
+                ApiUtilities.class,
+                "responseCodeMatch",
+                getPreviousMethodName(),
+                expectedCode,
+                call,
+                false,
+                false,
+                false
+        );
+        Assert.assertTrue("Response code did not match the expected code " + expectedCode + " within " + timeoutInSeconds + " seconds!", codeMatch);
+        return ContextStore.get("monitorResponseCodeResponse");
+    }
+    /**
+     * Monitors the response field value for compliance with the expected value, print the response body of the last successful call.
      *
      * @param timeoutInSeconds The time limit (in seconds) for monitoring the response code.
      * @param expectedValue    The expected value to be matched.
      * @param call             The network call to monitor.
      * @param <SuccessModel>   The type of the expected response model.
+     * @param printLastCallBody If true, print the response body for successful call
      */
     public <SuccessModel> Response<SuccessModel> monitorFieldValueFromResponse(
             int timeoutInSeconds,
