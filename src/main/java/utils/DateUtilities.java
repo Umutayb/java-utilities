@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -99,16 +101,76 @@ public class DateUtilities {
      * Parses a date string with the specified input format and reformats it into a new string
      * with the specified output format.
      *
-     * @param dateString The date string to be reformatted.
-     * @param inputFormat The format of the input date string.
      * @param outputFormat The format to which the date string should be reformatted.
      * @return A string representing the reformatted date.
      */
-    public static LocalDateTime reformatLocalDateTime(String dateString, String inputFormat, String outputFormat) {
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern(inputFormat);
-        LocalDateTime inputDate = LocalDateTime.parse(dateString, inputFormatter);
+    public static LocalDateTime reformatLocalDateTime(LocalDateTime inputDate, String outputFormat) {
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern(outputFormat);
         return LocalDateTime.parse(inputDate.toString(), outputFormatter);
+    }
+
+    /**
+     * Parses a date string with the specified input format and reformats it into a new string
+     * with the specified output format.
+     *
+     * @param outputFormat The format to which the date string should be reformatted.
+     * @return A string representing the reformatted date.
+     */
+    public static LocalDate reformatLocalDate(LocalDate inputDate, String outputFormat) {
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern(outputFormat);
+        return LocalDate.parse(inputDate.toString(), outputFormatter);
+    }
+
+    /**
+     * Parses a date string using the specified date format and returns a LocalDate object.
+     *
+     * @param dateString  A string representing the date to parse.
+     * @param dateFormat  A string specifying the format of the date string, following the DateTimeFormatter pattern.
+     * @return A LocalDate object representing the parsed date.
+     */
+    public static LocalDate getLocalDateFor(String dateString, String dateFormat) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        return LocalDate.parse(dateString, dateFormatter);
+    }
+
+    /**
+     * Parses a date and time string using the specified date format and returns a LocalDateTime object.
+     *
+     * @param dateString  A string representing the date and time to parse.
+     * @param dateFormat  A string specifying the format of the date and time string, following the DateTimeFormatter pattern.
+     * @return A LocalDateTime object representing the parsed date and time.
+     */
+    public static LocalDateTime getLocalDateTimeFor(String dateString, String dateFormat) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        return LocalDateTime.parse(dateString, dateFormatter);
+    }
+
+    /**
+     * Parses a date and time string using the specified date format, converts it to an OffsetDateTime with the provided ZoneOffset,
+     * and returns a formatted date string.
+     *
+     * @param dateString  A string representing the date and time to parse.
+     * @param dateFormat  A string specifying the format of the date and time string, following the DateTimeFormatter pattern.
+     * @param offset     The ZoneOffset to apply to the parsed date and time.
+     * @return A formatted date string representing the OffsetDateTime with the specified ZoneOffset.
+     */
+    public static String getOffsetDateStringFor(String dateString, String dateFormat, ZoneOffset offset) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        OffsetDateTime currentOffsetDateTime = LocalDateTime.parse(dateString, dateFormatter).atOffset(offset);
+        return currentOffsetDateTime.format(dateFormatter);
+    }
+
+    /**
+     * Parses a date and time string using the specified date format, converts it to an OffsetDateTime with the provided ZoneOffset,
+     * and returns a formatted date string.
+     *
+     * @param dateFormat  A string specifying the format of the date and time string, following the DateTimeFormatter pattern.
+     * @param offset     The ZoneOffset to apply to the parsed date and time.
+     * @return A formatted date string representing the OffsetDateTime with the specified ZoneOffset.
+     */
+    public static String getOffsetDateStringFor(LocalDateTime dateTime, String dateFormat, ZoneOffset offset) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
+        return dateTime.atOffset(offset).format(dateFormatter);
     }
 
     /**
