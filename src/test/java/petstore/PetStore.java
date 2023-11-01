@@ -17,6 +17,13 @@ public class PetStore extends ApiUtilities {
     public List<Pet> getPetsByStatus(PetStoreServices.PetStatus status){
         log.info("Getting pets by status: " + strUtils.highlighted(StringUtilities.Color.BLUE, status.name()));
         Call<List<Pet>> petByStatusCall = petStoreServices.getPet(status);
-        return getResponseForCode(30, 200, petByStatusCall).body();
+        return getResponseForCode(30, 200, petByStatusCall, true).body();
+    }
+
+    public Pet postPet(Pet pet){
+        log.info("Post pet");
+        Call<Pet> postPetCall = petStoreServices.postPet(pet);
+        return monitorFieldValueFromResponse(30, "available", postPetCall,
+                "status", true).body();
     }
 }

@@ -38,4 +38,14 @@ public class AppTest {
         petStore.getPetsByStatus(PetStoreServices.PetStatus.pending);
     }
 
+    @Test
+    public void petPostTest() {
+        PetStore petStore = new PetStore();
+        Pet pet = new Pet();
+        pet.setName("doggie");
+        List<String> photoUrls = List.of("string");
+        pet.setPhotoUrls(photoUrls);
+        pet.setStatus("available");
+        petStore.postPet(pet);
+    }
 }
