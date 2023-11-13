@@ -153,6 +153,7 @@ public class ContextStore {
      *                          The specific exception details are logged for further investigation.
      * @see PropertyUtility#fromPropertyFile(String) fromPropertyFile(String)
      * @see ContextStore#merge(Map...) UtilityPropertiesMap.merge(Map)
+     * @see ContextStore#map
      */
     public static synchronized void loadProperties(String... propertyNames) {
         for (String propertyName : propertyNames) merge(fromPropertyFile(propertyName));
