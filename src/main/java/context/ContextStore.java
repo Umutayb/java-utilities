@@ -53,8 +53,8 @@ public class ContextStore {
      * @throws IllegalArgumentException If the provided key is null.
      * @see ContextStore#map
      */
-    public static synchronized <K, V> V remove(K key) {
-        return key != null ? ((ConcurrentHashMap<K, V>) map.get()).remove(key) : null;
+    public static synchronized <K, V> void remove(K key) {
+        final var v = key != null ? ((ConcurrentHashMap<K, V>) map.get()).remove(key) : null;
     }
 
     /**
