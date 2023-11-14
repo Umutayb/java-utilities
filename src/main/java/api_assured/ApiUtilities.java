@@ -8,17 +8,14 @@ import org.junit.Assert;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Properties;
 
 import static utils.ReflectionUtilities.getPreviousMethodName;
 import static utils.ReflectionUtilities.iterativeConditionalInvocation;
 
 public abstract class ApiUtilities extends Caller {
-    public static Properties properties = PropertyUtility.getProperties();
     public StringUtilities strUtils = new StringUtilities();
     public NumericUtilities numUtils = new NumericUtilities();
     public Printer log = new Printer(this.getClass());

@@ -1,4 +1,7 @@
-package utils;
+package properties;
+
+import utils.Printer;
+import utils.StringUtilities;
 
 import java.io.IOException;
 import java.io.InputStream;
