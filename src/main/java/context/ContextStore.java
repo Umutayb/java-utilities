@@ -54,7 +54,8 @@ public class ContextStore {
      * @see ContextStore#map
      */
     public static synchronized <K, V> void remove(K key) {
-        ((ConcurrentHashMap<K, V>) map.get()).remove(key);
+        //((ConcurrentHashMap<K, V>) map.get()).remove(key);
+        ((ConcurrentHashMap<K, V>) map.get()).computeIfPresent(key, (k, oldValue) -> (V) map.get().remove(key));;
     }
 
     /**
