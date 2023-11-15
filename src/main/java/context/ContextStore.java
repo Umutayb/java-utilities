@@ -49,7 +49,6 @@ public class ContextStore {
      * @param <K> The type of the keys in the ContextStore.
      * @param <V> The type of the values in the ContextStore.
      * @param key The key whose associated entry is to be removed.
-     * @return The value associated with the specified key before removal, or null if the key is not present.
      * @throws IllegalArgumentException If the provided key is null.
      * @see ContextStore#map
      */
