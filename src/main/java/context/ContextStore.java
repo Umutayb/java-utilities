@@ -86,7 +86,7 @@ public class ContextStore {
      * @see ContextStore#map
      */
     public static synchronized <K, V> V get(K key, V defaultValue) {
-        return key != null ? ((ConcurrentHashMap<K, V>) map.get()).get(key) : defaultValue;
+        return key != null && map.get().get(key) != null ? ((ConcurrentHashMap<K, V>) map.get()).get(key) : defaultValue;
     }
 
     /**
