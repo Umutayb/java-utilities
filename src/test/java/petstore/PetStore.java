@@ -26,4 +26,10 @@ public class PetStore extends ApiUtilities {
         return monitorFieldValueFromResponse(30, "available", postPetCall,
                 "status", true).body();
     }
+
+    public Pet getPetById(Long petId){
+        log.info("Getting pet by petId: " + strUtils.highlighted(StringUtilities.Color.BLUE, String.valueOf(petId)));
+        Call<Pet> petByIdCall = petStoreServices.getPetById(petId);
+        return getResponseForCode(30, 200, petByIdCall, true).body();
+    }
 }

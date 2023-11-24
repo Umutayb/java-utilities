@@ -2,10 +2,7 @@ package petstore;
 
 import petstore.models.Pet;
 import retrofit2.Call;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Query;
+import retrofit2.http.*;
 
 import java.util.List;
 
@@ -21,6 +18,9 @@ public interface PetStoreServices {
 
     @GET("pet/findByStatus")
     Call<List<Pet>> getPet(@Query("status") PetStatus status);
+
+    @GET("pet/{petId}")
+    Call<Pet> getPetById(@Path("petId") Long petId);
 
     @POST("pet")
     Call<Pet> postPet(@Body Pet pet);
