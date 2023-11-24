@@ -1,10 +1,14 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.Assert;
 import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
 import utils.ArrayUtilities;
 import utils.Printer;
+import utils.ReflectionUtilities;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static utils.MappingUtilities.Json.*;
@@ -45,5 +49,55 @@ public class AppTest {
         pet.setPhotoUrls(photoUrls);
         pet.setStatus("available");
         petStore.postPet(pet);
+    }
+
+    @Test
+    public void petCompareJsonTest() {
+        PetStore petStore = new PetStore();
+        List<String> photoUrls = List.of("string1", "string2");
+        List<Pet.DataModel> tags = new ArrayList<>();
+        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
+        tags.add(dataModel);
+        Pet.DataModel category = new Pet.DataModel(3333L, "category");
+        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
+        Pet createdPet = petStore.postPet(pet);
+        Pet actualPet = petStore.getPetById(createdPet.getId());
+        createdPet.setId(actualPet.getId());
+        ReflectionUtilities.objectsMatch(createdPet, actualPet);
+    }
+
+    @Test
+    public void compareJsonPetWithEmptyArrayNegativeTest() {
+        PetStore petStore = new PetStore();
+        List<String> photoUrls = List.of("string1", "string2");
+        List<Pet.DataModel> tags = new ArrayList<>();
+        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
+        tags.add(dataModel);
+        Pet.DataModel category = new Pet.DataModel(3333L, "category");
+        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
+        Pet createdPet = petStore.postPet(pet);
+        Pet actualPet = petStore.getPetById(createdPet.getId());
+        createdPet.setId(actualPet.getId());
+        createdPet.setPhotoUrls(new ArrayList<>());
+        Assert.assertFalse("The compareJsonPetWithEmptyArrayNegativeTest() negative test fails!", ReflectionUtilities.objectsMatch(createdPet, actualPet));
+        printer.success("The compareJsonPetWithEmptyArrayNegativeTest() negative test passes!");
+    }
+
+    @Test
+    public void compareJsonPetWithNullFieldValueInObjectNegativeTest() {
+        PetStore petStore = new PetStore();
+        List<String> photoUrls = List.of("string1", "string2");
+        List<Pet.DataModel> tags = new ArrayList<>();
+        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
+        tags.add(dataModel);
+        Pet.DataModel category = new Pet.DataModel(3333L, "category");
+        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
+        Pet createdPet = petStore.postPet(pet);
+        Pet actualPet = petStore.getPetById(createdPet.getId());
+        createdPet.setId(actualPet.getId());
+        Pet.DataModel expectedCategory = new Pet.DataModel(3333L, null);
+        createdPet.setCategory(expectedCategory);
+        Assert.assertFalse("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test fails!", ReflectionUtilities.objectsMatch(createdPet, actualPet));
+        printer.success("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test passes!");
     }
 }
