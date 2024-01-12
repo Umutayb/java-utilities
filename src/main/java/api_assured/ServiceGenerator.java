@@ -16,6 +16,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
 import utils.*;
+import utils.reflection.ReflectionUtilities;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -141,7 +143,7 @@ public class ServiceGenerator {
      */
     public <S> S generate(Class<S> serviceClass) {
 
-        if (BASE_URL.isEmpty()) BASE_URL = (String) new ReflectionUtilities().getFieldValue("BASE_URL", serviceClass);
+        if (BASE_URL.isEmpty()) BASE_URL = (String) ReflectionUtilities.getFieldValue("BASE_URL", serviceClass);
 
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         HttpLoggingInterceptor headerInterceptor = new HttpLoggingInterceptor();

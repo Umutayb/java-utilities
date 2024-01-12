@@ -1,6 +1,5 @@
-package utils;
+package utils.reflection;
 
-import api_assured.Caller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
@@ -8,11 +7,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.Assert;
-import retrofit2.Call;
+import utils.MappingUtilities;
+import utils.Printer;
+import utils.StringUtilities;
 
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ReflectionUtilities {
@@ -21,17 +23,20 @@ public class ReflectionUtilities {
     static ObjectMapper mapper = MappingUtilities.Json.mapper;
 
     /**
-     * Iteratively invokes a specified method on a class and checks a condition until the condition is met
+     * Iteratively invokes a specified method or conditional function until a condition is met
      * or a timeout is reached.
      *
      * @param timeoutInSeconds The time limit (in seconds) for the iteration.
-     * @param parent The class containing the method to be invoked.
-     * @param methodName The name of the method to invoke.
-     * @param args The arguments to pass to the method when invoked.
+     * @param parent The class containing the method to be invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
+     * @param methodName The name of the method to invoke. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
+     * @param args The arguments to pass to the method when invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)}
      * @param <T> The type of the parent class.
      * @return True if the condition is met within the specified timeout; otherwise, false.
      * @throws RuntimeException if an exception occurs during method invocation.
+     *
+     * @deprecated Since version 1.9.7, use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)} instead
      */
+    @Deprecated(since = "1.9.7")
     public static <T> boolean iterativeConditionalInvocation(
             int timeoutInSeconds,
             Class<T> parent,
@@ -44,6 +49,7 @@ public class ReflectionUtilities {
         try {
             do {
                 Method method = getMethod(methodName, parent);
+                method.setAccessible(true);
                 condition = Boolean.parseBoolean(String.valueOf(method.invoke(parent, args)));
                 if (condition) break;
                 TimeUnit.SECONDS.sleep(interval);
@@ -51,6 +57,68 @@ public class ReflectionUtilities {
             while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
         }
         catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | InterruptedException exception) {
+            throw new RuntimeException(exception);
+        }
+        return condition;
+    }
+
+    /**
+     * Iteratively invokes a specified method on a class and checks a condition until the condition is met
+     * or a timeout is reached.
+     *
+     * Use this method when you have a specific {@link ConditionalFunction} that encapsulates the desired
+     * condition-checking logic, and you want to repeatedly execute it until the condition is met
+     * or a specified timeout is reached.
+     *
+     * Example usage:
+     * <pre>{@code
+     *     class Test1 {
+     *         public static void main(String[] args) {
+     *             int a = 2;
+     *             int b = 1;
+     *             int timeout = 30;
+     *             iterativeConditionalInvocation(timeout, () -> {return a - b > 0;});
+     *         }
+     *     }
+     *
+     *     //OR:
+     *     class Test2 {
+     *         public static void main(String[] args) {
+     *             int a = 2;
+     *             int b = 1;
+     *             int timeout = 30;
+     *             iterativeConditionalInvocation(timeout, () -> conditionalMethod(a, b));
+     *         }
+     *
+     *         public static boolean conditionalMethod(int a, int b) {
+     *             return a - b < 0;
+     *         }
+     *     }
+     * }
+     * }</pre>
+     *
+     *
+     * @param timeoutInSeconds The time limit (in seconds) for the iteration.
+     * @return True if the condition is met within the specified timeout; otherwise, false.
+     * @throws RuntimeException if an exception occurs during method invocation.
+     */
+    public static boolean iterativeConditionalInvocation(
+            int timeoutInSeconds,
+            ConditionalFunction conditionalFunction
+    ) {
+        boolean condition;
+        long startingTime = System.currentTimeMillis();
+        int interval = (int) Math.pow(timeoutInSeconds, 0.5);
+        log.info("Iterating at " + interval + " second intervals.");
+        try {
+            do {
+                condition = conditionalFunction.execute();
+                if (condition) break;
+                TimeUnit.SECONDS.sleep(interval);
+            }
+            while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
+        }
+        catch (InterruptedException exception) {
             throw new RuntimeException(exception);
         }
         return condition;

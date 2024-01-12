@@ -1,4 +1,4 @@
-package records;
+package collections;
 
 /**
  * A record that represents a bundle of three values of different types.
