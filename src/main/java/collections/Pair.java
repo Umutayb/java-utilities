@@ -1,4 +1,4 @@
-package records;
+package collections;
 
 /**
  * A record that represents a pair of two values in different types.

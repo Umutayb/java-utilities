@@ -8,13 +8,15 @@ import org.junit.Assert;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
+import utils.reflection.ReflectionUtilities;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static utils.ReflectionUtilities.getPreviousMethodName;
-import static utils.ReflectionUtilities.iterativeConditionalInvocation;
+import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
+import static utils.reflection.ReflectionUtilities.iterativeConditionalInvocation;
 
+@SuppressWarnings("unused")
 public abstract class ApiUtilities extends Caller {
     public StringUtilities strUtils = new StringUtilities();
     public NumericUtilities numUtils = new NumericUtilities();
@@ -90,13 +92,17 @@ public abstract class ApiUtilities extends Caller {
     ) {
         iterativeConditionalInvocation(
                 timeoutInSeconds,
-                ApiUtilities.class,
-                "responseCodeMatch",
-                getPreviousMethodName(),
-                expectedCode,
-                call,
-                false,
-                false
+                () -> {
+                    boolean condition;
+                    Call<?> callClone = call.clone();
+                    Response<?> response = getResponse(getPreviousMethodName(), callClone, false, false);
+                    condition = response.code() == expectedCode;
+                    if (condition) {
+                        log.success("Status code verified as " + expectedCode + "!");
+                        ContextStore.put("monitorResponseCodeResponse", response);
+                    }
+                    return condition;
+                }
         );
     }
 
@@ -117,14 +123,14 @@ public abstract class ApiUtilities extends Caller {
     ) {
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
-                ApiUtilities.class,
-                "responseCodeMatch",
-                getPreviousMethodName(),
-                expectedCode,
-                call,
-                false,
-                false,
-                printLastCallBody
+                () -> responseCodeMatch(
+                        getPreviousMethodName(),
+                        expectedCode,
+                        call,
+                        false,
+                        false,
+                        printLastCallBody
+                )
         );
         Assert.assertTrue("Response code did not match the expected code " + expectedCode + " within " + timeoutInSeconds + " seconds!", codeMatch);
         return ContextStore.get("monitorResponseCodeResponse");
@@ -145,18 +151,19 @@ public abstract class ApiUtilities extends Caller {
     ) {
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
-                ApiUtilities.class,
-                "responseCodeMatch",
-                getPreviousMethodName(),
-                expectedCode,
-                call,
-                false,
-                false,
-                false
+                () -> responseCodeMatch(
+                        getPreviousMethodName(),
+                        expectedCode,
+                        call,
+                        false,
+                        false,
+                        false
+                )
         );
         Assert.assertTrue("Response code did not match the expected code " + expectedCode + " within " + timeoutInSeconds + " seconds!", codeMatch);
         return ContextStore.get("monitorResponseCodeResponse");
     }
+
     /**
      * Monitors the response field value for compliance with the expected value, print the response body of the last successful call.
      *
@@ -173,17 +180,17 @@ public abstract class ApiUtilities extends Caller {
             String fieldName,
             boolean printLastCallBody
     ) {
-        boolean codeMatch = ReflectionUtilities.iterativeConditionalInvocation(
+        boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
-                ApiUtilities.class,
-                "fieldValueMatch",
-                getPreviousMethodName(),
-                expectedValue,
-                call,
-                false,
-                false,
-                fieldName,
-                printLastCallBody
+                () -> fieldValueMatch(
+                        getPreviousMethodName(),
+                        call,
+                        false,
+                        false,
+                        fieldName,
+                        expectedValue,
+                        printLastCallBody
+                )
         );
         Assert.assertTrue(strUtils.highlighted(StringUtilities.Color.BLUE, fieldName) + " did not match the expected value "
                 + strUtils.highlighted(StringUtilities.Color.BLUE, expectedValue) + " within "
@@ -194,20 +201,22 @@ public abstract class ApiUtilities extends Caller {
     /**
      * Checks if the HTTP response code of a network call matches the expected code.
      *
-     * @param expectedCode   The expected HTTP response code to match.
-     * @param call           The network call to inspect.
-     * @param strict         If true, perform strict checking of the response code.
-     * @param printBody      If true, print the response body.
      * @param <SuccessModel> The type of the expected response model.
+     * @param serviceName The name of the service for identification purposes.
+     * @param expectedCode The expected HTTP response code.
+     * @param call The network call to inspect.
+     * @param strict If true, performs strict checking of the response code.
+     * @param printBody If true, prints the response body.
+     * @param printLastCallBody If true, prints the response body of the last call.
      * @return True if the response code matches the expected code; otherwise, false.
      */
-    public static <SuccessModel> boolean responseCodeMatch(
-            String serviceName,
-            int expectedCode,
-            Call<SuccessModel> call,
-            Boolean strict,
-            Boolean printBody,
-            Boolean printLastCallBody) {
+
+    public static <SuccessModel> boolean responseCodeMatch(String serviceName,
+                                                           int expectedCode,
+                                                           Call<SuccessModel> call,
+                                                           Boolean strict,
+                                                           Boolean printBody,
+                                                           Boolean printLastCallBody) {
         Printer log = new Printer(ApiUtilities.class);
         boolean condition;
         Call<?> callClone = call.clone();
@@ -224,23 +233,25 @@ public abstract class ApiUtilities extends Caller {
     }
 
     /**
-     * Checks if the field value of response body matches the expected value.
+     * Checks if the field value of the response body matches the expected value.
      *
-     * @param expectedValue  The expected field value to match.
-     * @param call           The network call to inspect.
-     * @param strict         If true, perform strict checking of the response code.
-     * @param printBody      If true, print the response body.
      * @param <SuccessModel> The type of the expected response model.
+     * @param serviceName The name of the service for identification purposes.
+     * @param call The network call to inspect.
+     * @param strict If true, performs strict checking of the response code.
+     * @param printBody If true, prints the response body.
+     * @param fieldName The name of the field to inspect.
+     * @param expectedValue The expected field value to match.
+     * @param printLastCallBody If true, prints the response body of the last call.
      * @return True if the field value matches the expected value; otherwise, false.
      */
-
-    static <SuccessModel> boolean fieldValueMatch(
+    public static <SuccessModel> boolean fieldValueMatch(
             String serviceName,
-            String expectedValue,
             Call<SuccessModel> call,
             boolean strict,
             boolean printBody,
             String fieldName,
+            String expectedValue,
             boolean printLastCallBody
     ) {
         Printer log = new Printer(ApiUtilities.class);

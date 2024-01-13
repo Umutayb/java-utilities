@@ -23,8 +23,7 @@ public class PetStore extends ApiUtilities {
     public Pet postPet(Pet pet){
         log.info("Post pet");
         Call<Pet> postPetCall = petStoreServices.postPet(pet);
-        return monitorFieldValueFromResponse(30, "available", postPetCall,
-                "status", true).body();
+        return monitorFieldValueFromResponse(30, "available", postPetCall, "status", true).body();
     }
 
     public Pet getPetById(Long petId){

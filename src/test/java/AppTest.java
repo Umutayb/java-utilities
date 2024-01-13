@@ -6,7 +6,7 @@ import petstore.models.Pet;
 import org.junit.Test;
 import utils.ArrayUtilities;
 import utils.Printer;
-import utils.ReflectionUtilities;
+import utils.reflection.ReflectionUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
