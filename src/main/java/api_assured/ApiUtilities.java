@@ -13,12 +13,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static utils.StringUtilities.*;
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.reflection.ReflectionUtilities.iterativeConditionalInvocation;
 
 @SuppressWarnings("unused")
 public abstract class ApiUtilities extends Caller {
-    public StringUtilities strUtils = new StringUtilities();
     public NumericUtilities numUtils = new NumericUtilities();
     public Printer log = new Printer(this.getClass());
 
@@ -192,9 +192,9 @@ public abstract class ApiUtilities extends Caller {
                         printLastCallBody
                 )
         );
-        Assert.assertTrue(strUtils.highlighted(StringUtilities.Color.BLUE, fieldName) + " did not match the expected value "
-                + strUtils.highlighted(StringUtilities.Color.BLUE, expectedValue) + " within "
-                + strUtils.highlighted(StringUtilities.Color.BLUE, String.valueOf(timeoutInSeconds)) + " seconds!", codeMatch);
+        Assert.assertTrue(highlighted(Color.BLUE, fieldName) + " did not match the expected value "
+                + highlighted(Color.BLUE, expectedValue) + " within "
+                + highlighted(Color.BLUE, String.valueOf(timeoutInSeconds)) + " seconds!", codeMatch);
         return ContextStore.get("monitorFieldValueResponse");
     }
 

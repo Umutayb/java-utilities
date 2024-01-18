@@ -4,7 +4,6 @@ import api_assured.exceptions.JavaUtilitiesException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -28,8 +27,6 @@ import static utils.StringUtilities.Color.*;
 @SuppressWarnings("unused")
 public class FileUtilities {
 
-    StringUtilities strUtils = new StringUtilities();
-
     /**
      * Returns the absolute path of a file given its relative path.
      *
@@ -37,7 +34,7 @@ public class FileUtilities {
      * @return The absolute path of the file.
      * @throws JavaUtilitiesException If the file is not found.
      */
-    public String getAbsolutePath(String relativePath){
+    public static String getAbsolutePath(String relativePath){
         if (verifyFilePresence(relativePath)) {
             File file = new File(relativePath);
             return file.getAbsolutePath().replaceAll("#","%23");
@@ -52,10 +49,10 @@ public class FileUtilities {
      * @param fileName The name of the file.
      * @return The contents of the file as a string.
      */
-    public String getString(String directory, String fileName) {
+    public static String getString(String directory, String fileName) {
         try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}
         catch (IOException exception){
-            Assert.fail(strUtils.markup(YELLOW, fileName+" not found!"));
+            Assert.fail(StringUtilities.markup(YELLOW, fileName+" not found!"));
             return null;
         }
     }
@@ -67,7 +64,7 @@ public class FileUtilities {
      * @throws RuntimeException If the file cannot be created.
      */
     @SuppressWarnings("UnusedReturnValue")
-    public Optional<Boolean> createIfAbsent(String pathname){
+    public static Optional<Boolean> createIfAbsent(String pathname){
         try {if (!verifyFilePresence(pathname)) return Optional.of(new File(pathname).createNewFile());}
         catch (IOException e) {throw new RuntimeException(e);}
         return Optional.empty();
@@ -80,7 +77,7 @@ public class FileUtilities {
      * @param className The name of the file to be written to.
      * @throws IOException If the file cannot be written to.
      */
-    public void classWriter(String classString, String className) throws IOException {
+    public static void classWriter(String classString, String className) throws IOException {
         FileWriter file = new FileWriter("src/main/java/utils/classes/"+className+".java");
         if(file.toString().isEmpty())
             file.write(classString);
@@ -96,7 +93,7 @@ public class FileUtilities {
      * @return True if the directory was successfully deleted, false otherwise.
      */
     @SuppressWarnings("UnusedReturnValue")
-    boolean deleteDirectory(File directoryToBeDeleted) {
+    static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) for (File file : allContents) deleteDirectory(file);
         return directoryToBeDeleted.delete();
@@ -108,7 +105,7 @@ public class FileUtilities {
      * @param fileDirectory The directory where the file should be located.
      * @return True if the file is present, false otherwise.
      */
-    public boolean verifyFilePresence(String fileDirectory) {
+    public static boolean verifyFilePresence(String fileDirectory) {
         boolean fileIsPresent = false;
         try {
             File file = new File(fileDirectory);
@@ -294,7 +291,7 @@ public class FileUtilities {
                     in.close();
                 }
                 out.close();
-                new FileUtilities().deleteDirectory(tmpPath.toFile());
+                FileUtilities.deleteDirectory(tmpPath.toFile());
             }
             catch (IOException e) {throw new RuntimeException(e);}
             return new File(zipName);
@@ -346,7 +343,6 @@ public class FileUtilities {
         public JSONObject urlsJson = new JSONObject();
         public JSONObject notificationJson = new JSONObject();
         private final Printer log = new Printer(Json.class);
-        FileUtilities fileUtil = new FileUtilities();
 
         /**
          * Saves a JSON object to a file.
@@ -355,7 +351,7 @@ public class FileUtilities {
          * @param directory The directory where the file should be saved.
          * @throws RuntimeException if an exception occurs while writing the file.
          */
-        public void saveJSON(JSONObject inputJson, String directory){
+        public static void saveJSON(JSONObject inputJson, String directory){
             try {
 
                 FileWriter file = new FileWriter(directory);
@@ -378,7 +374,7 @@ public class FileUtilities {
          * @param directory The directory where the file should be saved.
          * @throws RuntimeException if an exception occurs while writing the file.
          */
-        public void saveJson(JsonObject inputJson, String directory){
+        public static void saveJson(JsonObject inputJson, String directory){
             try {
 
                 FileWriter file = new FileWriter(directory);
@@ -403,7 +399,7 @@ public class FileUtilities {
          * @param directory The directory where the JSON file is located.
          * @return The JsonObject representing the JSON file, or null if the file is not found.
          */
-        public JsonObject parseJsonFile(String directory) {
+        public static JsonObject parseJsonFile(String directory) {
             try {
                 JsonElement object;
 
@@ -430,7 +426,7 @@ public class FileUtilities {
          * @return the contents of the JSON file as a JSONObject
          * @throws RuntimeException if an IOException or ParseException occurs during parsing
          */
-        public JSONObject parseJSONFile(String directory) {
+        public static JSONObject parseJSONFile(String directory) {
             try {
                 FileReader fileReader = new FileReader(directory);
                 JSONParser jsonParser = new JSONParser();
@@ -449,7 +445,7 @@ public class FileUtilities {
          * @return the nested JsonObject with the specified key
          * @throws NullPointerException if the JsonObject retrieved by the specified key is null
          */
-        public JsonObject getJsonObject(JsonObject json, String key){
+        public static JsonObject getJsonObject(JsonObject json, String key){
 
             JsonObject jsonObject = json.get(key).getAsJsonObject();
 
@@ -465,7 +461,7 @@ public class FileUtilities {
          * @param attributeType the type of the attribute to retrieve
          * @return the value of the attribute with the specified type as a String
          */
-        public String getElementAttribute(JsonObject attributes, String attributeType){
+        public static String getElementAttribute(JsonObject attributes, String attributeType){
             return attributes.get(attributeType).getAsString();
         }
 
@@ -475,7 +471,7 @@ public class FileUtilities {
          * @param inputString the input string to be parsed into a JSONObject
          * @return the JSONObject representation of the input string
          */
-        public JSONObject str2JSON(String inputString){
+        public static JSONObject str2JSON(String inputString){
             JSONObject object = null;
             try {
                 JSONParser parser = new JSONParser();
@@ -493,7 +489,7 @@ public class FileUtilities {
          * @param inputString the input string to be parsed into a JsonObject
          * @return the JsonObject representation of the input string
          */
-        public JsonElement str2json(String inputString){
+        public static JsonElement str2json(String inputString){
             return JsonParser.parseString(inputString);
         }
 
@@ -503,7 +499,7 @@ public class FileUtilities {
          * @param json the JSON string to be formatted
          * @return the formatted JSON string
          */
-        public String formatJsonString(String json) {
+        public static String formatJsonString(String json) {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 Object jsonObject = mapper.readValue(json, Object.class);

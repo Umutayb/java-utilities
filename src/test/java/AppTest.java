@@ -1,17 +1,24 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonObject;
+import context.ContextStore;
 import org.junit.Assert;
 import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
 import utils.ArrayUtilities;
+import utils.Conversion;
+import utils.FileUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static utils.MappingUtilities.Json.*;
+import static utils.StringUtilities.contextCheck;
 
 public class AppTest {
 
@@ -31,13 +38,14 @@ public class AppTest {
     @Test
     public void stringToObjectTest() throws JsonProcessingException {
         Pet pet = fromJsonString("{\"id\" : null, \"category\" : {\"id\" : null, \"name\" : \"Cats\"},\"name\" : \"Whiskers\", \"photoUrls\" : [ \"https://example.com/cat.jpg\" ],\"tags\" : [ {\"id\" : 123456789, \"name\" : \"Furry\"}, {\"id\" : 987654321, \"name\" : \"Playful\"} ],\"status\" : \"Available\"}", Pet.class);
-        System.out.println(getJsonStringFor(pet));
+        printer.success("The stringToObjectTest() test passed!");
     }
 
     @Test
     public void petStatusTest() {
         PetStore petStore = new PetStore();
         petStore.getPetsByStatus(PetStoreServices.PetStatus.pending);
+        printer.success("The petStatusTest() test passed!");
     }
 
     @Test
@@ -49,6 +57,7 @@ public class AppTest {
         pet.setPhotoUrls(photoUrls);
         pet.setStatus("available");
         petStore.postPet(pet);
+        printer.success("The petPostTest() test passed!");
     }
 
     @Test
@@ -64,6 +73,7 @@ public class AppTest {
         Pet actualPet = petStore.getPetById(createdPet.getId());
         createdPet.setId(actualPet.getId());
         ReflectionUtilities.objectsMatch(createdPet, actualPet);
+        printer.success("The petCompareJsonTest() test passed!");
     }
 
     @Test
@@ -99,5 +109,22 @@ public class AppTest {
         createdPet.setCategory(expectedCategory);
         Assert.assertFalse("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test fails!", ReflectionUtilities.objectsMatch(createdPet, actualPet));
         printer.success("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test passes!");
+    }
+
+    @Test
+    public void localisationCapabilityTest(){
+        JsonObject localisationJson = FileUtilities.Json.parseJsonFile("src/test/resources/localisation.json");
+        ContextStore.put("localisation-json", localisationJson);
+        ContextStore.put("localised-elements", true);
+
+        assert localisationJson != null;
+        for (String key:localisationJson.keySet()) {
+            Assert.assertEquals(
+                    "Translation does not match the expected value!",
+                    localisationJson.get(key).getAsString(),
+                    contextCheck(key)
+            );
+        }
+        printer.success("The localisationCapabilityTest() test passed!");
     }
 }

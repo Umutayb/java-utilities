@@ -1,6 +1,7 @@
 package utils;
 
 import static utils.StringUtilities.Color.*;
+import static utils.StringUtilities.highlighted;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.net.Socket;
 
 public class SystemUtilities {
     Printer log = new Printer(SystemUtilities.class);
-    StringUtilities strUtils = new StringUtilities();
 
     /**
      * Checks if the specified port is available on the local host.
@@ -17,7 +17,7 @@ public class SystemUtilities {
      * @return true if the port is available, false otherwise
      */
     public boolean portIsAvailable(int port) {
-        log.info("Checking availability of port " + strUtils.highlighted(PURPLE, String.valueOf(port)));
+        log.info("Checking availability of port " + highlighted(PURPLE, String.valueOf(port)));
         try (Socket socket = new Socket("localhost", port)) {
             log.warning("Port is unavailable!");
             socket.close();

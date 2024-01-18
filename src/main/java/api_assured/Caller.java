@@ -3,7 +3,7 @@ package api_assured;
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import okio.Buffer;
-import properties.PropertyUtility;
+import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
@@ -33,11 +33,6 @@ public abstract class Caller {
     protected static boolean keepLogs;
 
     /**
-     * A StringUtilities object for string manipulation.
-     */
-    protected static StringUtilities strUtils = new StringUtilities();
-
-    /**
      * A Printer object for logging.
      */
     private static final Printer log = new Printer(Caller.class);
@@ -46,7 +41,7 @@ public abstract class Caller {
      * Constructs a Caller object and initializes the ObjectMapper object and the keepLogs variable.
      */
     public Caller(){
-        keepLogs = Boolean.parseBoolean(PropertyUtility.getProperty("keep-api-logs", "true"));
+        keepLogs = Boolean.parseBoolean(PropertyUtilities.getProperty("keep-api-logs", "true"));
     }
 
     /**
@@ -193,9 +188,9 @@ public abstract class Caller {
     private static <T> void printCallSpecifications(Call<T> call, String serviceName){
         if (keepLogs)
             log.info("Performing " +
-                    strUtils.markup(PALE, call.request().method()) +
+                    StringUtilities.markup(PALE, call.request().method()) +
                     " call for '" +
-                    strUtils.markup(PALE, serviceName) +
+                    StringUtilities.markup(PALE, serviceName) +
                     "' service on url: " + call.request().url()
             );
     }

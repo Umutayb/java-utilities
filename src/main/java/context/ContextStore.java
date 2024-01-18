@@ -1,12 +1,12 @@
 package context;
 
-import properties.PropertyUtility;
+import properties.PropertyUtilities;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static properties.PropertyUtility.*;
+import static properties.PropertyUtilities.*;
 
 /**
  * The ContextStore class provides a thread-safe storage for key-value pairs in a ConcurrentHashMap.
@@ -150,7 +150,7 @@ public class ContextStore {
      * @throws RuntimeException If an error occurs during the loading or merging of properties.
      *                          This can be an IOException or any other runtime exception.
      *                          The specific exception details are logged for further investigation.
-     * @see PropertyUtility#fromPropertyFile(String) fromPropertyFile(String)
+     * @see PropertyUtilities#fromPropertyFile(String) fromPropertyFile(String)
      * @see ContextStore#merge(Map...) UtilityPropertiesMap.merge(Map)
      * @see ContextStore#map
      */

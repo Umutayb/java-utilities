@@ -7,6 +7,8 @@ import retrofit2.Call;
 import utils.StringUtilities;
 import java.util.List;
 
+import static utils.StringUtilities.*;
+
 public class PetStore extends ApiUtilities {
 
     PetStoreServices petStoreServices = new ServiceGenerator()
@@ -15,7 +17,7 @@ public class PetStore extends ApiUtilities {
             .generate(PetStoreServices.class);
 
     public List<Pet> getPetsByStatus(PetStoreServices.PetStatus status){
-        log.info("Getting pets by status: " + strUtils.highlighted(StringUtilities.Color.BLUE, status.name()));
+        log.info("Getting pets by status: " + highlighted(StringUtilities.Color.BLUE, status.name()));
         Call<List<Pet>> petByStatusCall = petStoreServices.getPet(status);
         return getResponseForCode(30, 200, petByStatusCall, true).body();
     }
@@ -27,7 +29,7 @@ public class PetStore extends ApiUtilities {
     }
 
     public Pet getPetById(Long petId){
-        log.info("Getting pet by petId: " + strUtils.highlighted(StringUtilities.Color.BLUE, String.valueOf(petId)));
+        log.info("Getting pet by petId: " + highlighted(StringUtilities.Color.BLUE, String.valueOf(petId)));
         Call<Pet> petByIdCall = petStoreServices.getPetById(petId);
         return getResponseForCode(30, 200, petByIdCall, true).body();
     }

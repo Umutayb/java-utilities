@@ -6,15 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static java.util.Objects.requireNonNull;
 import static properties.Constants.UTILITY_PROPERTIES_FILE_NAME;
 
 /**
  * A utility class for loading properties from a file.
  */
-public abstract class PropertyUtility {
+public abstract class PropertyUtilities {
 
-    private static final Printer log = new Printer(PropertyUtility.class);
+    private static final Printer log = new Printer(PropertyUtilities.class);
 
     /**
      * The default Properties object containing the loaded default properties.
@@ -27,7 +26,7 @@ public abstract class PropertyUtility {
      * @return The Properties object containing the loaded default properties.
      */
     public static Properties loadPropertyFile(String propertyFileName) {
-        try (InputStream inputStream = PropertyUtility.class.getResourceAsStream("/" + propertyFileName)) {
+        try (InputStream inputStream = PropertyUtilities.class.getResourceAsStream("/" + propertyFileName)) {
             if (inputStream != null)
                 properties.load(inputStream);
             else
