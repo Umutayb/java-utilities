@@ -1,9 +1,9 @@
 package utils;
 
-import properties.PropertyUtility;
-
+import properties.PropertyUtilities;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static utils.StringUtilities.Color.*;
 
 /**
@@ -151,7 +151,7 @@ public class Printer {
      * @param output The message to log.
      */
     private void log(Level level, String output){
-        if (Boolean.parseBoolean(PropertyUtility.getProperty("save-logs", "false")))
+        if (Boolean.parseBoolean(PropertyUtilities.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(level, log.getName(), getMethod(), output);
     }
@@ -164,7 +164,7 @@ public class Printer {
      * @param exception The exception to include in the log.
      */
     private void log(String output, Exception exception){
-        if (Boolean.parseBoolean(PropertyUtility.getProperty("save-logs", "false")))
+        if (Boolean.parseBoolean(PropertyUtilities.getProperty("save-logs", "false")))
             LogUtilities.log.info(output);
         else log.logp(Level.SEVERE, log.getName(), getMethod(), output, exception);
     }

@@ -5,7 +5,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.Buffer;
-import properties.PropertyUtility;
+import properties.PropertyUtilities;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -47,47 +47,47 @@ public class ServiceGenerator {
     /**
      * A boolean indicating whether to log the headers in the requests.
      */
-    boolean printHeaders = Boolean.parseBoolean(PropertyUtility.getProperty("log-headers", "true"));
+    boolean printHeaders = Boolean.parseBoolean(PropertyUtilities.getProperty("log-headers", "true"));
 
     /**
      * A boolean indicating whether to log detailed information in the requests.
      */
-    boolean detailedLogging = Boolean.parseBoolean(PropertyUtility.getProperty("detailed-logging", "false"));
+    boolean detailedLogging = Boolean.parseBoolean(PropertyUtilities.getProperty("detailed-logging", "false"));
 
     /**
      * A boolean indicating whether to verify the hostname in the requests.
      */
-    boolean hostnameVerification = Boolean.parseBoolean(PropertyUtility.getProperty("verify-hostname", "true"));
+    boolean hostnameVerification = Boolean.parseBoolean(PropertyUtilities.getProperty("verify-hostname", "true"));
 
     /**
      * A boolean indicating whether to print request body in the outgoing requests.
      */
-    boolean printRequestBody = Boolean.parseBoolean(PropertyUtility.getProperty("print-request-body", "false"));
+    boolean printRequestBody = Boolean.parseBoolean(PropertyUtilities.getProperty("print-request-body", "false"));
 
     /**
      * Connection timeout in seconds.
      */
-    int connectionTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-timeout", "60"));
+    int connectionTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-timeout", "60"));
 
     /**
      * Read timeout in seconds.
      */
-    int readTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-read-timeout", "30"));
+    int readTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-read-timeout", "30"));
 
     /**
      * Write timeout in seconds.
      */
-    int writeTimeout = Integer.parseInt(PropertyUtility.getProperty("connection-write-timeout", "30"));
+    int writeTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-write-timeout", "30"));
 
     /**
      * Proxy host. (default: null)
      */
-    String proxyHost = PropertyUtility.getProperty("proxy-host", null);
+    String proxyHost = PropertyUtilities.getProperty("proxy-host", null);
 
     /**
      * Proxy port (default: 8888)
      */
-    int proxyPort = Integer.parseInt(PropertyUtility.getProperty("proxy-port", "8888"));
+    int proxyPort = Integer.parseInt(PropertyUtilities.getProperty("proxy-port", "8888"));
 
     /**
      * Use proxy?

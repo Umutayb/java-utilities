@@ -1,17 +1,17 @@
 package utils;
 
+import com.google.gson.JsonObject;
 import context.ContextStore;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
-import properties.PropertyUtility;
-
+import properties.PropertyUtilities;
 import java.text.Normalizer;
 import java.util.*;
 
 import static utils.StringUtilities.Color.*;
 
 @SuppressWarnings("unused")
-public class StringUtilities {   //Utility methods
+public class StringUtilities {
 
     /**
      * Returns true if the input is null or empty after trimming, false otherwise.
@@ -30,7 +30,7 @@ public class StringUtilities {   //Utility methods
      * @param color target color
      * @param text target text
      */
-    public String highlighted(Color color, CharSequence text){
+    public static String highlighted(Color color, CharSequence text){
         StringJoiner colorFormat = new StringJoiner("", color.getValue(), RESET.getValue());
         return String.valueOf(colorFormat.add(text));
     }
@@ -41,7 +41,7 @@ public class StringUtilities {   //Utility methods
      * @param color target color
      * @param text target text
      */
-    public String markup(Color color, CharSequence text){
+    public static String markup(Color color, CharSequence text){
         StringJoiner colorFormat = new StringJoiner("", color.getValue(), GRAY.getValue());
         return String.valueOf(colorFormat.add(text));
     }
@@ -52,7 +52,7 @@ public class StringUtilities {   //Utility methods
      * @param input the string to be reversed
      * @return the reversed string
      */
-    public String reverse(String input){
+    public static String reverse(String input){
         StringBuilder reversed = new StringBuilder();
         for (int i = 0; i < input.length(); i++) {
             reversed.append(input.charAt(input.length() - i - 1));
@@ -66,7 +66,7 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be processed
      * @return the input string with the first letter capitalized, or null if the input string is null
      */
-    public String firstLetterCapped(String inputString){
+    public static String firstLetterCapped(String inputString){
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
             String remainingLetters = inputString.substring(1);
@@ -82,7 +82,7 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be processed
      * @return the input string with the first letter decapitalized, or null if the input string is null
      */
-    public String firstLetterDeCapped(String inputString){
+    public static String firstLetterDeCapped(String inputString){
         if (inputString!=null){
             String firstLetter = inputString.substring(0, 1);
             String remainingLetters = inputString.substring(1);
@@ -98,7 +98,7 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be converted to camel case
      * @return the input string in camel case format
      */
-    public String camelCase(String inputString){
+    public static String camelCase(String inputString){
         inputString = inputString.replaceAll("-", " ").replaceAll("_", " ").trim();
         while (inputString.contains(" ")){
             int spaceIndex = inputString.indexOf(" ");
@@ -118,7 +118,7 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be cleaned
      * @return the cleaned string, or a randomly generated string if the input string is empty
      */
-    public String cleanText(String inputString){
+    public static String cleanText(String inputString){
         inputString = inputString
                 .replaceAll("\\s", "")                    //Cleans spaces
                 .replaceAll("[0-9]", "")                  //Cleans numbers
@@ -135,7 +135,7 @@ public class StringUtilities {   //Utility methods
      * @param inputString the string to be normalized
      * @return the normalized string
      */
-    public String normalize(String inputString){
+    public static String normalize(String inputString){
         return Normalizer
                 .normalize(inputString, Normalizer.Form.NFD)
                 .replaceAll("ç", "c")
@@ -153,7 +153,7 @@ public class StringUtilities {   //Utility methods
      * @param length the maximum length of the shortened string
      * @return the shortened string, or the full input string if it is already shorter than the given length
      */
-    public String shorten(String inputString, int length) {
+    public static String shorten(String inputString, int length) {
         return inputString.substring(0, Math.min(inputString.length(), length));
     }
 
@@ -166,7 +166,7 @@ public class StringUtilities {   //Utility methods
      * @param useNumbers whether to include numbers in the random string
      * @return the generated random string with the given prefix
      */
-    public String generateRandomString(String keyword, int length, boolean useLetters, boolean useNumbers) {
+    public static String generateRandomString(String keyword, int length, boolean useLetters, boolean useNumbers) {
         return keyword + RandomStringUtils.random(length, useLetters, useNumbers);
     }
 
@@ -178,7 +178,7 @@ public class StringUtilities {   //Utility methods
      * @param lastKeyword the second keyword to search for
      * @return the distance between the first occurrence of the two keywords in the input string, or -1 if either keyword is not found
      */
-    public int measureDistanceBetween(String input, String firstKeyword, String lastKeyword){
+    public static int measureDistanceBetween(String input, String firstKeyword, String lastKeyword){
         // Remove any special chars from string
         final String strOnlyWords = input.replace(",", "").replace(".", "");
         final List<String> words = Arrays.asList(strOnlyWords.split(" "));
@@ -199,7 +199,7 @@ public class StringUtilities {   //Utility methods
      * @return a map containing the key-value pairs from the input string
      * @throws RuntimeException if either the key or value of a pair is null
      */
-    public Map<String, String> str2Map(String inputString){
+    public static Map<String, String> str2Map(String inputString){
         Map<String, String> outputMap = new HashMap<>();
         inputString = inputString.replaceAll("[{}]*", "");
         String[] pairs = inputString.split(",");
@@ -223,25 +223,32 @@ public class StringUtilities {   //Utility methods
      * @param input string that is to be context checked
      * @return value depending on the context (could be from ContextStore, Properties, Random etc)
      */
-    public String contextCheck(@NotNull String input){
+    public static String contextCheck(@NotNull String input){
         if (input.contains("CONTEXT-"))
             input = ContextStore.get(TextParser.parse("CONTEXT-", null, input));
-        else if (input.contains("RANDOM-")){
-            boolean useLetters = input.contains("LETTER");
-            boolean useNumbers = input.contains("NUMBER");
-            String keyword = "";
-            if (input.contains("KEYWORD")) keyword = TextParser.parse("-K=", "-", input);
-            String lengthString = TextParser.parse("-L=", null, input);
-            int length = lengthString == null ? 5 : Integer.parseInt(Objects.requireNonNull(lengthString));
-            input = generateRandomString(keyword, length, useLetters, useNumbers);
-        }
-        else if (input.contains("UPLOAD-")){
-            String relativePath = TextParser.parse("UPLOAD-", null, input);
-            input = new FileUtilities().getAbsolutePath(relativePath);
-        }
         else if (input.contains("PROPERTY-")){
             String propertyName = TextParser.parse("PROPERTY-", null, input);
-            input = PropertyUtility.getProperty(propertyName, "NULL");
+            input = PropertyUtilities.getProperty(propertyName, "NULL");
+        }
+        if (input != null && ContextStore.get("localised-elements", false)){
+            JsonObject localisationJson = ContextStore.get("localisation-json");
+            String translation = localisationJson.get(input).getAsString();
+            if (translation != null) input = localisationJson.get(input).getAsString();
+        }
+        else {
+            if (input != null && input.contains("RANDOM-")){
+                boolean useLetters = input.contains("LETTER");
+                boolean useNumbers = input.contains("NUMBER");
+                String keyword = "";
+                if (input.contains("KEYWORD")) keyword = TextParser.parse("-K=", "-", input);
+                String lengthString = TextParser.parse("-L=", null, input);
+                int length = lengthString == null ? 5 : Integer.parseInt(Objects.requireNonNull(lengthString));
+                input = generateRandomString(keyword, length, useLetters, useNumbers);
+            }
+            if (input != null && input.contains("UPLOAD-")){
+                String relativePath = TextParser.parse("UPLOAD-", null, input);
+                input = FileUtilities.getAbsolutePath(relativePath);
+            }
         }
         return input;
     }
