@@ -32,7 +32,7 @@ jobs:
           mvn \
             --no-transfer-progress \
             --batch-mode \
-            deploy -Pdeploy
+            deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
