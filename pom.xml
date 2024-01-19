@@ -120,7 +120,6 @@
       <version>${retrofit.version}</version>
     </dependency>
 
-
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -284,7 +283,6 @@
       </plugin>
     </plugins>
   </build>
-
 
   <distributionManagement>
      <snapshotRepository>
