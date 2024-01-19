@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static utils.StringUtilities.Color.*;
+import static utils.StringUtilities.highlighted;
 
 /**
  * The Printer class is used to log messages with different levels of importance and formatting.
@@ -12,11 +13,6 @@ import static utils.StringUtilities.Color.*;
  * The class also includes utility methods for highlighting text with different colors.
  */
 public class Printer {
-
-    /**
-     * A StringUtilities instance used for highlighting text.
-     */
-    StringUtilities strUtils = new StringUtilities();
 
     /**
      * The Logger instance used for logging messages.
@@ -48,7 +44,7 @@ public class Printer {
     @Deprecated(since = "1.4.3")
     public class Important {
         public Important(CharSequence output){
-            log(Level.INFO, strUtils.highlighted(PURPLE, output));
+            log(Level.INFO, highlighted(PURPLE, output));
         }
     }
 
@@ -58,7 +54,7 @@ public class Printer {
     @Deprecated(since = "1.4.3")
     public class Info {
         public Info(CharSequence output) {
-            log(Level.INFO, strUtils.highlighted(GRAY, output));
+            log(Level.INFO, highlighted(GRAY, output));
         }
     }
 
@@ -68,7 +64,7 @@ public class Printer {
     @Deprecated(since = "1.4.3")
     public class Success {
         public Success(CharSequence output){
-            log(Level.INFO, strUtils.highlighted(GREEN, output));
+            log(Level.INFO, highlighted(GREEN, output));
         }
     }
 
@@ -78,7 +74,7 @@ public class Printer {
     @Deprecated(since = "1.4.3")
     public class Warning {
         public Warning(CharSequence output){
-            log(Level.WARNING, strUtils.highlighted(YELLOW, output));
+            log(Level.WARNING, highlighted(YELLOW, output));
         }
     }
 
@@ -89,7 +85,7 @@ public class Printer {
     @Deprecated(since = "1.4.3")
     public class Error {
         public Error(CharSequence output, Exception exception){
-            log(strUtils.highlighted(RED, output), exception);
+            log(highlighted(RED, output), exception);
         }
     }
 
@@ -103,7 +99,7 @@ public class Printer {
      * @param output the message to be logged
      */
     public void info(CharSequence output){
-        log(Level.INFO, strUtils.highlighted(GRAY, output));
+        log(Level.INFO, highlighted(GRAY, output));
     }
 
     /**
@@ -112,7 +108,7 @@ public class Printer {
      * @param output the message to be logged
      */
     public void important(CharSequence output){
-        log(Level.INFO, strUtils.highlighted(PURPLE, output));
+        log(Level.INFO, highlighted(PURPLE, output));
     }
 
     /**
@@ -121,7 +117,7 @@ public class Printer {
      * @param output the message to be logged
      */
     public void success(CharSequence output){
-        log(Level.INFO, strUtils.highlighted(GREEN, output));
+        log(Level.INFO, highlighted(GREEN, output));
     }
 
     /**
@@ -130,7 +126,7 @@ public class Printer {
      * @param output the message to be logged
      */
     public void warning(CharSequence output){
-        log(Level.WARNING, strUtils.highlighted(YELLOW, output));
+        log(Level.WARNING, highlighted(YELLOW, output));
     }
 
     /**
@@ -140,7 +136,7 @@ public class Printer {
      * @param exception the exception to be logged
      */
     public void error(CharSequence output, Exception exception){
-        log(strUtils.highlighted(RED, output), exception);
+        log(highlighted(RED, output), exception);
     }
 
     /**
