@@ -6,16 +6,14 @@ import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
-import utils.ArrayUtilities;
-import utils.Conversion;
-import utils.FileUtilities;
-import utils.Printer;
+import utils.*;
 import utils.reflection.ReflectionUtilities;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.regex.Pattern;
 
 import static utils.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
@@ -126,5 +124,42 @@ public class AppTest {
             );
         }
         printer.success("The localisationCapabilityTest() test passed!");
+    }
+
+    @Test
+    public void getPDFFileTextTest() throws IOException {
+        URL url = new URL("https://sandbox.mabl.com/downloads/mabl_dash.pdf");
+        String fileDestinationPath = "src/test/resources/filePDF.pdf";
+        String pdfText = FileUtilities.getPDFFileText(url, fileDestinationPath);
+
+        assert pdfText != null;
+        Assert.assertTrue(
+                "PDF text does not contain the expected value!",
+                pdfText.contains("Run Settings")
+        );
+        printer.success("The getPDFFileTextTest() test passed!" + pdfText);
+    }
+
+    @Test
+    public void getSimpleDateFromTest() {
+        String offsetDateTimeString = "2024-01-25T14:00:00+01:00";
+        String dateFormat = "yyyy-MM-dd";
+        String simpleDateFormatString = DateUtilities.getSimpleDateFrom(offsetDateTimeString, dateFormat);
+        Assert.assertEquals(
+                "Date string does not match the expected value!",
+                simpleDateFormatString,
+                "2024-01-25"
+        );
+        printer.success("The getSimpleDateFormatStringFromTest() test passed!");
+    }
+
+    @Test
+    public void getDateNowTest() {
+        String simpleDateFormatString = DateUtilities.getDateNow();
+        Assert.assertTrue(
+                "Date string does not match!",
+                Pattern.matches("(20)\\d{2}-(0[1-9]|1[1,2])-(0[1-9]|[12][0-9]|3[01])", simpleDateFormatString)
+        );
+        printer.success("The getSimpleDateFormatStringFromTest() test passed!");
     }
 }
