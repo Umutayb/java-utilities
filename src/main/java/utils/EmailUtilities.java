@@ -1,5 +1,7 @@
 package utils;
 
+import collections.Pair;
+
 import static utils.EmailUtilities.Inbox.EmailField.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -251,6 +253,34 @@ public class EmailUtilities {
                 store.close();
             }
             catch (MessagingException exception) {log.error(exception.getLocalizedMessage(),exception);}
+        }
+
+        public boolean emailMatch(Message message, Pair<EmailField, String>... filterPairs){
+
+            for (Pair<EmailField, String> filterPair: filterPairs) {
+                String selector;
+
+                EmailField filterType = filterPair.alpha();
+                String filterValue = filterPair.beta();
+
+                if (filterType != null) {
+                    try{
+                        selector = switch (filterType) {
+                            case SUBJECT -> message.getSubject();
+                            case SENDER -> message.getFrom()[0].toString();
+                            case CONTENT -> getContent(message);
+                            case INDEX -> String.valueOf(messages.indexOf(message));
+                            case DATE -> String.valueOf(message.getSentDate());
+                            default -> throw new EnumConstantNotPresentException(EmailField.class, filterValue);
+                        };
+                        if (!(selector.contains(filterValue) || selector.equalsIgnoreCase(filterValue)))
+                            return false;
+                    }catch (MessagingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            return true;
         }
 
         /**
