@@ -255,7 +255,94 @@ public class EmailUtilities {
             catch (MessagingException exception) {log.error(exception.getLocalizedMessage(),exception);}
         }
 
-        public boolean emailMatch(Message message, Pair<EmailField, String>... filterPairs){
+        // option 2: name new method different and call it inside loadInbox
+        private void loadInbox3(EmailField filterType, String filterKey, Boolean print, Boolean save, Boolean saveAttachments){
+            Pair<EmailField, String> filterPairs = new Pair<>(filterType,filterKey);
+            loadInbox2(print, save, saveAttachments, filterPairs);
+        }
+        // option 1 override loadInbox and convert EmailField filterType, String filterKey in a Pair
+        private void loadInbox2(EmailField filterType, String filterKey, Boolean print, Boolean save, Boolean saveAttachments){
+            Pair<EmailField, String> filterPairs = new Pair<>(filterType,filterKey);
+            Properties properties = new Properties();
+
+            //---------- Server Setting---------------
+            properties.put("mail.pop3.host", host);
+            properties.put("mail.pop3.port", port);
+            if(secureCon.equalsIgnoreCase("ssl")){properties.put("mail.smtp.ssl.enable", "true");}
+            else{properties.put("mail.smtp.ssl.enable", "false");}
+            //---------- SSL setting------------------
+            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
+            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
+            Session session = Session.getDefaultInstance(properties);
+            //----------------------------------------
+
+            try {
+                log.info("Connecting please wait....");
+                Store store = session.getStore("pop3");
+                store.connect(userName, password);
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_ONLY);
+                log.info("Connected to mail via "+host);
+                // opens the inbox folder
+                log.info("Getting inbox..");
+
+                // fetches new messages from server
+                List<Message> messages = List.of(folderInbox.getMessages());
+
+                for (Message message:messages) {
+                    if (emailMatch( message, filterPairs))
+                        resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
+                }
+                log.info("You have "+this.messages.size()+" new mails in your inbox");
+                // disconnect
+                folderInbox.close(false);
+                store.close();
+            }
+            catch (MessagingException exception) {log.error(exception.getLocalizedMessage(),exception);}
+        }
+        // new method for loadInbox
+        private void loadInbox2( Boolean print, Boolean save, Boolean saveAttachments, Pair<EmailField, String>... filterPairs){
+            Properties properties = new Properties();
+
+            //---------- Server Setting---------------
+            properties.put("mail.pop3.host", host);
+            properties.put("mail.pop3.port", port);
+            if(secureCon.equalsIgnoreCase("ssl")){properties.put("mail.smtp.ssl.enable", "true");}
+            else{properties.put("mail.smtp.ssl.enable", "false");}
+            //---------- SSL setting------------------
+            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
+            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
+            Session session = Session.getDefaultInstance(properties);
+            //----------------------------------------
+
+            try {
+                log.info("Connecting please wait....");
+                Store store = session.getStore("pop3");
+                store.connect(userName, password);
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_ONLY);
+                log.info("Connected to mail via "+host);
+                // opens the inbox folder
+                log.info("Getting inbox..");
+
+                // fetches new messages from server
+                List<Message> messages = List.of(folderInbox.getMessages());
+
+                for (Message message:messages) {
+                    if (emailMatch( message, filterPairs))
+                        resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
+                }
+                log.info("You have "+this.messages.size()+" new mails in your inbox");
+                // disconnect
+                folderInbox.close(false);
+                store.close();
+            }
+            catch (MessagingException exception) {log.error(exception.getLocalizedMessage(),exception);}
+        }
+
+        private boolean emailMatch(Message message, Pair<EmailField, String>... filterPairs){
 
             for (Pair<EmailField, String> filterPair: filterPairs) {
                 String selector;
