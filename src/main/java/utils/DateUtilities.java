@@ -2,10 +2,7 @@ package utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -194,5 +191,30 @@ public class DateUtilities {
      */
     public static long countDaysBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return ChronoUnit.DAYS.between(startDate, endDate);
+    }
+
+    /**
+     * Reformat a OffsetDateTime string into a SimpleDateFormat string.
+     *
+     * @param outputFormat The SimpleDateFormat to which the date string should be reformatted.
+     * @return A string representing the SimpleDateFormat date.
+     */
+    public static String getSimpleDateFrom(String offsetDateTimeString, String outputFormat) {
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(offsetDateTimeString);
+        Instant instant = offsetDateTime.toInstant();
+        Date date = Date.from(instant);
+        SimpleDateFormat formatter = new SimpleDateFormat(outputFormat);
+        return formatter.format(date);
+    }
+
+    /**
+     * Get a current date into a SimpleDateFormat string.
+     *
+     * @return A string representing the current SimpleDateFormat date.
+     */
+    public static String getDateNow() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return dtf.format(now);
     }
 }
