@@ -1,5 +1,7 @@
 package utils;
 
+import enums.ZoneIds;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -199,7 +201,7 @@ public class DateUtilities {
      * @param outputFormat The SimpleDateFormat to which the date string should be reformatted.
      * @return A string representing the SimpleDateFormat date.
      */
-    public static String getSimpleDateFrom(String offsetDateTimeString, String outputFormat) {
+    public static String getSimpleDateStringFrom(String offsetDateTimeString, String outputFormat) {
         OffsetDateTime offsetDateTime = OffsetDateTime.parse(offsetDateTimeString);
         Instant instant = offsetDateTime.toInstant();
         Date date = Date.from(instant);
@@ -212,8 +214,8 @@ public class DateUtilities {
      *
      * @return A string representing the current SimpleDateFormat date.
      */
-    public static String getDateNow() {
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Europe/Paris"));
+    public static String getCurrentDate(ZoneIds zoneId) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of(zoneId.getZoneId()));
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return dtf.format(now);
     }
