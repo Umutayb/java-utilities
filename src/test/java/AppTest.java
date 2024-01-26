@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import context.ContextStore;
+import enums.ZoneIds;
 import org.junit.Assert;
 import petstore.PetStore;
 import petstore.PetStoreServices;
@@ -141,10 +142,10 @@ public class AppTest {
     }
 
     @Test
-    public void getSimpleDateFromTest() {
+    public void getSimpleDateStringFromTest() {
         String offsetDateTimeString = "2024-01-25T14:00:00+01:00";
         String dateFormat = "yyyy-MM-dd";
-        String simpleDateFormatString = DateUtilities.getSimpleDateFrom(offsetDateTimeString, dateFormat);
+        String simpleDateFormatString = DateUtilities.getSimpleDateStringFrom(offsetDateTimeString, dateFormat);
         Assert.assertEquals(
                 "Date string does not match the expected value!",
                 simpleDateFormatString,
@@ -154,8 +155,8 @@ public class AppTest {
     }
 
     @Test
-    public void getDateNowTest() {
-        String simpleDateFormatString = DateUtilities.getDateNow();
+    public void getCurrentDateTest() {
+        String simpleDateFormatString = DateUtilities.getCurrentDate(ZoneIds.EUROPE_PARIS);
         Assert.assertTrue(
                 "Date string does not match!",
                 Pattern.matches("(20)\\d{2}-(0[1-9]|1[1,2])-(0[1-9]|[12][0-9]|3[01])", simpleDateFormatString)
