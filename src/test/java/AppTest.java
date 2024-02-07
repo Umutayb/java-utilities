@@ -1,3 +1,4 @@
+import collections.Pair;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import context.ContextStore;
@@ -6,10 +7,7 @@ import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
-import utils.ArrayUtilities;
-import utils.Conversion;
-import utils.FileUtilities;
-import utils.Printer;
+import utils.*;
 import utils.reflection.ReflectionUtilities;
 
 import java.util.ArrayList;
@@ -17,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static utils.EmailUtilities.Inbox.EmailField.CONTENT;
+import static utils.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
@@ -112,13 +112,13 @@ public class AppTest {
     }
 
     @Test
-    public void localisationCapabilityTest(){
+    public void localisationCapabilityTest() {
         JsonObject localisationJson = FileUtilities.Json.parseJsonFile("src/test/resources/localisation.json");
         ContextStore.put("localisation-json", localisationJson);
         ContextStore.put("localised-elements", true);
 
         assert localisationJson != null;
-        for (String key:localisationJson.keySet()) {
+        for (String key : localisationJson.keySet()) {
             Assert.assertEquals(
                     "Translation does not match the expected value!",
                     localisationJson.get(key).getAsString(),
@@ -126,5 +126,44 @@ public class AppTest {
             );
         }
         printer.success("The localisationCapabilityTest() test passed!");
+    }
+
+    @Test
+    public void filterEmailTest() {
+        ContextStore.loadProperties("test.properties");
+        EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
+        emailUtilities.sendEmail(
+                "Test filter two",
+                "content",
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        emailUtilities.sendEmail(
+                "Test filter apple",
+                "content",
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        emailUtilities.sendEmail(
+                "Test filter orange",
+                "test",
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
+                "pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl"
+        );
+        // TODO: assertions and change return value of load method
+        inbox.load(true, true, false, Pair.of(SUBJECT, "Test filter"),Pair.of(CONTENT, "content"));
     }
 }
