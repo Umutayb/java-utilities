@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import utils.reflection.ReflectionUtilities;
 
 import static utils.EmailUtilities.Inbox.EmailField.*;
 import static utils.arrays.lambda.Collectors.toSingleton;
@@ -119,44 +120,68 @@ public class EmailUtilities {
         /**
          * Enumeration of email fields used as keys in the map representation of email messages.
          */
-        public enum EmailField {SUBJECT, SENDER, CONTENT, INDEX, DATE, ATTACHMENTS}
+        public enum EmailField {SUBJECT, SENDER, CONTENT, @Deprecated(since = "1.6.2", forRemoval = true) INDEX, DATE, ATTACHMENTS}
 
+        /**
+         * This class represents an email message.
+         */
         @Data
         @AllArgsConstructor
         @NoArgsConstructor
         public static class EmailMessage {
             String from;
-            Date sentDate;
+            String sentDate;
             String subject;
             String messageContent;
             String attachments;
+
+            /**
+             * Constructs an EmailMessage object from a javax.mail.Message.
+             *
+             * @param message The javax.mail.Message object to construct from.
+             */
+            public EmailMessage(Message message) {
+                try {
+                    this.from = message.getFrom()[0].toString();
+                    this.subject = message.getSubject();
+                    this.messageContent = getContent(message);
+                    this.sentDate = String.valueOf(message.getSentDate());
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            /**
+             * Creates an EmailMessage object from a javax.mail.Message.
+             *
+             * @param message The javax.mail.Message object to create from.
+             * @return        The created EmailMessage object.
+             */
+            public static EmailMessage from(Message message) {
+                return new EmailMessage(message);
+            }
         }
 
-        public <T> EmailMessage getMessageBy(EmailField filterType, T filterValue) {
-            if (filterType.equals(INDEX)) return this.messages.get((int) filterValue);
-            else return this.messages.stream().filter(message -> {
-                        switch (filterType) {
-                            case CONTENT -> {
-                                return message.getMessageContent().equals(filterValue);
-                            }
-                            case SUBJECT -> {
-                                return message.getSubject().equals(filterValue);
-                            }
-                            case DATE -> {
-                                return message.getSentDate().equals(filterValue);
-                            }
-                            case SENDER -> {
-                                return message.getFrom().equals(filterValue);
-                            }
-                            case ATTACHMENTS -> {
-                                return message.getAttachments().equals(filterValue);
-                            }
-                            default -> {
-                                return false;
-                            }
-                        }
-                    }
-            ).collect(toSingleton());
+        /**
+         * Retrieves an email message based on the specified filter pairs.
+         *
+         * @param filterPairs An array of filter pairs containing the filter type and value.
+         * @return            The email message matching the specified filters.
+         */
+        @SafeVarargs
+        public final EmailMessage getMessageBy(Pair<EmailField, String>... filterPairs) {
+            return this.messages.stream().filter(message -> emailMatch(message, filterPairs)).collect(toSingleton());
+        }
+
+        /**
+         * Retrieves an email message based on the specified filter type and value.
+         *
+         * @param filterType  The type of filter to apply.
+         * @param filterValue The value to filter by.
+         * @return            The email message matching the specified filter.
+         */
+        public EmailMessage getMessageBy(EmailField filterType, String filterValue) {
+            return getMessageBy(Pair.of(filterType, filterValue));
         }
 
         /**
@@ -182,6 +207,44 @@ public class EmailUtilities {
         }
 
         /**
+         * Retrieves the inbox with specified parameters and filters.
+         *
+         * @param inbox                The inbox to retrieve.
+         * @param timeout              The timeout value for retrieving the inbox.
+         * @param expectedMessageCount The expected number of messages to be retrieved.
+         * @param filterPairs          An array of filter pairs containing the filter type and value.
+         * @return                     The retrieved inbox.
+         */
+        public static Inbox get(Inbox inbox, int timeout, int expectedMessageCount, Pair<EmailField, String>... filterPairs){
+            load(inbox, timeout, expectedMessageCount, false, true, false, filterPairs);
+            return inbox;
+        }
+
+        /**
+         * Retrieves the inbox with specified parameters, filters, and loading options.
+         *
+         * @param inbox                The inbox to retrieve.
+         * @param timeout              The timeout value for retrieving the inbox.
+         * @param expectedMessageCount The expected number of messages to be retrieved.
+         * @param print                Specifies whether to print the retrieved messages.
+         * @param save                 Specifies whether to save the retrieved messages.
+         * @param saveAttachments      Specifies whether to save attachments.
+         * @param filterPairs          An array of filter pairs containing the filter type and value.
+         * @return                     The retrieved inbox.
+         */
+        public static Inbox get(
+                Inbox inbox,
+                int timeout,
+                int expectedMessageCount,
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                Pair<EmailField, String>... filterPairs){
+            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+            return inbox;
+        }
+
+        /**
          * Saves an email message body to a file with the given filename in the 'inbox' directory.
          *
          * @param filename       the name of the file to be created and saved as.
@@ -196,6 +259,27 @@ public class EmailUtilities {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        /**
+         * Loads messages into the specified inbox with the given parameters and filters, waiting until the expected number of messages is reached.
+         *
+         * @param inbox                The inbox to load messages into.
+         * @param timeout              The timeout value for loading messages.
+         * @param expectedMessageCount The expected number of messages to be loaded.
+         * @param print                Specifies whether to print the loaded messages.
+         * @param save                 Specifies whether to save the loaded messages.
+         * @param saveAttachments      Specifies whether to save attachments.
+         * @param filterPairs          An array of filter pairs containing the filter type and value.
+         */
+        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs){
+            ReflectionUtilities.iterativeConditionalInvocation(
+                    timeout,
+                    ()-> {
+                        inbox.load(print, save, saveAttachments, filterPairs);
+                        return inbox.messages.size() >= expectedMessageCount;
+                    }
+            );
         }
 
         /**
@@ -251,7 +335,7 @@ public class EmailUtilities {
                 List<Message> messages = List.of(folderInbox.getMessages());
 
                 for (Message message : messages) {
-                    if (emailMatch(message, filterPairs))
+                    if (emailMatch(EmailMessage.from(message), filterPairs))
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
                 log.info("You have " + this.messages.size() + " new mails in your inbox");
@@ -264,13 +348,13 @@ public class EmailUtilities {
         }
 
         /**
-         * Checks if the provided message matches the specified filters.
+         * Checks if an email message matches the specified filters.
          *
-         * @param message     the message to be checked.
-         * @param filterPairs pairs of EmailField and String representing the filter criteria.
-         * @return true if the message matches all the filter criteria, false otherwise.
+         * @param emailMessage The email message to be matched against the filters.
+         * @param filterPairs  An array of filter pairs containing the filter type and value.
+         * @return             True if the email message matches all filters, false otherwise.
          */
-        private boolean emailMatch(Message message, Pair<EmailField, String>... filterPairs) {
+        public static boolean emailMatch(EmailMessage emailMessage, Pair<EmailField, String>... filterPairs) {
 
             for (Pair<EmailField, String> filterPair : filterPairs) {
                 String selector;
@@ -279,20 +363,15 @@ public class EmailUtilities {
                 String filterValue = filterPair.beta();
 
                 if (filterType != null) {
-                    try {
-                        selector = switch (filterType) {
-                            case SUBJECT -> message.getSubject();
-                            case SENDER -> message.getFrom()[0].toString();
-                            case CONTENT -> getContent(message);
-                            case INDEX -> String.valueOf(messages.indexOf(message));
-                            case DATE -> String.valueOf(message.getSentDate());
-                            default -> throw new EnumConstantNotPresentException(EmailField.class, filterValue);
-                        };
-                        if (!(selector.contains(filterValue) || selector.equalsIgnoreCase(filterValue)))
-                            return false;
-                    } catch (MessagingException e) {
-                        throw new RuntimeException(e);
-                    }
+                    selector = switch (filterType) {
+                        case SUBJECT -> emailMessage.getSubject();
+                        case SENDER -> emailMessage.getFrom();
+                        case CONTENT -> emailMessage.getMessageContent();
+                        case DATE -> emailMessage.getSentDate();
+                        default -> throw new EnumConstantNotPresentException(EmailField.class, filterValue);
+                    };
+                    if (!(selector.contains(filterValue) || selector.equalsIgnoreCase(filterValue)))
+                        return false;
                 }
             }
             return true;
@@ -312,14 +391,12 @@ public class EmailUtilities {
             EmailMessage emailMessage;
             try {
                 String from = message.getFrom()[0].toString();
-                Date sentDate = message.getSentDate();
+                String sentDate = String.valueOf(message.getSentDate());
                 String subject = message.getSubject();
                 String messageContent = getContent(message);
                 String attachments = getAttachments(message, saveAttachments);
 
-                emailMessage = new EmailMessage(from, sentDate, subject, messageContent, attachments);
-
-                this.messages.add(emailMessage);
+                this.messages.add(EmailMessage.from(message));
 
                 if (print) {
                     log.info("Message #" + index);
@@ -385,7 +462,7 @@ public class EmailUtilities {
          * @return the message content, as a String
          * @throws RuntimeException if there is a problem retrieving the message content
          */
-        private String getContent(Message message) {
+        public static String getContent(Message message) {
             try {
                 String messageContent = "";
                 String contentType = message.getContentType();
@@ -402,7 +479,7 @@ public class EmailUtilities {
                     messageContent = message.getContent().toString();
                 return messageContent;
             } catch (MessagingException | IOException e) {
-                log.error(e.fillInStackTrace().getLocalizedMessage(), e);
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
@@ -453,7 +530,7 @@ public class EmailUtilities {
          * @param part is the body
          * @return returns the body of the email
          */
-        private String getText(Part part) throws MessagingException, IOException {
+        private static String getText(Part part) throws MessagingException, IOException {
 
             if (part.isMimeType("text/*")) {
                 return (String) part.getContent();

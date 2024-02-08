@@ -206,16 +206,19 @@ public class AppTest {
                 "ssl"
         );
 
-        ReflectionUtilities.iterativeConditionalInvocation(
+        inbox.get(
+                inbox,
                 30,
-                ()-> {
-                    inbox.load(true, true, false, Pair.of(SUBJECT, "Test filter"), Pair.of(CONTENT, emailTestContent));
-                    return inbox.messages.size()==2;
-                }
+                2,
+                true,
+                true,
+                false,
+                Pair.of(SUBJECT, "Test filter"), Pair.of(CONTENT, emailTestContent)
         );
+
         Assert.assertEquals("Unexpected number of emails found!", 2, inbox.getMessages().size());
-        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
-        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(Pair.of(SUBJECT, "Test filter banana")).getMessageContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(Pair.of(SUBJECT, "Test filter apple")).getMessageContent().contains(emailTestContent));
         printer.success("Sending and receiving emails tests are successful!");
     }
 }
