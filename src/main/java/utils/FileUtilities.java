@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -15,9 +18,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -26,6 +31,8 @@ import static utils.StringUtilities.Color.*;
 
 @SuppressWarnings("unused")
 public class FileUtilities {
+
+    static Printer log = new Printer(FileUtilities.class);
 
     /**
      * Returns the absolute path of a file given its relative path.
@@ -115,6 +122,27 @@ public class FileUtilities {
             gamma.printStackTrace();
         }
         return fileIsPresent;
+    }
+
+    /**
+     * Downloads PDF from url and returns a text of PDF.
+     *
+     * @param url The url which is used for downloading PDF.
+     * @param fileDestinationPath The destination path where the PDF is downloaded.
+     * @return The text of PDF.
+     */
+    public static String getPDFFileText(URL url, String fileDestinationPath) throws IOException {
+        try (InputStream in = url.openStream()) {
+            Files.copy(in, Paths.get(fileDestinationPath), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException exception) {
+            log.error(exception.getMessage(), exception);
+        }
+        File file = new File(fileDestinationPath);
+        PDDocument document = Loader.loadPDF(file);
+        PDFTextStripper stripper = new PDFTextStripper();
+        String invoiceText = stripper.getText(document);
+        document.close();
+        return invoiceText;
     }
 
     /**

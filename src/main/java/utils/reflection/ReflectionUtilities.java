@@ -77,6 +77,70 @@ public class ReflectionUtilities {
      *             int a = 2;
      *             int b = 1;
      *             int timeout = 30;
+     *             iterativeConditionalInvocation(timeout, 5, () -> {return a - b > 0;});
+     *         }
+     *     }
+     *
+     *     //OR:
+     *     class Test2 {
+     *         public static void main(String[] args) {
+     *             int a = 2;
+     *             int b = 1;
+     *             int timeout = 30;
+     *             iterativeConditionalInvocation(timeout, 5, () -> conditionalMethod(a, b));
+     *         }
+     *
+     *         public static boolean conditionalMethod(int a, int b) {
+     *             return a - b < 0;
+     *         }
+     *     }
+     * }
+     * }</pre>
+     *
+     *
+     * @param timeoutInSeconds The time limit (in seconds) for the iteration.
+     * @return True if the condition is met within the specified timeout; otherwise, false.
+     * @throws RuntimeException if an exception occurs during method invocation.
+     */
+    public static boolean iterativeConditionalInvocation(
+            int timeoutInSeconds,
+            int repeats,
+            ConditionalFunction conditionalFunction
+    ) {
+        boolean condition;
+        long startingTime = System.currentTimeMillis();
+        int interval = timeoutInSeconds / repeats;
+        log.info("Iterating at " + interval + " second intervals.");
+        try {
+            do {
+                condition = conditionalFunction.execute();
+                if (condition) break;
+                TimeUnit.SECONDS.sleep(interval);
+            }
+            while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
+        }
+        catch (InterruptedException exception) {
+            throw new RuntimeException(exception);
+        }
+        return condition;
+    }
+
+
+    /**
+     * Iteratively invokes a specified method on a class and checks a condition until the condition is met
+     * or a timeout is reached.
+     *
+     * Use this method when you have a specific {@link ConditionalFunction} that encapsulates the desired
+     * condition-checking logic, and you want to repeatedly execute it until the condition is met
+     * or a specified timeout is reached.
+     *
+     * Example usage:
+     * <pre>{@code
+     *     class Test1 {
+     *         public static void main(String[] args) {
+     *             int a = 2;
+     *             int b = 1;
+     *             int timeout = 30;
      *             iterativeConditionalInvocation(timeout, () -> {return a - b > 0;});
      *         }
      *     }
@@ -106,22 +170,11 @@ public class ReflectionUtilities {
             int timeoutInSeconds,
             ConditionalFunction conditionalFunction
     ) {
-        boolean condition;
-        long startingTime = System.currentTimeMillis();
-        int interval = (int) Math.pow(timeoutInSeconds, 0.5);
-        log.info("Iterating at " + interval + " second intervals.");
-        try {
-            do {
-                condition = conditionalFunction.execute();
-                if (condition) break;
-                TimeUnit.SECONDS.sleep(interval);
-            }
-            while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
-        }
-        catch (InterruptedException exception) {
-            throw new RuntimeException(exception);
-        }
-        return condition;
+        return iterativeConditionalInvocation(
+                timeoutInSeconds,
+                (int) Math.pow(timeoutInSeconds, 0.5),
+                conditionalFunction
+        );
     }
 
     /**
@@ -373,7 +426,7 @@ public class ReflectionUtilities {
         try {
             for (Field field : fields) {
                 field.setAccessible(true);
-                String fieldName = new StringUtilities().firstLetterCapped(field.getName());
+                String fieldName = StringUtilities.firstLetterCapped(field.getName());
                 output.append("\n").append(fieldName).append(" : ").append(field.get(object));
             }
             log.important("\nFields: " + output);
@@ -393,7 +446,7 @@ public class ReflectionUtilities {
         try {
             for (Method method : methods)
                 if (method.getName().contains("get")) {
-                    String fieldName = new StringUtilities().firstLetterCapped(method.getName().replaceAll("get", ""));
+                    String fieldName = StringUtilities.firstLetterCapped(method.getName().replaceAll("get", ""));
                     output.append("\n").append(fieldName).append(" : ").append(method.invoke(object));
                 }
             log.important("\nFields: " + output);
