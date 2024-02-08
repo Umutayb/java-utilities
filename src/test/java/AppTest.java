@@ -165,16 +165,16 @@ public class AppTest {
     }
 
     @Test
-    public void setObjectFieldTest() {
+    public void setFieldTest() {
         Pet pet = new Pet();
         String expectedFieldName = "name";
         String expectedFieldValue = "Bella";
-        ReflectionUtilities.setObjectField(pet, expectedFieldName, expectedFieldValue);
+        ReflectionUtilities.setField(pet, expectedFieldName, expectedFieldValue);
         Assert.assertEquals(
                 "Value of field " + expectedFieldName + " does not match!",
                 expectedFieldValue,
                 pet.getName()
         );
-        printer.success("The setObjectFieldTest() test passed!");
+        printer.success("The setFieldTest() test passed!");
     }
 }

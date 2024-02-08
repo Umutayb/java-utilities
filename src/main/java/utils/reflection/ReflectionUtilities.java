@@ -380,7 +380,7 @@ public class ReflectionUtilities {
      * @param fieldValue The value to set the field of object.
      * @throws RuntimeException If the field cannot be accessed or does not exist.
      */
-    public static void setObjectField(Object object, String fieldName, Object fieldValue) {
+    public static void setField(Object object, String fieldName, Object fieldValue) {
         try {
             Field field = object.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
