@@ -27,13 +27,12 @@ public class ReflectionUtilities {
      * or a timeout is reached.
      *
      * @param timeoutInSeconds The time limit (in seconds) for the iteration.
-     * @param parent The class containing the method to be invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
-     * @param methodName The name of the method to invoke. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
-     * @param args The arguments to pass to the method when invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)}
-     * @param <T> The type of the parent class.
+     * @param parent           The class containing the method to be invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
+     * @param methodName       The name of the method to invoke. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)})
+     * @param args             The arguments to pass to the method when invoked. (Deprecated: Use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)}
+     * @param <T>              The type of the parent class.
      * @return True if the condition is met within the specified timeout; otherwise, false.
      * @throws RuntimeException if an exception occurs during method invocation.
-     *
      * @deprecated Since version 1.9.7, use {@link ReflectionUtilities#iterativeConditionalInvocation(int, ConditionalFunction)} instead
      */
     @Deprecated(since = "1.9.7")
@@ -65,11 +64,11 @@ public class ReflectionUtilities {
     /**
      * Iteratively invokes a specified method on a class and checks a condition until the condition is met
      * or a timeout is reached.
-     *
+     * <p>
      * Use this method when you have a specific {@link ConditionalFunction} that encapsulates the desired
      * condition-checking logic, and you want to repeatedly execute it until the condition is met
      * or a specified timeout is reached.
-     *
+     * <p>
      * Example usage:
      * <pre>{@code
      *     class Test1 {
@@ -97,7 +96,6 @@ public class ReflectionUtilities {
      * }
      * }</pre>
      *
-     *
      * @param timeoutInSeconds The time limit (in seconds) for the iteration.
      * @return True if the condition is met within the specified timeout; otherwise, false.
      * @throws RuntimeException if an exception occurs during method invocation.
@@ -116,9 +114,8 @@ public class ReflectionUtilities {
                 if (condition) break;
                 TimeUnit.SECONDS.sleep(interval);
             }
-            while (!((System.currentTimeMillis() - startingTime)/1000 > timeoutInSeconds));
-        }
-        catch (InterruptedException exception) {
+            while (!((System.currentTimeMillis() - startingTime) / 1000 > timeoutInSeconds));
+        } catch (InterruptedException exception) {
             throw new RuntimeException(exception);
         }
         return condition;
@@ -317,6 +314,24 @@ public class ReflectionUtilities {
             Field field = inputObject.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             return field.get(inputObject);
+        } catch (IllegalAccessException | NoSuchFieldException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    /**
+     * This method set the value to a field of object with a given field name.
+     *
+     * @param object     The object in which field the value is set.
+     * @param fieldName  The name of the field to set the value.
+     * @param fieldValue The value to set the field of object.
+     * @throws RuntimeException If the field cannot be accessed or does not exist.
+     */
+    public static void setObjectField(Object object, String fieldName, Object fieldValue) {
+        try {
+            Field field = object.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(object, fieldValue);
         } catch (IllegalAccessException | NoSuchFieldException exception) {
             throw new RuntimeException(exception);
         }

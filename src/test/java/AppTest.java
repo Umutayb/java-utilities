@@ -111,13 +111,13 @@ public class AppTest {
     }
 
     @Test
-    public void localisationCapabilityTest(){
+    public void localisationCapabilityTest() {
         JsonObject localisationJson = FileUtilities.Json.parseJsonFile("src/test/resources/localisation.json");
         ContextStore.put("localisation-json", localisationJson);
         ContextStore.put("localised-elements", true);
 
         assert localisationJson != null;
-        for (String key:localisationJson.keySet()) {
+        for (String key : localisationJson.keySet()) {
             Assert.assertEquals(
                     "Translation does not match the expected value!",
                     localisationJson.get(key).getAsString(),
@@ -162,5 +162,19 @@ public class AppTest {
                 Pattern.matches("(20)\\d{2}-(0[1-9]|1[1,2])-(0[1-9]|[12][0-9]|3[01])", simpleDateFormatString)
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
+    }
+
+    @Test
+    public void setObjectFieldTest() {
+        Pet pet = new Pet();
+        String expectedFieldName = "name";
+        String expectedFieldValue = "Bella";
+        ReflectionUtilities.setObjectField(pet, expectedFieldName, expectedFieldValue);
+        Assert.assertEquals(
+                "Value of field " + expectedFieldName + " does not match!",
+                expectedFieldValue,
+                pet.getName()
+        );
+        printer.success("The setObjectFieldTest() test passed!");
     }
 }
