@@ -1,8 +1,13 @@
 package utils;
 
 import collections.Pair;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import static utils.EmailUtilities.Inbox.EmailField.*;
+import static utils.arrays.lambda.Collectors.toSingleton;
 
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -108,12 +113,51 @@ public class EmailUtilities {
          * List of email messages represented as a list of maps where each map contains email fields as keys
          * and their corresponding values as values.
          */
-        public List<Map<EmailField, Object>> messages = new ArrayList<>();
+        @Getter
+        public List<EmailMessage> messages = new ArrayList<>();
 
         /**
          * Enumeration of email fields used as keys in the map representation of email messages.
          */
         public enum EmailField {SUBJECT, SENDER, CONTENT, INDEX, DATE, ATTACHMENTS}
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class EmailMessage {
+            String from;
+            Date sentDate;
+            String subject;
+            String messageContent;
+            String attachments;
+        }
+
+        public <T> EmailMessage getMessageBy(EmailField filterType, T filterValue) {
+            if (filterType.equals(INDEX)) return this.messages.get((int) filterValue);
+            else return this.messages.stream().filter(message -> {
+                        switch (filterType) {
+                            case CONTENT -> {
+                                return message.getMessageContent().equals(filterValue);
+                            }
+                            case SUBJECT -> {
+                                return message.getSubject().equals(filterValue);
+                            }
+                            case DATE -> {
+                                return message.getSentDate().equals(filterValue);
+                            }
+                            case SENDER -> {
+                                return message.getFrom().equals(filterValue);
+                            }
+                            case ATTACHMENTS -> {
+                                return message.getAttachments().equals(filterValue);
+                            }
+                            default -> {
+                                return false;
+                            }
+                        }
+                    }
+            ).collect(toSingleton());
+        }
 
         /**
          * Constructs a new Inbox object with the specified configuration settings.
@@ -197,7 +241,7 @@ public class EmailUtilities {
                 log.info("Connecting please wait....");
                 Store store = session.getStore("pop3");
                 store.connect(userName, password);
-                Folder folderInbox = store.getFolder("INBOX");
+                Folder folderInbox = store.getFolder("INBOX"); // TODO: Dynamically acquire folder
                 folderInbox.open(Folder.READ_ONLY);
                 log.info("Connected to mail via " + host);
                 // opens the inbox folder
@@ -265,6 +309,7 @@ public class EmailUtilities {
          * @throws Error if there is a MessagingException during the process.
          */
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments) {
+            EmailMessage emailMessage;
             try {
                 String from = message.getFrom()[0].toString();
                 Date sentDate = message.getSentDate();
@@ -272,17 +317,9 @@ public class EmailUtilities {
                 String messageContent = getContent(message);
                 String attachments = getAttachments(message, saveAttachments);
 
-                Map<EmailField, Object> messageMap = new HashMap<>();
+                emailMessage = new EmailMessage(from, sentDate, subject, messageContent, attachments);
 
-                messageMap.put(INDEX, index);
-                messageMap.put(SENDER, from);
-                messageMap.put(SUBJECT, subject);
-                messageMap.put(DATE, sentDate);
-                messageMap.put(CONTENT, messageContent);
-
-                if (attachments.length() > 0) messageMap.put(ATTACHMENTS, attachments);
-
-                this.messages.add(messageMap);
+                this.messages.add(emailMessage);
 
                 if (print) {
                     log.info("Message #" + index);

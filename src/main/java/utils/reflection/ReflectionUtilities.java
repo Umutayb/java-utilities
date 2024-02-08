@@ -14,7 +14,6 @@ import utils.StringUtilities;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ReflectionUtilities {
@@ -112,7 +111,10 @@ public class ReflectionUtilities {
         int interval = timeoutInSeconds / repeats;
         log.info("Iterating at " + interval + " second intervals.");
         try {
-            do {
+            int counter = 0;
+            do{
+                counter++;
+                log.info("Iteration #" + counter);
                 condition = conditionalFunction.execute();
                 if (condition) break;
                 TimeUnit.SECONDS.sleep(interval);

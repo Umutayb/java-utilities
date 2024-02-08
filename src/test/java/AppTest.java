@@ -9,8 +9,8 @@ import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
 import utils.*;
+import utils.arrays.ArrayUtilities;
 import utils.reflection.ReflectionUtilities;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,7 +29,9 @@ public class AppTest {
     @Test
     public void getRandomItemTest() {
         List<Integer> numList = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        System.out.println(ArrayUtilities.getRandomItemFrom(numList));
+        int randomNumber = ArrayUtilities.getRandomItemFrom(numList);
+        Assert.assertTrue(String.format("Random number %d is not part of the list!", randomNumber), numList.contains(randomNumber));
+        printer.success("getRandomItemTest successful!");
     }
 
     @Test
@@ -169,11 +171,12 @@ public class AppTest {
 	
 	@Test
     public void filterEmailTest() {
+        String emailTestContent = "username:xyz";
         ContextStore.loadProperties("test.properties");
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
-                "Test filter two",
-                "content",
+                "Test filter banana",
+                emailTestContent,
                 ContextStore.get("test-email"),
                 ContextStore.get("sender-test-email"),
                 ContextStore.get("test-email-master-password"),
@@ -181,7 +184,7 @@ public class AppTest {
         );
         emailUtilities.sendEmail(
                 "Test filter apple",
-                "content",
+                emailTestContent,
                 ContextStore.get("test-email"),
                 ContextStore.get("sender-test-email"),
                 ContextStore.get("test-email-master-password"),
@@ -202,6 +205,17 @@ public class AppTest {
                 ContextStore.get("test-email-application-password"),
                 "ssl"
         );
-        // TODO: assertions and change return value of load method
-        inbox.load(true, true, false, Pair.of(SUBJECT, "Test filter"),Pair.of(CONTENT, "content"));
+
+        ReflectionUtilities.iterativeConditionalInvocation(
+                30,
+                ()-> {
+                    inbox.load(true, true, false, Pair.of(SUBJECT, "Test filter"), Pair.of(CONTENT, emailTestContent));
+                    return inbox.messages.size()==2;
+                }
+        );
+        Assert.assertEquals("Unexpected number of emails found!", 2, inbox.getMessages().size());
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
+        printer.success("Sending and receiving emails tests are successful!");
+    }
 }
