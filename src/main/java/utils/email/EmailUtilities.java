@@ -241,9 +241,9 @@ public class EmailUtilities {
          */
         public void saveMessage(String filename, String messageContent) {
             log.info("Saving email body...");
-            try (FileWriter file = new FileWriter("inbox/" + filename + ".html")) {
+            try (FileWriter file = new FileWriter("inbox/" + filename)) {
                 file.write(String.valueOf(messageContent));
-                log.info("Saved as \"" + filename + ".html\"");
+                log.info("Saved as \"" + filename);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
