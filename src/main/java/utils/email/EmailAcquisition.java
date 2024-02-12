@@ -116,13 +116,23 @@ public class EmailAcquisition {
                     highlighted(BLUE, filter.beta())
             );
         }
-        EmailUtilities.Inbox.EmailMessage message =  EmailUtilities.Inbox.getEmail(this.inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+        EmailUtilities.Inbox.EmailMessage message = EmailUtilities.Inbox.getEmail(
+                this.inbox,
+                timeout,
+                expectedMessageCount,
+                print,
+                save,
+                saveAttachments,
+                filterPairs
+        );
         File dir = new File("inbox");
         String absolutePath = null;
         for (File email : Objects.requireNonNull(dir.listFiles()))
             try {
                 boolean nullCheck = Files.probeContentType(email.toPath()) != null;
-                if (nullCheck && Files.probeContentType(email.toPath()).equals("text/html")) {
+                boolean isHTML = Files.probeContentType(email.toPath()).equals("text/html");
+                boolean emailNameMatch = email.getName().equals(message.getFileName());
+                if (nullCheck && isHTML && emailNameMatch) {
                     absolutePath = "file://" + email.getAbsolutePath().replaceAll("#", "%23");
                     break;
                 }

@@ -133,6 +133,7 @@ public class EmailUtilities {
             String subject;
             String messageContent;
             String attachments;
+            String fileName;
 
             /**
              * Constructs an EmailMessage object from a javax.mail.Message.
@@ -158,6 +159,10 @@ public class EmailUtilities {
              */
             public static EmailMessage from(Message message) {
                 return new EmailMessage(message);
+            }
+
+            public void setFileName(String fileName){
+                this.fileName = fileName + ".html";
             }
         }
 
@@ -392,7 +397,10 @@ public class EmailUtilities {
                 String messageContent = getContent(message);
                 String attachments = getAttachments(message, saveAttachments);
 
-                this.messages.add(EmailMessage.from(message));
+                emailMessage = EmailMessage.from(message);
+                emailMessage.setFileName("message#" + index);
+
+                this.messages.add(emailMessage);
 
                 if (print) {
                     log.info("Message #" + index);
@@ -403,7 +411,7 @@ public class EmailUtilities {
                     if (attachments.length() > 0) log.info("Attachments: " + attachments);
                 }
 
-                if (save) saveMessage("message#" + index, messageContent);
+                if (save) saveMessage(emailMessage.getFileName(), messageContent);
             } catch (MessagingException exception) {
                 log.error("Could not connect to the message store", exception);
             }
