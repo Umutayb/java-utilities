@@ -47,7 +47,8 @@ public class EmailUtilities {
     public Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
 
         // Get system properties
-        Properties properties = System.getProperties();
+        Properties properties = new Properties();
+        properties.putAll(System.getProperties());
 
         // Setup mail server
         properties.put("mail.smtp.host", host);
