@@ -1,3 +1,4 @@
+import collections.Pair;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import context.ContextStore;
@@ -8,14 +9,17 @@ import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
 import utils.*;
+import utils.arrays.ArrayUtilities;
+import utils.email.EmailUtilities;
 import utils.reflection.ReflectionUtilities;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
+import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
@@ -26,7 +30,9 @@ public class AppTest {
     @Test
     public void getRandomItemTest() {
         List<Integer> numList = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        System.out.println(ArrayUtilities.getRandomItemFrom(numList));
+        int randomNumber = ArrayUtilities.getRandomItemFrom(numList);
+        Assert.assertTrue(String.format("Random number %d is not part of the list!", randomNumber), numList.contains(randomNumber));
+        printer.success("getRandomItemTest successful!");
     }
 
     @Test
@@ -128,7 +134,7 @@ public class AppTest {
     }
 
     @Test
-    public void getPDFFileTextTest() throws IOException {
+	public void getPDFFileTextTest() throws IOException {
         URL url = new URL("https://sandbox.mabl.com/downloads/mabl_dash.pdf");
         String fileDestinationPath = "src/test/resources/filePDF.pdf";
         String pdfText = FileUtilities.getPDFFileText(url, fileDestinationPath);
@@ -162,6 +168,58 @@ public class AppTest {
                 Pattern.matches("(20)\\d{2}-(0[1-9]|1[1,2])-(0[1-9]|[12][0-9]|3[01])", simpleDateFormatString)
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
+    }
+	
+	@Test
+    public void filterEmailTest() {
+        String emailTestContent = "username:xyz";
+        ContextStore.loadProperties("test.properties");
+        EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
+        emailUtilities.sendEmail(
+                "Test filter banana",
+                emailTestContent,
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        emailUtilities.sendEmail(
+                "Test filter apple",
+                emailTestContent,
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        emailUtilities.sendEmail(
+                "Test filter orange",
+                "test",
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null
+        );
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
+                "pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl"
+        );
+
+        inbox.load(
+                30,
+                2,
+                true,
+                true,
+                false,
+                List.of(Pair.of(SUBJECT, "Test filter"), Pair.of(CONTENT, emailTestContent))
+        );
+
+        Assert.assertEquals("Unexpected number of emails found!", 2, inbox.getMessages().size());
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
+        printer.success("Sending and receiving emails tests are successful!");
     }
 
     @Test

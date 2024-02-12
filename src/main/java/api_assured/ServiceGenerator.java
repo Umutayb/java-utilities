@@ -34,7 +34,7 @@ import static utils.MappingUtilities.Json.mapper;
  * and base URL.
  *
  * @author Umut Ay Bora
- * @version 1.4.0 (Documented in 1.4.0, released in 1.0.0 earlier version)
+ * @version 1.4.0 (Documented in 1.4.0, released in version 1.0.0)
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ServiceGenerator {
@@ -109,7 +109,7 @@ public class ServiceGenerator {
      *
      * @param headers The headers to be added to the requests.
      * @param BASE_URL The base URL for the service.
-     */
+     */ // TODO: Constructor should reference each other
     public ServiceGenerator(Headers headers, String BASE_URL) {
         this.BASE_URL = BASE_URL;
         setHeaders(headers);
