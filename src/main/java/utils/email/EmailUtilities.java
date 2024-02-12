@@ -1,13 +1,13 @@
-package utils;
+package utils.email;
 
 import collections.Pair;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import utils.Printer;
 import utils.reflection.ReflectionUtilities;
 
-import static utils.EmailUtilities.Inbox.EmailField.*;
 import static utils.arrays.lambda.Collectors.toSingleton;
 
 import javax.mail.internet.InternetAddress;
@@ -155,7 +155,7 @@ public class EmailUtilities {
              * Creates an EmailMessage object from a javax.mail.Message.
              *
              * @param message The javax.mail.Message object to create from.
-             * @return        The created EmailMessage object.
+             * @return The created EmailMessage object.
              */
             public static EmailMessage from(Message message) {
                 return new EmailMessage(message);
@@ -163,14 +163,27 @@ public class EmailUtilities {
         }
 
         /**
-         * Retrieves an email message based on the specified filter pairs.
+         * Retrieves an email message based on the provided filter pairs.
+         * This method is a varargs version that delegates to the list version.
          *
-         * @param filterPairs An array of filter pairs containing the filter type and value.
-         * @return            The email message matching the specified filters.
+         * @param filterPairs an array of pairs consisting of email fields and corresponding filter strings
+         * @return the email message matching the filter criteria
          */
         @SafeVarargs
         public final EmailMessage getMessageBy(Pair<EmailField, String>... filterPairs) {
-            return this.messages.stream().filter(message -> emailMatch(message, filterPairs)).collect(toSingleton());
+            return getMessageBy(Arrays.asList(filterPairs));
+        }
+
+        /**
+         * Retrieves an email message based on the provided filter pairs.
+         *
+         * @param filterPairs a list of pairs consisting of email fields and corresponding filter strings
+         * @return the email message matching the filter criteria
+         */
+        public final EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
+            return this.messages.stream()
+                    .filter(message -> emailMatch(message, filterPairs))
+                    .collect(toSingleton());
         }
 
         /**
@@ -178,7 +191,7 @@ public class EmailUtilities {
          *
          * @param filterType  The type of filter to apply.
          * @param filterValue The value to filter by.
-         * @return            The email message matching the specified filter.
+         * @return The email message matching the specified filter.
          */
         public EmailMessage getMessageBy(EmailField filterType, String filterValue) {
             return getMessageBy(Pair.of(filterType, filterValue));
@@ -206,6 +219,29 @@ public class EmailUtilities {
             this.secureCon = secureCon;
         }
 
+        public static EmailMessage getEmail(
+                Inbox inbox,
+                int timeout,
+                int expectedMessageCount,
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                List<Pair<EmailField, String>> filterPairs) {
+            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+            return inbox.getMessageBy(filterPairs);
+        }
+
+        public EmailMessage getEmail(
+                int timeout,
+                int expectedMessageCount,
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                List<Pair<EmailField, String>> filterPairs) {
+            load(timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+            return this.getMessageBy(filterPairs);
+        }
+
         /**
          * Retrieves the inbox with specified parameters and filters.
          *
@@ -213,10 +249,10 @@ public class EmailUtilities {
          * @param timeout              The timeout value for retrieving the inbox.
          * @param expectedMessageCount The expected number of messages to be retrieved.
          * @param filterPairs          An array of filter pairs containing the filter type and value.
-         * @return                     The retrieved inbox.
+         * @return The retrieved inbox.
          */
-        public static Inbox get(Inbox inbox, int timeout, int expectedMessageCount, Pair<EmailField, String>... filterPairs){
-            load(inbox, timeout, expectedMessageCount, false, true, false, filterPairs);
+        public static Inbox get(Inbox inbox, int timeout, int expectedMessageCount, Pair<EmailField, String>... filterPairs) {
+            load(inbox, timeout, expectedMessageCount, false, true, true, filterPairs);
             return inbox;
         }
 
@@ -230,7 +266,7 @@ public class EmailUtilities {
          * @param save                 Specifies whether to save the retrieved messages.
          * @param saveAttachments      Specifies whether to save attachments.
          * @param filterPairs          An array of filter pairs containing the filter type and value.
-         * @return                     The retrieved inbox.
+         * @return The retrieved inbox.
          */
         public static Inbox get(
                 Inbox inbox,
@@ -239,7 +275,31 @@ public class EmailUtilities {
                 boolean print,
                 boolean save,
                 boolean saveAttachments,
-                Pair<EmailField, String>... filterPairs){
+                Pair<EmailField, String>... filterPairs) {
+            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+            return inbox;
+        }
+
+        /**
+         * Retrieves the specified inbox with the given settings and filters, ensuring that the expected message count is reached within the specified timeout.
+         *
+         * @param inbox                the inbox to retrieve
+         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
+         * @param expectedMessageCount the expected number of messages to be loaded
+         * @param print                boolean flag indicating whether to print the emails
+         * @param save                 boolean flag indicating whether to save the emails
+         * @param saveAttachments      boolean flag indicating whether to save email attachments
+         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         * @return the retrieved inbox
+         */
+        public static Inbox get(
+                Inbox inbox,
+                int timeout,
+                int expectedMessageCount,
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                List<Pair<EmailField, String>> filterPairs) {
             load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
             return inbox;
         }
@@ -272,10 +332,25 @@ public class EmailUtilities {
          * @param saveAttachments      Specifies whether to save attachments.
          * @param filterPairs          An array of filter pairs containing the filter type and value.
          */
-        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs){
+        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
+            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+        }
+
+        /**
+         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
+         *
+         * @param inbox                the inbox from which to load emails
+         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
+         * @param expectedMessageCount the expected number of messages to be loaded
+         * @param print                boolean flag indicating whether to print the emails
+         * @param save                 boolean flag indicating whether to save the emails
+         * @param saveAttachments      boolean flag indicating whether to save email attachments
+         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         */
+        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             ReflectionUtilities.iterativeConditionalInvocation(
                     timeout,
-                    ()-> {
+                    () -> {
                         inbox.load(print, save, saveAttachments, filterPairs);
                         return inbox.messages.size() >= expectedMessageCount;
                     }
@@ -304,6 +379,18 @@ public class EmailUtilities {
          * @param filterPairs     pairs of EmailField and String representing the filter criteria.
          */
         public void load(boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
+            load(print, save, saveAttachments, filterPairs);
+        }
+
+        /**
+         * Loads emails from the configured mail server with specified settings and filters.
+         *
+         * @param print           boolean flag indicating whether to print the emails
+         * @param save            boolean flag indicating whether to save the emails
+         * @param saveAttachments boolean flag indicating whether to save email attachments
+         * @param filterPairs     a list of pairs consisting of email fields and corresponding filter strings
+         */
+        public void load(boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             Properties properties = new Properties();
 
             //---------- Server Setting---------------
@@ -352,9 +439,9 @@ public class EmailUtilities {
          *
          * @param emailMessage The email message to be matched against the filters.
          * @param filterPairs  An array of filter pairs containing the filter type and value.
-         * @return             True if the email message matches all filters, false otherwise.
+         * @return True if the email message matches all filters, false otherwise.
          */
-        public static boolean emailMatch(EmailMessage emailMessage, Pair<EmailField, String>... filterPairs) {
+        public static boolean emailMatch(EmailMessage emailMessage, List<Pair<EmailField, String>> filterPairs) {
 
             for (Pair<EmailField, String> filterPair : filterPairs) {
                 String selector;
@@ -556,6 +643,46 @@ public class EmailUtilities {
                 }
             }
             return null;
+        }
+
+        /**
+         * Clears the email inbox using the specified email credentials and server settings.
+         *
+         * @param email                    The email address.
+         * @param emailApplicationPassword The application-specific password for the email account.
+         * @param host                     The email server host.
+         * @param port                     The email server port.
+         * @param secureCon                Indicates whether to use secure connection (e.g., "true" or "false").
+         */
+        public static void clearInbox(
+                String email,
+                String emailApplicationPassword,
+                String host,
+                String port,
+                String secureCon
+        ) {
+            new Printer(Inbox.class).info("Flushing email inbox...");
+            new EmailUtilities.Inbox(
+                    host,
+                    port,
+                    email,
+                    emailApplicationPassword,
+                    secureCon
+            );
+        }
+
+        /**
+         * Clears the email inbox using the configured email credentials and server settings.
+         */
+        public void clearInbox() {
+            log.info("Flushing email inbox...");
+            new EmailUtilities.Inbox(
+                    host,
+                    port,
+                    userName,
+                    password,
+                    secureCon
+            );
         }
     }
 }

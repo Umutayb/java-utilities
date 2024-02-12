@@ -10,6 +10,7 @@ import petstore.models.Pet;
 import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
+import utils.email.EmailUtilities;
 import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
@@ -17,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static utils.EmailUtilities.Inbox.EmailField.CONTENT;
-import static utils.EmailUtilities.Inbox.EmailField.SUBJECT;
+import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
+import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
