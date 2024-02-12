@@ -29,11 +29,13 @@ jobs:
         cache: maven
     - name: Create Properties File
       run: |
-          echo "test-email=${{secrets.RECEIVER_EMAIL}}" >> src/test/resources/test.properties
-          echo "test-email-application-password=${{secrets.RECEIVER_EMAIL_PASSWORD}}" >> src/test/resources/test.properties
-          echo "test-email-master-password=${{secrets.SENDER_PASSWORD}}" >> src/test/resources/test.properties
-          echo "sender-test-email=${{secrets.SENDER_TEST_EMAIL}}" >> src/test/resources/test.properties
-          echo "host=${{secrets.SENDER_HOST}}" >> src/test/resources/test.properties
+          echo "
+            test-email=${{secrets.RECEIVER_EMAIL}}
+            test-email-application-password=${{secrets.RECEIVER_EMAIL_PASSWORD}}
+            test-email-master-password=${{secrets.SENDER_PASSWORD}}
+            sender-test-email=${{secrets.SENDER_TEST_EMAIL}}
+            host=${{secrets.SENDER_HOST}}
+          " >> src/test/resources/test.properties
     - name: Build with Maven
       run: mvn clean test
 
