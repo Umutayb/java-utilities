@@ -1,4 +1,4 @@
-name: release and push to central
+name: Deploy on Maven Central
 on:
   push:
     tags:
