@@ -16,6 +16,7 @@ jobs:
           echo "test-email-application-password=${RECEIVER_EMAIL_PASSWORD}" >> test.properties
           echo "test-email-master-password=${SENDER_PASSWORD}" >> test.properties
           echo "sender-test-email=${SENDER_TEST_EMAIL}" >> test.properties
+          echo "host=${SENDER_HOST}" >> test.properties
 
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@v1
@@ -48,3 +49,4 @@ jobs:
           RECEIVER_EMAIL_PASSWORD: ${{ secrets.RECEIVER_EMAIL_PASSWORD }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           SENDER_TEST_EMAIL: ${{ secrets.SENDER_TEST_EMAIL }}
+          SENDER_HOST: ${{ secrets.SENDER_HOST }}
