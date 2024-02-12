@@ -220,5 +220,18 @@ public class AppTest {
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
         printer.success("Sending and receiving emails tests are successful!");
+
+    @Test
+    public void setFieldTest() {
+        Pet pet = new Pet();
+        String expectedFieldName = "name";
+        String expectedFieldValue = "Bella";
+        ReflectionUtilities.setField(pet, expectedFieldName, expectedFieldValue);
+        Assert.assertEquals(
+                "Value of field " + expectedFieldName + " does not match!",
+                expectedFieldValue,
+                pet.getName()
+        );
+        printer.success("The setFieldTest() test passed!");
     }
 }

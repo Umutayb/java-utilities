@@ -33,6 +33,12 @@
       <email>benegecansen@gmail.com</email>
       <organizationUrl>https://github.com/egecansen</organizationUrl>
     </developer>
+
+    <developer>
+      <name>Inna Drapii</name>
+      <email>i.drapii@gmail.com</email>
+      <organizationUrl>https://github.com/InnaDrapii</organizationUrl>
+    </developer>
   </developers>
 
   <properties>
