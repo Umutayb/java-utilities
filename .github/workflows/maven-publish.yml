@@ -12,11 +12,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: Create Properties File
         run: |
-          echo "test-email=${RECEIVER_EMAIL}" >> src/test/resources/test.properties
-          echo "test-email-application-password=${RECEIVER_EMAIL_PASSWORD}" >> src/test/resources/test.properties
-          echo "test-email-master-password=${SENDER_PASSWORD}" >> src/test/resources/test.properties
-          echo "sender-test-email=${SENDER_TEST_EMAIL}" >> src/test/resources/test.properties
-          echo "host=${SENDER_HOST}" >> src/test/resources/test.properties
+          echo "test-email=${{secrets.RECEIVER_EMAIL}}" >> src/test/resources/test.properties
+          echo "test-email-application-password=${{secrets.RECEIVER_EMAIL_PASSWORD}}" >> src/test/resources/test.properties
+          echo "test-email-master-password=${{secrets.SENDER_PASSWORD}}" >> src/test/resources/test.properties
+          echo "sender-test-email=${{secrets.SENDER_TEST_EMAIL}}" >> src/test/resources/test.properties
+          echo "host=${{secrets.SENDER_HOST}}" >> src/test/resources/test.properties
 
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@v1
@@ -45,8 +45,3 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
-          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
-          RECEIVER_EMAIL_PASSWORD: ${{ secrets.RECEIVER_EMAIL_PASSWORD }}
-          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-          SENDER_TEST_EMAIL: ${{ secrets.SENDER_TEST_EMAIL }}
-          SENDER_HOST: ${{ secrets.SENDER_HOST }}
