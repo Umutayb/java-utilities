@@ -116,7 +116,7 @@ public class EmailAcquisition {
                     highlighted(BLUE, filter.beta())
             );
         }
-        EmailUtilities.Inbox.EmailMessage message =  inbox.getEmail(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+        EmailUtilities.Inbox.EmailMessage message =  EmailUtilities.Inbox.getEmail(this.inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
         File dir = new File("inbox");
         String absolutePath = null;
         for (File email : Objects.requireNonNull(dir.listFiles()))

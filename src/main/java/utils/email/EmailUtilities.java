@@ -7,9 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
-
-import static utils.arrays.lambda.Collectors.toSingleton;
-
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -18,6 +15,8 @@ import java.io.IOException;
 import java.io.File;
 import javax.mail.*;
 import java.util.*;
+
+import static utils.arrays.lambda.Collectors.toSingleton;
 
 @SuppressWarnings("unused")
 public class EmailUtilities {
@@ -164,23 +163,11 @@ public class EmailUtilities {
 
         /**
          * Retrieves an email message based on the provided filter pairs.
-         * This method is a varargs version that delegates to the list version.
-         *
-         * @param filterPairs an array of pairs consisting of email fields and corresponding filter strings
-         * @return the email message matching the filter criteria
-         */
-        @SafeVarargs
-        public final EmailMessage getMessageBy(Pair<EmailField, String>... filterPairs) {
-            return getMessageBy(Arrays.asList(filterPairs));
-        }
-
-        /**
-         * Retrieves an email message based on the provided filter pairs.
          *
          * @param filterPairs a list of pairs consisting of email fields and corresponding filter strings
          * @return the email message matching the filter criteria
          */
-        public final EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
+        public EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
             return this.messages.stream()
                     .filter(message -> emailMatch(message, filterPairs))
                     .collect(toSingleton());
@@ -194,7 +181,7 @@ public class EmailUtilities {
          * @return The email message matching the specified filter.
          */
         public EmailMessage getMessageBy(EmailField filterType, String filterValue) {
-            return getMessageBy(Pair.of(filterType, filterValue));
+            return getMessageBy(List.of(Pair.of(filterType, filterValue)));
         }
 
         /**
@@ -232,76 +219,12 @@ public class EmailUtilities {
         }
 
         public EmailMessage getEmail(
-                int timeout,
-                int expectedMessageCount,
                 boolean print,
                 boolean save,
                 boolean saveAttachments,
                 List<Pair<EmailField, String>> filterPairs) {
-            load(timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+            load(print, save, saveAttachments, filterPairs);
             return this.getMessageBy(filterPairs);
-        }
-
-        /**
-         * Retrieves the inbox with specified parameters and filters.
-         *
-         * @param inbox                The inbox to retrieve.
-         * @param timeout              The timeout value for retrieving the inbox.
-         * @param expectedMessageCount The expected number of messages to be retrieved.
-         * @param filterPairs          An array of filter pairs containing the filter type and value.
-         * @return The retrieved inbox.
-         */
-        public static Inbox get(Inbox inbox, int timeout, int expectedMessageCount, Pair<EmailField, String>... filterPairs) {
-            load(inbox, timeout, expectedMessageCount, false, true, true, filterPairs);
-            return inbox;
-        }
-
-        /**
-         * Retrieves the inbox with specified parameters, filters, and loading options.
-         *
-         * @param inbox                The inbox to retrieve.
-         * @param timeout              The timeout value for retrieving the inbox.
-         * @param expectedMessageCount The expected number of messages to be retrieved.
-         * @param print                Specifies whether to print the retrieved messages.
-         * @param save                 Specifies whether to save the retrieved messages.
-         * @param saveAttachments      Specifies whether to save attachments.
-         * @param filterPairs          An array of filter pairs containing the filter type and value.
-         * @return The retrieved inbox.
-         */
-        public static Inbox get(
-                Inbox inbox,
-                int timeout,
-                int expectedMessageCount,
-                boolean print,
-                boolean save,
-                boolean saveAttachments,
-                Pair<EmailField, String>... filterPairs) {
-            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
-            return inbox;
-        }
-
-        /**
-         * Retrieves the specified inbox with the given settings and filters, ensuring that the expected message count is reached within the specified timeout.
-         *
-         * @param inbox                the inbox to retrieve
-         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
-         * @param expectedMessageCount the expected number of messages to be loaded
-         * @param print                boolean flag indicating whether to print the emails
-         * @param save                 boolean flag indicating whether to save the emails
-         * @param saveAttachments      boolean flag indicating whether to save email attachments
-         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
-         * @return the retrieved inbox
-         */
-        public static Inbox get(
-                Inbox inbox,
-                int timeout,
-                int expectedMessageCount,
-                boolean print,
-                boolean save,
-                boolean saveAttachments,
-                List<Pair<EmailField, String>> filterPairs) {
-            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
-            return inbox;
         }
 
         /**
@@ -322,18 +245,17 @@ public class EmailUtilities {
         }
 
         /**
-         * Loads messages into the specified inbox with the given parameters and filters, waiting until the expected number of messages is reached.
+         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
          *
-         * @param inbox                The inbox to load messages into.
-         * @param timeout              The timeout value for loading messages.
-         * @param expectedMessageCount The expected number of messages to be loaded.
-         * @param print                Specifies whether to print the loaded messages.
-         * @param save                 Specifies whether to save the loaded messages.
-         * @param saveAttachments      Specifies whether to save attachments.
-         * @param filterPairs          An array of filter pairs containing the filter type and value.
+         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
+         * @param expectedMessageCount the expected number of messages to be loaded
+         * @param print                boolean flag indicating whether to print the emails
+         * @param save                 boolean flag indicating whether to save the emails
+         * @param saveAttachments      boolean flag indicating whether to save email attachments
+         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
          */
-        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
-            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
+        public void load(int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
+            EmailUtilities.Inbox.load(this, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
         }
 
         /**
@@ -367,19 +289,7 @@ public class EmailUtilities {
          * @param saveAttachments true if attachments of the loaded emails should be saved, false otherwise.
          */
         public void load(EmailField filterType, String filterKey, boolean print, boolean save, boolean saveAttachments) {
-            load(print, save, saveAttachments, Pair.of(filterType, filterKey));
-        }
-
-        /**
-         * Loads emails from the inbox based on specified criteria.
-         *
-         * @param print           true if the loaded emails should be printed, false otherwise.
-         * @param save            true if the loaded emails should be saved, false otherwise.
-         * @param saveAttachments true if attachments of the loaded emails should be saved, false otherwise.
-         * @param filterPairs     pairs of EmailField and String representing the filter criteria.
-         */
-        public void load(boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
-            load(print, save, saveAttachments, filterPairs);
+            load(print, save, saveAttachments, List.of(Pair.of(filterType, filterKey)));
         }
 
         /**
@@ -442,7 +352,6 @@ public class EmailUtilities {
          * @return True if the email message matches all filters, false otherwise.
          */
         public static boolean emailMatch(EmailMessage emailMessage, List<Pair<EmailField, String>> filterPairs) {
-
             for (Pair<EmailField, String> filterPair : filterPairs) {
                 String selector;
 
