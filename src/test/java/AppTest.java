@@ -220,6 +220,7 @@ public class AppTest {
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
         printer.success("Sending and receiving emails tests are successful!");
+    }
 
     @Test
     public void setFieldTest() {
