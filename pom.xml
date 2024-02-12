@@ -39,6 +39,12 @@
       <email>i.drapii@gmail.com</email>
       <organizationUrl>https://github.com/InnaDrapii</organizationUrl>
     </developer>
+
+    <developer>
+      <name>Joana Sol Del Valle</name>
+      <email>jsoldelvalle@gmail.com</email>
+      <organizationUrl>https://github.com/soldelv</organizationUrl>
+    </developer>
   </developers>
 
   <properties>
