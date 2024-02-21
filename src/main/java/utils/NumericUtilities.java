@@ -20,7 +20,7 @@ public class NumericUtilities {
      * @param max the maximum value of the range (inclusive)
      * @return a random integer within the range
      */
-    public int randomNumber(int min, int max){
+    public static int randomNumber(int min, int max){
         int range = max - min + 1;
         return (int)(Math.random() * range) + min;
     }
@@ -31,7 +31,7 @@ public class NumericUtilities {
      * @param larger2smaller true if the list should be sorted from largest to smallest, false if it should be sorted from smallest to largest
      * @return a new list containing the sorted integers
      */
-    public List<Integer> sortList(List<Integer> list, boolean larger2smaller){
+    public static List<Integer> sortList(List<Integer> list, boolean larger2smaller){
         List<Integer> orderedList = new ArrayList<>();
         int lnIndex;
         int ln;
@@ -52,7 +52,7 @@ public class NumericUtilities {
      * @param list the list of integers to be searched
      * @return a map containing the largest integer and its index in the list
      */
-    public Map<String, Integer> getLargestInList(List<Integer> list){
+    public static Map<String, Integer> getLargestInList(List<Integer> list){
         Map<String, Integer> largestNumberMap = new HashMap<>();
         int largestNumber = 0;
         int largestNumberIndex = 0;
@@ -72,7 +72,7 @@ public class NumericUtilities {
      * @param list the list of integers to be searched
      * @return a map containing the smallest integer and its index in the list
      */
-    public Map<String, Integer> getSmallestInList(List<Integer> list){
+    public static Map<String, Integer> getSmallestInList(List<Integer> list){
         Map<String, Integer> largestNumberMap = new HashMap<>();
         int smallestNumber = 999999999;
         int smallestNumberIndex = 0;
@@ -92,7 +92,7 @@ public class NumericUtilities {
      * @param number the double to be shortened
      * @return the shortened double
      */
-    public Double shortenDouble(Double number){
+    public static Double shortenDouble(Double number){
         DecimalFormat formatter = new DecimalFormat("#.##");
         return Double.parseDouble(formatter.format(number).replaceAll(",","."));
     }

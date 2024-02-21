@@ -19,7 +19,7 @@ import static utils.reflection.ReflectionUtilities.iterativeConditionalInvocatio
 
 @SuppressWarnings("unused")
 public abstract class ApiUtilities extends Caller {
-    public NumericUtilities numUtils = new NumericUtilities();
+
     public Printer log = new Printer(this.getClass());
 
     /**

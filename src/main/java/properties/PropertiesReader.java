@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class PropertiesReader {
 
-    private final Printer log = new Printer(StringUtilities.class);
+    Printer log = new Printer(StringUtilities.class);
 
     private Properties properties;
 

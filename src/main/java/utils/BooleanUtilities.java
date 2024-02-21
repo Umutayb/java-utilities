@@ -14,7 +14,7 @@ public class BooleanUtilities {
      *
      * @return The randomly generated boolean value.
      */
-    public Boolean generateRandomBoolean(){
+    public static Boolean generateRandomBoolean(){
         return new Random().nextBoolean();
     }
 

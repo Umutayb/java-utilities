@@ -200,7 +200,7 @@ public class FileUtilities {
          * @param extensionFilter The file extension to be compressed.
          * @return The compressed zip file.
          */
-        public File compress(String zipName, List<File> files, String extensionFilter) {
+        public static File compress(String zipName, List<File> files, String extensionFilter) {
             assert files != null;
             List<File> toBeCompressed = new ArrayList<>();
             for (File file:files) {
@@ -221,7 +221,7 @@ public class FileUtilities {
          * @return The compressed zip file.
          * @throws RuntimeException If the file does not contain the correct file extension.
          */
-        public File compress(String zipName, File file, String extensionFilter) {
+        public static File compress(String zipName, File file, String extensionFilter) {
             String mediaType;
             File zip;
             try {mediaType = Files.probeContentType(file.toPath());}
@@ -238,7 +238,7 @@ public class FileUtilities {
          * @param file The file to be compressed.
          * @return The compressed zip file.
          */
-        public File compress(String zipName, File file) {return createZip(zipName, file);}
+        public static File compress(String zipName, File file) {return createZip(zipName, file);}
 
         /**
          * Compresses an array of files into a zip file.
@@ -247,7 +247,7 @@ public class FileUtilities {
          * @param files The array of files to be compressed.
          * @return The compressed zip file.
          */
-        public File compress(String zipName, File[] files) {return createZip(zipName, List.of(files));}
+        public static File compress(String zipName, File[] files) {return createZip(zipName, List.of(files));}
 
         /**
          * Compresses a list of files into a zip file.
@@ -256,7 +256,7 @@ public class FileUtilities {
          * @param files The list of files to be compressed.
          * @return The compressed zip file.
          */
-        public File compress(String zipName, List<File> files) {return createZip(zipName, files);}
+        public static File compress(String zipName, List<File> files) {return createZip(zipName, files);}
 
         /**
          * Compresses all files in a directory into a zip file.
@@ -265,7 +265,7 @@ public class FileUtilities {
          * @param directory The directory where the files are located.
          * @return The compressed zip file.
          */
-        public File compress(String zipName, String directory) {
+        public static File compress(String zipName, String directory) {
             File screenshotsDirectory = new File(directory);
             File[] files = screenshotsDirectory.listFiles();
             assert files != null;
@@ -280,7 +280,7 @@ public class FileUtilities {
          * @return The compressed zip file.
          * @throws RuntimeException If the file cannot be compressed.
          */
-        public File createZip(String zipName, File file){
+        public static File createZip(String zipName, File file){
             if (!zipName.contains(".zip")) zipName = zipName + ".zip";
             try {
                 ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipName));
@@ -304,7 +304,7 @@ public class FileUtilities {
          * @return The compressed zip file.
          * @throws RuntimeException If the file cannot be compressed.
          */
-        public File createZip(String zipName, List<File> files) {
+        public static File createZip(String zipName, List<File> files) {
             if (!zipName.contains(".zip")) zipName = zipName + ".zip";
             try {
                 Path tmpPath = Path.of("temp");
@@ -327,7 +327,7 @@ public class FileUtilities {
     }
 
     public static class Excel {
-        Printer log = new Printer(Excel.class);
+        static Printer log = new Printer(Excel.class);
 
         /**
          * Retrieves a map of Excel sheet data.
@@ -339,7 +339,7 @@ public class FileUtilities {
          *         cell values.
          * @throws RuntimeException if an IOException occurs while reading the file.
          */
-        public Map<String, Map<String, Object>> getExcelList(String directory, String selector){
+        public static Map<String, Map<String, Object>> getExcelList(String directory, String selector){
             Map<String, Map<String, Object>> excelMap = new HashMap<>();
             try {
                 XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(directory)));
@@ -536,6 +536,5 @@ public class FileUtilities {
             catch (IOException e) {e.printStackTrace();}
             return null;
         }
-
     }
 }
