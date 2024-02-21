@@ -101,12 +101,11 @@ public class ReflectionUtilities {
      */
     public static boolean iterativeConditionalInvocation(
             int timeoutInSeconds,
-            int repeats,
+            int interval,
             ConditionalFunction conditionalFunction
     ) {
         boolean condition;
         long startingTime = System.currentTimeMillis();
-        int interval = timeoutInSeconds / repeats;
         log.info("Iterating at " + interval + " second intervals.");
         try {
             int counter = 0;
@@ -123,7 +122,6 @@ public class ReflectionUtilities {
         }
         return condition;
     }
-
 
     /**
      * Iteratively invokes a specified method on a class and checks a condition until the condition is met
@@ -171,7 +169,7 @@ public class ReflectionUtilities {
     ) {
         return iterativeConditionalInvocation(
                 timeoutInSeconds,
-                (int) Math.pow(timeoutInSeconds, 0.5),
+                timeoutInSeconds / (int) Math.pow(timeoutInSeconds, 0.5),
                 conditionalFunction
         );
     }

@@ -30,8 +30,7 @@ public class SystemUtilities {
     }
 
     public static class TerminalUtilities {
-
-        private final Printer log = new Printer(TerminalUtilities.class);
+        private static final Printer log = new Printer(TerminalUtilities.class);
 
         /**
          * Executes the specified command as a new process and waits for it to complete.
@@ -40,7 +39,7 @@ public class SystemUtilities {
          * @throws IOException if an I/O error occurs
          * @throws InterruptedException if the current thread is interrupted while waiting for the process to complete
          */
-        public void runCommand(String command) throws IOException, InterruptedException {
+        public static void runCommand(String command) throws IOException, InterruptedException {
 
             log.info("Running command: " + command);
 

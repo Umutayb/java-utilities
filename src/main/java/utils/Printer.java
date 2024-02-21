@@ -28,67 +28,6 @@ public class Printer {
         log = Logger.getLogger(className.getName());
     }
 
-    /**
-     * The Plain class is used to log plain text messages with the INFO level.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Plain {
-        public Plain(CharSequence output) {
-            log(Level.INFO, String.valueOf(output));
-        }
-    }
-
-    /**
-     * The Important class is used to log important messages with the INFO level and highlighted text.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Important {
-        public Important(CharSequence output){
-            log(Level.INFO, highlighted(PURPLE, output));
-        }
-    }
-
-    /**
-     * The Info class is used to log informational messages with the INFO level and highlighted text.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Info {
-        public Info(CharSequence output) {
-            log(Level.INFO, highlighted(GRAY, output));
-        }
-    }
-
-    /**
-     * The Success class is used to log success messages with the INFO level and highlighted text.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Success {
-        public Success(CharSequence output){
-            log(Level.INFO, highlighted(GREEN, output));
-        }
-    }
-
-    /**
-     * The Warning class is used to log warning messages with the WARNING level and highlighted text.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Warning {
-        public Warning(CharSequence output){
-            log(Level.WARNING, highlighted(YELLOW, output));
-        }
-    }
-
-    /**
-     * The Error class is used to log error messages with the SEVERE level and highlighted text.
-     * It also includes an exception to provide additional information.
-     */
-    @Deprecated(since = "1.4.3")
-    public class Error {
-        public Error(CharSequence output, Exception exception){
-            log(highlighted(RED, output), exception);
-        }
-    }
-
     public void plain(CharSequence output){
         log(Level.INFO, String.valueOf(output));
     }

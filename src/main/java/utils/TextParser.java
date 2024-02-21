@@ -12,7 +12,6 @@ public class TextParser {
 
     public static void main(String[] args) {//Sample execution
         Printer log = new Printer(TextParser.class);
-        TextParser textParser = new TextParser();
         Scanner scanner = new Scanner(System.in);
         log.important("Enter the input");
         String input = scanner.nextLine(); // "ajsKAagq5J3w._CoolButton-sg-j3yaG3 a3TGb"
@@ -21,7 +20,7 @@ public class TextParser {
         log.important("Enter the final keyword"); // -
         String finalKeyword = scanner.nextLine();
         scanner.close();
-        log.plain(textParser.parse(initialKeyword,finalKeyword,input));
+        log.plain(parse(initialKeyword,finalKeyword,input));
     }
 
     /**

@@ -8,6 +8,7 @@ import org.junit.runners.model.InitializationError;
 import java.util.List;
 
 public class FrameworkInitializer extends ParentRunner<ParentRunner<?>> {
+    //TODO: Create a framework initialiser for annotation support
 
     protected FrameworkInitializer(Class<?> testClass) throws InitializationError {
         super(testClass);

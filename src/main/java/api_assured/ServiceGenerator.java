@@ -102,7 +102,7 @@ public class ServiceGenerator {
     /**
      * The logger object for logging information.
      */
-    private final Printer log = new Printer(ServiceGenerator.class);
+    private static final Printer log = new Printer(ServiceGenerator.class);
 
     /**
      * Constructor for the ServiceGenerator class with headers and base URL.
@@ -111,7 +111,7 @@ public class ServiceGenerator {
      * @param BASE_URL The base URL for the service.
      */ // TODO: Constructor should reference each other
     public ServiceGenerator(Headers headers, String BASE_URL) {
-        this.BASE_URL = BASE_URL;
+        this(BASE_URL);
         setHeaders(headers);
     }
 
@@ -134,6 +134,46 @@ public class ServiceGenerator {
      */
     public ServiceGenerator(){}
 
+    /**
+     * Creates Retrofit Service based on the provided service class and configurations.
+     *
+     * @param serviceClass The service class (api data store) to be used when creating Retrofit Service.
+     * @return The created Retrofit Service.
+     */
+    public static <S> S generate(
+            Class<S> serviceClass,
+            String BASE_URL,
+            boolean detailedLogging,
+            int connectionTimeout,
+            int readTimeout,
+            int writeTimeout,
+            Headers headers,
+            boolean printRequestBody,
+            boolean printHeaders,
+            boolean hostnameVerification,
+            String proxyHost
+    ) {
+        return new ServiceGenerator(headers, BASE_URL)
+                .setRequestLogging(printRequestBody)
+                .hostnameVerification(hostnameVerification)
+                .detailedLogging(detailedLogging)
+                .setPoxyHost(proxyHost)
+                .printHeaders(printHeaders)
+                .setReadTimeout(readTimeout)
+                .setWriteTimeout(writeTimeout)
+                .setConnectionTimeout(connectionTimeout)
+                .generate(serviceClass);
+    }
+
+    /**
+     * Creates Retrofit Service based on the provided service class and configurations.
+     *
+     * @param serviceClass The service class (api data store) to be used when creating Retrofit Service.
+     * @return The created Retrofit Service.
+     */
+    public static <S> S generate(Class<S> serviceClass, String BASE_URL) {
+        return new ServiceGenerator(BASE_URL).generate(serviceClass);
+    }
 
     /**
      * Creates Retrofit Service based on the provided service class and configurations.
@@ -234,8 +274,6 @@ public class ServiceGenerator {
                 .build();
         return retrofit.create(serviceClass);
     }
-
-
 
     /**
      * Sets whether to log the headers in the requests.
@@ -358,6 +396,28 @@ public class ServiceGenerator {
      */
     public ServiceGenerator setWriteTimeout(int writeTimeout) {
         this.writeTimeout = writeTimeout;
+        return this;
+    }
+
+    /**
+     * Sets write timeout in seconds.
+     *
+     * @param proxyHost proxy host.
+     * @return The updated ServiceGenerator object.
+     */
+    public ServiceGenerator setPoxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+        return this;
+    }
+
+    /**
+     * Sets write timeout in seconds.
+     *
+     * @param proxyPort proxy host.
+     * @return The updated ServiceGenerator object.
+     */
+    public ServiceGenerator setPoxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
         return this;
     }
 

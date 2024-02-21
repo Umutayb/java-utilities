@@ -32,7 +32,7 @@ public class LogUtilities {
      * @param logLevel desired log level
      * @return returns log level
      */
-    public java.util.logging.Level getLevel(String logLevel){
+    public static java.util.logging.Level getLevel(String logLevel){
         return java.util.logging.Level.parse(Objects.requireNonNull(Arrays.stream(java.util.logging.Level.class.getFields()).filter(field -> {
             field.setAccessible(true);
             String fieldName = field.getName();
