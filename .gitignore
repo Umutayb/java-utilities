@@ -7,3 +7,4 @@ POM-Framework.iml
 .DS_Store
 /inbox/
 src/test/resources/filePDF.pdf
+src/test/resources/secret.properties
