@@ -29,9 +29,7 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: build artifact
-        run: mvn clean package
-      - name: Create release
+      - name: Build, Test & Publish
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
