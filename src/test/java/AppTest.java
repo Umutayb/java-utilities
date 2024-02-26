@@ -178,6 +178,7 @@ public class AppTest {
 	
 	@Test
     public void filterEmailTest() {
+        ContextStore.loadProperties("test.properties", "secret.properties");
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
                 "pop.gmail.com",
                 "995",
@@ -188,7 +189,6 @@ public class AppTest {
 
         inbox.clearInbox();
         String emailTestContent = "username:xyz";
-        ContextStore.loadProperties("test.properties");
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
                 "Test filter banana",
