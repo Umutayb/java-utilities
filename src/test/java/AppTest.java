@@ -30,7 +30,7 @@ public class AppTest {
 
     @Before
     public void before(){
-        ContextStore.loadProperties("test.properties");
+        ContextStore.loadProperties("test.properties", "secret.properties");
     }
 
     @Test
@@ -178,7 +178,6 @@ public class AppTest {
 	
 	@Test
     public void filterEmailTest() {
-        ContextStore.loadProperties("test.properties", "secret.properties");
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
                 "pop.gmail.com",
                 "995",
