@@ -9,11 +9,9 @@
 name: Java CI with Maven
 
 on:
-  pull_request_target:
-    branches: [ "main" ]
   push:
     branches: [ "main" ]
-  pull_request:
+  pull_request_target:
     branches: [ "main" ]
 
 jobs:
