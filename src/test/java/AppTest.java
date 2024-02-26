@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
 import org.junit.Assert;
+import org.junit.Before;
 import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
@@ -26,6 +27,11 @@ import static utils.StringUtilities.contextCheck;
 public class AppTest {
 
     static Printer printer = new Printer(AppTest.class);
+
+    @Before
+    public void before(){
+        ContextStore.loadProperties("test.properties");
+    }
 
     @Test
     public void getRandomItemTest() {
