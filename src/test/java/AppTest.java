@@ -223,7 +223,6 @@ public class AppTest {
                 false,
                 List.of(Pair.of(SUBJECT, "Test filter"), Pair.of(CONTENT, emailTestContent))
         );
-
         Assert.assertEquals("Unexpected number of emails found!", 2, inbox.getMessages().size());
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
         Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
