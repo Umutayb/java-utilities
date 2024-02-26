@@ -216,7 +216,7 @@ public class AppTest {
         );
 
         inbox.load(
-                60,
+                90,
                 2,
                 true,
                 true,
