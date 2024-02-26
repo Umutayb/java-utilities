@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
 import org.junit.Assert;
+import org.junit.Before;
 import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
@@ -26,6 +27,11 @@ import static utils.StringUtilities.contextCheck;
 public class AppTest {
 
     static Printer printer = new Printer(AppTest.class);
+
+    @Before
+    public void before(){
+        ContextStore.loadProperties("test.properties");
+    }
 
     @Test
     public void getRandomItemTest() {
@@ -172,6 +178,15 @@ public class AppTest {
 	
 	@Test
     public void filterEmailTest() {
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
+                "pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl"
+        );
+
+        inbox.clearInbox();
         String emailTestContent = "username:xyz";
         ContextStore.loadProperties("test.properties");
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
@@ -198,13 +213,6 @@ public class AppTest {
                 ContextStore.get("sender-test-email"),
                 ContextStore.get("test-email-master-password"),
                 null
-        );
-        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
-                "pop.gmail.com",
-                "995",
-                ContextStore.get("test-email"),
-                ContextStore.get("test-email-application-password"),
-                "ssl"
         );
 
         inbox.load(
