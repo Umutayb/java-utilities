@@ -90,12 +90,13 @@ public abstract class ApiUtilities extends Caller {
             int expectedCode,
             Call<SuccessModel> call
     ) {
+        String serviceName = getPreviousMethodName();
         iterativeConditionalInvocation(
                 timeoutInSeconds,
                 () -> {
                     boolean condition;
                     Call<?> callClone = call.clone();
-                    Response<?> response = getResponse(getPreviousMethodName(), callClone, false, false);
+                    Response<?> response = getResponse(serviceName, callClone, false, false);
                     condition = response.code() == expectedCode;
                     if (condition) {
                         log.success("Status code verified as " + expectedCode + "!");
@@ -121,10 +122,11 @@ public abstract class ApiUtilities extends Caller {
             Call<SuccessModel> call,
             boolean printLastCallBody
     ) {
+        String serviceName = getPreviousMethodName();
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
                 () -> responseCodeMatch(
-                        getPreviousMethodName(),
+                        serviceName,
                         expectedCode,
                         call,
                         false,
