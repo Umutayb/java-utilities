@@ -3,7 +3,6 @@ package utils.email;
 import collections.Pair;
 import context.ContextStore;
 import utils.Printer;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,8 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static utils.StringUtilities.Color.BLUE;
-import static utils.StringUtilities.Color.GRAY;
-import static utils.StringUtilities.highlighted;
+import static utils.StringUtilities.*;
 
 /**
  * The EmailAcquisition class facilitates the acquisition of emails from an inbox
@@ -154,13 +152,17 @@ public class EmailAcquisition {
             boolean saveAttachments,
             List<Pair<EmailUtilities.Inbox.EmailField, String>> filterPairs
     ) {
-        for (Pair<EmailUtilities.Inbox.EmailField, String> filter : filterPairs) {
-            log.info("Acquiring & saving email(s) by " +
-                    highlighted(BLUE, filter.alpha().name()) +
-                    highlighted(GRAY, " -> ") +
-                    highlighted(BLUE, filter.beta())
-            );
+        StringBuilder logMessage = new StringBuilder();
+        for (Pair<EmailUtilities.Inbox.EmailField, String> filterPair : filterPairs){
+            logMessage
+                    .append("\n ")
+                    .append(markup(BLUE, filterPair.alpha().name()))
+                    .append(" : ")
+                    .append(markup(BLUE, filterPair.beta()));
         }
+
+        log.info("Acquiring & saving email(s) by: " + logMessage);
+
         EmailUtilities.Inbox.EmailMessage message = EmailUtilities.Inbox.getEmail(
                 this.inbox,
                 timeout,
