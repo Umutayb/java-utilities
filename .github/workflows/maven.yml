@@ -35,5 +35,5 @@ jobs:
             sender-test-email=${{secrets.SENDER_TEST_EMAIL}}
             host=${{secrets.SENDER_HOST}}
           " >> src/test/resources/test.properties
-    - name: Build with Maven
+    - name: Build & Test
       run: mvn clean test
