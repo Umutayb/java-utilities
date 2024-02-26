@@ -30,7 +30,7 @@ public class AppTest {
 
     @Before
     public void before(){
-        ContextStore.loadProperties("utility.properties");
+        ContextStore.loadProperties("test.properties", "secret.properties");
     }
 
     @Test
@@ -188,7 +188,6 @@ public class AppTest {
 
         inbox.clearInbox();
         String emailTestContent = "username:xyz";
-        ContextStore.loadProperties("test.properties");
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
                 "Test filter banana",
@@ -216,7 +215,7 @@ public class AppTest {
         );
 
         inbox.load(
-                90,
+                30,
                 2,
                 true,
                 true,
