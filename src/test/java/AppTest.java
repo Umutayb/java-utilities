@@ -30,7 +30,7 @@ public class AppTest {
 
     @Before
     public void before(){
-        ContextStore.loadProperties("test.properties");
+        ContextStore.loadProperties("utility.properties");
     }
 
     @Test
