@@ -149,10 +149,11 @@ public abstract class ApiUtilities extends Caller {
             int expectedCode,
             Call<SuccessModel> call
     ) {
+        String serviceName = getPreviousMethodName();
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
                 () -> responseCodeMatch(
-                        getPreviousMethodName(),
+                        serviceName,
                         expectedCode,
                         call,
                         false,
@@ -180,10 +181,11 @@ public abstract class ApiUtilities extends Caller {
             String fieldName,
             boolean printLastCallBody
     ) {
+        String serviceName = getPreviousMethodName();
         boolean codeMatch = iterativeConditionalInvocation(
                 timeoutInSeconds,
                 () -> fieldValueMatch(
-                        getPreviousMethodName(),
+                        serviceName,
                         call,
                         false,
                         false,
