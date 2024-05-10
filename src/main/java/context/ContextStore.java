@@ -117,8 +117,19 @@ public class ContextStore {
      *
      * @see ContextStore#map
      */
-    static synchronized void clear() {
+    public static synchronized void clear() {
         map.get().clear();
+    }
+
+    /**
+     * Checks whether the ContextStore contains the specified key.
+     *
+     * @param <K> The type of the key in the ContextStore.
+     * @param key The key to check for existence in the ContextStore.
+     * @return true if the ContextStore contains the key, otherwise false.
+     */
+    public static synchronized <K, V> boolean has(K key){
+        return map.get().get(key) != null;
     }
 
     /**
