@@ -18,7 +18,7 @@ jobs:
              test-email-master-password=${{secrets.SENDER_PASSWORD}}
              sender-test-email=${{secrets.SENDER_TEST_EMAIL}}
              host=${{secrets.SENDER_HOST}}
-           " >> src/test/resources/test.properties
+           " >> src/test/resources/secret.properties
 
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@v4
