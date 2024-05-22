@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -33,6 +34,36 @@ import static utils.StringUtilities.Color.*;
 public class FileUtilities {
 
     static Printer log = new Printer(FileUtilities.class);
+
+    /**
+     * Retrieves the Base64-encoded string representation of an image file.
+     *
+     * @param image The image file to be encoded.
+     * @return The Base64-encoded string representation of the image file.
+     * @throws RuntimeException if an IOException occurs during file reading.
+     */
+    public static String getEncodedString(File image) {
+        try {
+            // Read the contents of the image file into a byte array
+            byte[] fileContent = FileUtils.readFileToByteArray(image);
+            // Encode the byte array to a Base64 string and return it
+            return Base64.getEncoder().encodeToString(fileContent);
+        } catch (IOException e) {
+            // If an IOException occurs during file reading, wrap it in a RuntimeException and throw
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves the Base64-encoded string representation of an image file from the given file path.
+     *
+     * @param imagePath The file path of the image to be encoded.
+     * @return The Base64-encoded string representation of the image file.
+     */
+    public static String getEncodedString(String imagePath) {
+        // Delegate to the method that accepts a File object, passing a File object created from the provided file path
+        return getEncodedString(new File(imagePath));
+    }
 
     /**
      * Returns the absolute path of a file given its relative path.
