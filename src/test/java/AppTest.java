@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static utils.DateUtilities.changeTimeZone;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
@@ -174,6 +175,19 @@ public class AppTest {
                 Pattern.matches("(20)\\d{2}-(0[1-9]|1[1,2])-(0[1-9]|[12][0-9]|3[01])", simpleDateFormatString)
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
+    }
+
+    @Test
+    public void changeTimeZoneTest() {
+        String arrival = "2024-07-14T12:00:00+00:00"; // UTC time
+        String currentPattern = "yyyy-MM-dd'T'HH:mm:ssXXX";
+        String newPattern = "yyyy-MM-dd'T'HH:mm:ssXXX"; // Keep the same pattern but with the new timezone
+        String targetTimeZone = "Europe/Amsterdam"; // Target time zone for Netherlands
+        String expectedDateTimeString = "2024-07-14T14:00:00+02:00"; // +02:00 is the offset for CEST
+
+        String newDateTimeString = DateUtilities.changeTimeZone(arrival, currentPattern, newPattern, targetTimeZone);
+        Assert.assertEquals(expectedDateTimeString, newDateTimeString);
+        printer.success("The changeTimeZoneTest() test passed!");
     }
 	
 	@Test
