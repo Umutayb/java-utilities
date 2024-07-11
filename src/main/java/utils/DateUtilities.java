@@ -120,6 +120,15 @@ public class DateUtilities {
         return LocalDate.parse(inputDate.toString(), outputFormatter);
     }
 
+    public static String changeTimeZone(String dateTimeString, String currentPattern, String newPattern, String targetTimeZone) {
+        DateTimeFormatter currentFormatter = DateTimeFormatter.ofPattern(currentPattern);
+        ZonedDateTime dateTime = ZonedDateTime.parse(dateTimeString, currentFormatter);
+        ZonedDateTime adjustedDateTime = dateTime.withZoneSameInstant(ZoneId.of(targetTimeZone));
+        DateTimeFormatter newFormatter = DateTimeFormatter.ofPattern(newPattern);
+
+        return adjustedDateTime.format(newFormatter);
+    }
+
     /**
      * Parses a date string using the specified date format and returns a LocalDate object.
      *
