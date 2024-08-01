@@ -1,21 +1,12 @@
 package context;
 
-import collections.Pair;
 import properties.PropertyUtilities;
-import utils.Printer;
-import utils.email.EmailUtilities;
-
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static properties.PropertyUtilities.*;
-import static utils.StringUtilities.Color.BLUE;
-import static utils.StringUtilities.Color.GRAY;
-import static utils.StringUtilities.highlighted;
-import static utils.StringUtilities.markup;
 
 /**
  * The ContextStore class provides a thread-safe storage for key-value pairs in a ConcurrentHashMap.

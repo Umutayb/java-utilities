@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import utils.DateUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
 import javax.mail.internet.InternetAddress;
@@ -399,7 +400,7 @@ public class EmailUtilities {
                 String attachments = getAttachments(message, saveAttachments);
 
                 emailMessage = EmailMessage.from(message);
-                emailMessage.setFileName("message#" + index);
+                emailMessage.setFileName(String.format("message#%dT%s",index, DateUtilities.getDate().getTimeInMillis()));
 
                 this.messages.add(emailMessage);
 
