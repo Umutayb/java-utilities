@@ -400,7 +400,7 @@ public class EmailUtilities {
                 String attachments = getAttachments(message, saveAttachments);
 
                 emailMessage = EmailMessage.from(message);
-                emailMessage.setFileName(String.format("message#%dT%s",index, DateUtilities.getDate().getTimeInMillis()));
+                emailMessage.setFileName(String.format("message#%s", DateUtilities.getDate().getTimeInMillis()));
 
                 this.messages.add(emailMessage);
 
