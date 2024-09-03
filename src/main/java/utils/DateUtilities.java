@@ -13,12 +13,13 @@ import java.util.Date;
 public class DateUtilities {
 
     public static Calendar date;
+
     /**
      * Returns the current date and time as a Calendar object.
      *
      * @return The current date and time as a Calendar object.
      */
-    public Calendar getDate(){return Calendar.getInstance();}
+    public static Calendar getDate(){return Calendar.getInstance();}
 
     /**
      * Returns a new Calendar object with the specified unit of time set to the specified value.
