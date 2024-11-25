@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static utils.arrays.ArrayUtilities.isLastMemberOf;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
@@ -241,5 +242,11 @@ public class AppTest {
                 pet.getName()
         );
         printer.success("The setFieldTest() test passed!");
+    }
+
+    @Test
+    public void lastItemOfTest() {
+        List<Integer> integers = List.of(1, 2, 3, 4, 5);
+        Assert.assertTrue("Integer was not the last member!", isLastMemberOf(integers, 5));
     }
 }
