@@ -59,7 +59,7 @@
         <retrofit.version>2.9.0</retrofit.version>
         <lombok.version>1.18.26</lombok.version>
         <okhttp.version>4.9.3</okhttp.version>
-
+        <java.version>17</java.version>
     </properties>
 
     <dependencyManagement>
@@ -179,16 +179,9 @@
 
         <!-- Javax Mail -->
         <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-            <version>1.6.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
-            <scope>compile</scope>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <!-- Apache PDFBox -->
@@ -217,8 +210,8 @@
                 <version>${maven.compiler.version}</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 

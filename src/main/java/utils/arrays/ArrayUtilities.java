@@ -26,5 +26,19 @@ public class ArrayUtilities {
         int randomIndex = new Random().nextInt(items.size());
         return items.get(randomIndex);
     }
+
+    /**
+     * Checks if the specified member is the last element in the provided list.
+     *
+     * @param <ItemType> the type of elements in the list
+     * @param items the list of items to check
+     * @param member the item to check if it's the last element in the list
+     * @return {@code true} if the specified member is the last element in the list,
+     *         {@code false} otherwise
+     * @throws NullPointerException if the {@code items} list or {@code member} is {@code null}
+     */
+    public static <ItemType> boolean isLastMemberOf(List<ItemType> items, ItemType member){
+        return items.indexOf(member) == (items.size() - 1);
+    }
 }
 

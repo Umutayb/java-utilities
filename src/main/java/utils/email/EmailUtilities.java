@@ -1,6 +1,10 @@
 package utils.email;
 
 import collections.Pair;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -8,13 +12,9 @@ import lombok.NoArgsConstructor;
 import utils.DateUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
-import javax.mail.*;
 import java.util.*;
 
 import static utils.arrays.lambda.Collectors.toSingleton;
@@ -410,7 +410,7 @@ public class EmailUtilities {
                     log.info("Subject: " + subject);
                     log.info("Sent Date: " + sentDate);
                     log.info("Message: " + messageContent);
-                    if (attachments.length() > 0) log.info("Attachments: " + attachments);
+                    if (!attachments.isEmpty()) log.info("Attachments: " + attachments);
                 }
 
                 if (save) saveMessage(emailMessage.getFileName(), messageContent);
@@ -485,8 +485,7 @@ public class EmailUtilities {
                     messageContent = message.getContent().toString();
                 return messageContent;
             } catch (MessagingException | IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
+                throw new RuntimeException(e.getMessage(), e);
             }
         }
 
