@@ -183,7 +183,7 @@ public class EmailAcquisition {
                     absolutePath = "file://" + email.getAbsolutePath().replaceAll("#", "%23");
                     break;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         return absolutePath;
