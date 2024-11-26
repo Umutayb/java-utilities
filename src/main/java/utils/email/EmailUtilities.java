@@ -5,10 +5,6 @@ import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import utils.DateUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
@@ -19,7 +15,7 @@ import java.util.*;
 
 import static utils.arrays.lambda.Collectors.toSingleton;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class EmailUtilities {
 
     /**
@@ -115,8 +111,11 @@ public class EmailUtilities {
          * List of email messages represented as a list of maps where each map contains email fields as keys
          * and their corresponding values as values.
          */
-        @Getter
-        public List<EmailMessage> messages = new ArrayList<>();
+        public static List<EmailMessage> messages = new ArrayList<>();
+
+        public List<EmailMessage> getMessages() {
+            return messages;
+        }
 
         /**
          * Enumeration of email fields used as keys in the map representation of email messages.
@@ -126,11 +125,53 @@ public class EmailUtilities {
         /**
          * This class represents an email message.
          */
-        @Data
-        @AllArgsConstructor
-        @NoArgsConstructor
         public static class EmailMessage {
             String from;
+
+            public String getSentDate() {
+                return sentDate;
+            }
+
+            public void setSentDate(String sentDate) {
+                this.sentDate = sentDate;
+            }
+
+            public String getSubject() {
+                return subject;
+            }
+
+            public void setSubject(String subject) {
+                this.subject = subject;
+            }
+
+            public String getMessageContent() {
+                return messageContent;
+            }
+
+            public void setMessageContent(String messageContent) {
+                this.messageContent = messageContent;
+            }
+
+            public String getAttachments() {
+                return attachments;
+            }
+
+            public void setAttachments(String attachments) {
+                this.attachments = attachments;
+            }
+
+            public String getFileName() {
+                return fileName;
+            }
+
+            public String getFrom() {
+                return from;
+            }
+
+            public void setFrom(String from) {
+                this.from = from;
+            }
+
             String sentDate;
             String subject;
             String messageContent;
@@ -175,7 +216,7 @@ public class EmailUtilities {
          * @return the email message matching the filter criteria
          */
         public EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
-            return this.messages.stream()
+            return messages.stream()
                     .filter(message -> emailMatch(message, filterPairs))
                     .collect(toSingleton());
         }
@@ -281,7 +322,7 @@ public class EmailUtilities {
                     timeout,
                     () -> {
                         inbox.load(print, save, saveAttachments, filterPairs);
-                        return inbox.messages.size() >= expectedMessageCount;
+                        return messages.size() >= expectedMessageCount;
                     }
             );
         }
@@ -342,7 +383,7 @@ public class EmailUtilities {
                     if (emailMatch(EmailMessage.from(message), filterPairs))
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
-                log.info("You have " + this.messages.size() + " new mails in your inbox");
+                log.info("You have " + Inbox.messages.size() + " new mails in your inbox");
                 // disconnect
                 folderInbox.close(false);
                 store.close();
@@ -402,7 +443,7 @@ public class EmailUtilities {
                 emailMessage = EmailMessage.from(message);
                 emailMessage.setFileName(String.format("message#%s", DateUtilities.getDate().getTimeInMillis()));
 
-                this.messages.add(emailMessage);
+                messages.add(emailMessage);
 
                 if (print) {
                     log.info("Message #" + index);
