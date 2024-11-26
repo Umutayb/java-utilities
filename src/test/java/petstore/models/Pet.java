@@ -21,6 +21,15 @@ public class Pet {
     public Pet() {
     }
 
+    public Pet(Long id, DataModel category, String name, List<String> photoUrls, List<DataModel> tags, String status) {
+        this.id = id;
+        this.category = category;
+        this.name = name;
+        this.photoUrls = photoUrls;
+        this.tags = tags;
+        this.status = status;
+    }
+
     public Long getId() {
         return id;
     }
@@ -76,6 +85,9 @@ public class Pet {
         public DataModel(Long id, String name) {
             this.id = id;
             this.name = name;
+        }
+
+        public DataModel() {
         }
     }
 }

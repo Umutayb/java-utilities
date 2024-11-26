@@ -161,8 +161,8 @@ public class AppTest {
         String simpleDateFormatString = DateUtilities.getSimpleDateStringFrom(offsetDateTimeString, dateFormat);
         Assert.assertEquals(
                 "Date string does not match the expected value!",
-                simpleDateFormatString,
-                "2024-01-25"
+                "2024-01-25",
+                simpleDateFormatString
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
     }

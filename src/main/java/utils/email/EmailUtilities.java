@@ -111,7 +111,7 @@ public class EmailUtilities {
          * List of email messages represented as a list of maps where each map contains email fields as keys
          * and their corresponding values as values.
          */
-        public List<EmailMessage> messages = new ArrayList<>();
+        public static List<EmailMessage> messages = new ArrayList<>();
 
         public List<EmailMessage> getMessages() {
             return messages;
@@ -216,7 +216,7 @@ public class EmailUtilities {
          * @return the email message matching the filter criteria
          */
         public EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
-            return this.messages.stream()
+            return messages.stream()
                     .filter(message -> emailMatch(message, filterPairs))
                     .collect(toSingleton());
         }
@@ -322,7 +322,7 @@ public class EmailUtilities {
                     timeout,
                     () -> {
                         inbox.load(print, save, saveAttachments, filterPairs);
-                        return inbox.messages.size() >= expectedMessageCount;
+                        return messages.size() >= expectedMessageCount;
                     }
             );
         }
@@ -383,7 +383,7 @@ public class EmailUtilities {
                     if (emailMatch(EmailMessage.from(message), filterPairs))
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
-                log.info("You have " + this.messages.size() + " new mails in your inbox");
+                log.info("You have " + Inbox.messages.size() + " new mails in your inbox");
                 // disconnect
                 folderInbox.close(false);
                 store.close();
@@ -443,7 +443,7 @@ public class EmailUtilities {
                 emailMessage = EmailMessage.from(message);
                 emailMessage.setFileName(String.format("message#%s", DateUtilities.getDate().getTimeInMillis()));
 
-                this.messages.add(emailMessage);
+                messages.add(emailMessage);
 
                 if (print) {
                     log.info("Message #" + index);
