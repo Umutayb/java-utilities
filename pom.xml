@@ -6,7 +6,7 @@
 
     <groupId>io.github.umutayb</groupId>
     <artifactId>Utilities</artifactId>
-    <version>1.6.8</version>
+    <version>1.6.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Java-Utilities</name>
@@ -58,7 +58,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <cucumber.version>4.8.0</cucumber.version>
         <retrofit.version>2.9.0</retrofit.version>
-        <lombok.version>1.18.26</lombok.version>
         <okhttp.version>4.9.3</okhttp.version>
         <java.version>17</java.version>
     </properties>
@@ -138,14 +137,6 @@
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-wire</artifactId>
             <version>${retrofit.version}</version>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Apache -->
