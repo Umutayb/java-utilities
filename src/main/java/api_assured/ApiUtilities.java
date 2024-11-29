@@ -20,7 +20,7 @@ import static utils.reflection.ReflectionUtilities.iterativeConditionalInvocatio
 @SuppressWarnings("unused")
 public abstract class ApiUtilities extends Caller {
 
-    public Printer log = new Printer(this.getClass());
+    public static Printer log = new Printer(ApiUtilities.class);
 
     /**
      * Converts file to multipart
@@ -29,7 +29,7 @@ public abstract class ApiUtilities extends Caller {
      * @param name desired name for the multipart
      * @return returns the multipart
      */
-    public MultipartBody.Part getMultipartFromFile(File file, String name) {
+    public static MultipartBody.Part getMultipartFromFile(File file, String name) {
         RequestBody body = getRequestBodyFromFile(file);
         log.info("Creating multipart from " + file.getName() + " file");
         return MultipartBody.Part.createFormData(name, file.getName(), body);
@@ -43,7 +43,7 @@ public abstract class ApiUtilities extends Caller {
      * @param mediaType desired media type
      * @return returns the multipart
      */
-    public MultipartBody.Part getMultipartFromFile(File file, String name, String mediaType) {
+    public static MultipartBody.Part getMultipartFromFile(File file, String name, String mediaType) {
         RequestBody body = getRequestBodyFromFile(file, mediaType);
         log.info("Creating multipart from " + file.getName() + " file");
         return MultipartBody.Part.createFormData(name, file.getName(), body);
@@ -55,7 +55,7 @@ public abstract class ApiUtilities extends Caller {
      * @param file target file
      * @return returns the RequestBody
      */
-    public RequestBody getRequestBodyFromFile(File file) {
+    public static RequestBody getRequestBodyFromFile(File file) {
         String mediaType;
         try {
             mediaType = Files.probeContentType(file.toPath());
@@ -72,7 +72,7 @@ public abstract class ApiUtilities extends Caller {
      * @param mediaType desired media type
      * @return returns the RequestBody
      */
-    public RequestBody getRequestBodyFromFile(File file, String mediaType) {
+    public static RequestBody getRequestBodyFromFile(File file, String mediaType) {
         log.info("Generating request body from " + file.getName() + " file");
         return RequestBody.create(file, MediaType.parse(mediaType));
     }
