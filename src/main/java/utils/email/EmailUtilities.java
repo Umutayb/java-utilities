@@ -1,10 +1,9 @@
 package utils.email;
 
 import collections.Pair;
+import context.ContextStore;
 import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.*;
 import utils.DateUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
@@ -28,6 +27,7 @@ public class EmailUtilities {
     }
 
     private static final Printer log = new Printer(EmailUtilities.class);
+    private final boolean keepLogs = Boolean.parseBoolean(ContextStore.get("keep-email-logs", "true"));
     private String host;
 
     /**
@@ -37,11 +37,34 @@ public class EmailUtilities {
      * @param content    the content of the email
      * @param receiver   the email address of the recipient
      * @param ID         the username for authenticating with the SMTP server
-     * @param Password   the password for authenticating with the SMTP server
+     * @param password   the password for authenticating with the SMTP server
      * @param attachment the optional multipart attachment to include in the email
      * @return true if the email was sent successfully, false otherwise
      */
-    public Boolean sendEmail(String subject, String content, String receiver, String ID, String Password, Multipart attachment) {
+    public Boolean sendEmail(String subject, String content, String receiver, String ID, String password, Multipart attachment) {
+        return this.sendEmail(
+                subject,
+                content,
+                "text/plain; charset=" + MimeUtility.quote("us-ascii", HeaderTokenizer.MIME),
+                receiver,
+                ID,
+                password,
+                attachment
+        );
+    }
+
+    /**
+     * Sends an email message with an optional attachment to the specified recipient.
+     *
+     * @param subject    the subject of the email
+     * @param content    the content of the email
+     * @param receiver   the email address of the recipient
+     * @param ID         the username for authenticating with the SMTP server
+     * @param password   the password for authenticating with the SMTP server
+     * @param attachment the optional multipart attachment to include in the email
+     * @return true if the email was sent successfully, false otherwise
+     */
+    public Boolean sendEmail(String subject, String content, String contentType, String receiver, String ID, String password, Multipart attachment) {
 
         // Get system properties
         Properties properties = new Properties();
@@ -55,12 +78,12 @@ public class EmailUtilities {
         // Get the Session object.// and pass username and password
         Session session = Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(ID, Password);
+                return new PasswordAuthentication(ID, password);
             }
         });
 
         // Used to debug SMTP issues
-        session.setDebug(true);
+        session.setDebug(keepLogs);
 
         try {
             // Create a default MimeMessage object.
@@ -76,13 +99,13 @@ public class EmailUtilities {
             message.setSubject(subject);
 
             // Now set the actual message
-            message.setText(content + "\n");
+            message.setContent(content, contentType);
             if (attachment != null)
                 message.setContent(attachment);
 
-            log.info("Sending...");
+            if (keepLogs) log.info("Sending...");
             Transport.send(message);// Send message
-            log.success("Sent message successfully!");
+            if (keepLogs) log.success("Sent message successfully!");
             return true;
         } catch (MessagingException mex) {
             log.error(mex.getMessage(), mex);

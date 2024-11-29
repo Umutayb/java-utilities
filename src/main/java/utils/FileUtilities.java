@@ -88,9 +88,19 @@ public class FileUtilities {
      * @return The contents of the file as a string.
      */
     public static String getString(String directory, String fileName) {
-        try {return new String(Files.readAllBytes(Paths.get(directory+"/"+fileName)));}
+        return getString(directory+"/"+fileName);
+    }
+
+    /**
+     * Returns the contents of a file as a string.
+     *
+     * @param directory The directory where the file is located.
+     * @return The contents of the file as a string.
+     */
+    public static String getString(String directory) {
+        try {return new String(Files.readAllBytes(Paths.get(directory)));}
         catch (IOException exception){
-            Assert.fail(StringUtilities.markup(YELLOW, fileName+" not found!"));
+            Assert.fail(StringUtilities.markup(YELLOW, "File at '" + directory + "' not found!"));
             return null;
         }
     }
@@ -107,6 +117,22 @@ public class FileUtilities {
         catch (IOException e) {throw new RuntimeException(e);}
         return Optional.empty();
     }
+
+    /**
+     * Saves a content to a file.
+     *
+     * @param directory The directory where the file should be saved.
+     * @throws RuntimeException if an exception occurs while writing the file.
+     */
+    public static void saveFile(String content, String directory){
+        try {
+            FileWriter file = new FileWriter(directory);
+            file.write(String.valueOf(content));
+            file.close();
+        }
+        catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
+    }
+
 
     /**
      * Writes a string to a file.
