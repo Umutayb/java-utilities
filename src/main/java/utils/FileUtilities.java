@@ -194,6 +194,16 @@ public class FileUtilities {
         } catch (IOException exception) {
             log.error(exception.getMessage(), exception);
         }
+        return parsePDFFileToText(fileDestinationPath);
+    }
+
+    /**
+     * Returns a text of the PDF file.
+     *
+     * @param fileDestinationPath The destination path for the PDF file.
+     * @return The text of PDF.
+     */
+    public static String parsePDFFileToText(String fileDestinationPath) throws IOException {
         File file = new File(fileDestinationPath);
         PDDocument document = Loader.loadPDF(file);
         PDFTextStripper stripper = new PDFTextStripper();

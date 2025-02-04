@@ -2,6 +2,7 @@ package api_assured;
 
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 import properties.PropertyUtilities;
 import retrofit2.Call;
@@ -138,7 +139,9 @@ public abstract class Caller {
             T body = response.body();
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && response.message().length()>0) log.info(response.message());
-            if (printBody) log.info("The response body is: \n" + getJsonString(body));
+            if (printBody && !(body instanceof ResponseBody)) {
+                log.info("The response body is: \n" + getJsonString(body));
+            }
             return Response.success(body, response.raw());
         }
         else {
