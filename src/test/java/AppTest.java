@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static utils.arrays.ArrayUtilities.isLastMemberOf;
+import static utils.arrays.ArrayUtilities.*;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
 import static utils.MappingUtilities.Json.*;
@@ -241,12 +241,39 @@ public class AppTest {
                 expectedFieldValue,
                 pet.getName()
         );
-        printer.success("The setFieldTest() test passed!");
+        printer.success("The setFieldTest() test pass!");
     }
 
     @Test
     public void lastItemOfTest() {
         List<Integer> integers = List.of(1, 2, 3, 4, 5);
         Assert.assertTrue("Integer was not the last member!", isLastMemberOf(integers, 5));
+        printer.success("The lastItemOfTest() test pass!");
+    }
+
+    @Test
+    public void partitionTest() {
+        List<Integer> integers = List.of(1, 2, 3, 4, 5);
+        List<List<Integer>> partitionLists = List.of(
+                List.of(1,2),
+                List.of(3,4),
+                List.of(5)
+        );
+        for (int i = 0; i < getPartitionCount(integers.size(), 2); i++) {
+            List<Integer> partition = getListPartition(integers, 2, i);
+            Assert.assertEquals(partition, partitionLists.get(i));
+        }
+        printer.success("The partitionTest() test pass!");
+    }
+
+    @Test
+    public void partitionCountTest() {
+        List<Integer> integers = List.of(1, 2, 3, 4, 5);
+        Assert.assertEquals(
+                "The getPartitionCount() method returns an incorrect value!",
+                3,
+                getPartitionCount(integers.size(), 2)
+        );
+        printer.success("The partitionCountTest() test pass!");
     }
 }

@@ -75,7 +75,7 @@ public class ArrayUtilities {
      */
     public static int getPartitionCount(int listSize, int partitionSize){
         int partitionCount = listSize / partitionSize;
-        return (partitionCount * partitionSize > listSize ? partitionCount + 1 : partitionCount);
+        return listSize % partitionCount == 0 ? partitionCount : partitionCount + 1;
     }
 }
 
