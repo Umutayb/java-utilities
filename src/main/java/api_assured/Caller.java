@@ -135,10 +135,12 @@ public abstract class Caller {
     private static <T> Response<T> getResponse(Call<T> call, boolean printBody) throws IOException {
         Response<T> response = call.execute();
         if (response.isSuccessful()) {
+            String contentType = response.headers().get("content-type");
+            boolean printableResponse = contentType != null && contentType.contains("application/json");
             T body = response.body();
             if (keepLogs) log.success("The response code is: " + response.code());
-            if (keepLogs && response.message().length()>0) log.info(response.message());
-            if (printBody) log.info("The response body is: \n" + getJsonString(body));
+            if (keepLogs && !response.message().isEmpty()) log.info(response.message());
+            if (printBody && printableResponse) log.info("The response body is: \n" + getJsonString(body));
             return Response.success(body, response.raw());
         }
         else {
