@@ -136,7 +136,7 @@ public abstract class Caller {
         Response<T> response = call.execute();
         if (response.isSuccessful()) {
             String contentType = response.headers().get("content-type");
-            boolean printableResponse = contentType != null && contentType.contains("application/json; charset=utf-8");
+            boolean printableResponse = contentType != null && contentType.contains("application/json");
             T body = response.body();
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && !response.message().isEmpty()) log.info(response.message());
