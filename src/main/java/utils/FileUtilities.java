@@ -133,6 +133,31 @@ public class FileUtilities {
         catch (Exception gamma){Assert.fail(String.valueOf(gamma));}
     }
 
+    /**
+     * Downloads a PDF file from the given InputStream and saves it with the specified file name.
+     * <p>
+     * This method reads data from the provided InputStream in chunks and writes it to a local file.
+     * Once the download is complete, both the InputStream and the FileOutputStream are closed to
+     * free up resources.
+     * </p>
+     *
+     * @param inputStream The InputStream containing the PDF data to be downloaded.
+     * @param fileName    The name (including path, if necessary) under which the PDF should be saved.
+     * @throws IOException If an I/O error occurs during reading or writing.
+     */
+    public void downloadPdf(InputStream inputStream, String fileName) throws IOException {
+        File file = new File(fileName);
+        FileOutputStream outputStream = new FileOutputStream(file);
+        byte[] buffer = new byte[2048];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+        outputStream.close();
+        inputStream.close();
+        log.success("PDF downloaded successfully: " + fileName);
+    }
+
 
     /**
      * Writes a string to a file.
