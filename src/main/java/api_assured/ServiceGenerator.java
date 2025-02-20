@@ -1,5 +1,6 @@
 package api_assured;
 
+import context.ContextStore;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,6 +40,8 @@ import static utils.MappingUtilities.Json.mapper;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ServiceGenerator {
 
+    OkHttpClient client;
+
     /**
      * The header object containing the headers to be added to the requests.
      */
@@ -47,47 +50,52 @@ public class ServiceGenerator {
     /**
      * A boolean indicating whether to log the headers in the requests.
      */
-    boolean printHeaders = Boolean.parseBoolean(PropertyUtilities.getProperty("log-headers", "true"));
+    boolean printHeaders = Boolean.parseBoolean(ContextStore.get("log-headers", "true"));
 
     /**
      * A boolean indicating whether to log detailed information in the requests.
      */
-    boolean detailedLogging = Boolean.parseBoolean(PropertyUtilities.getProperty("detailed-logging", "false"));
+    boolean detailedLogging = Boolean.parseBoolean(ContextStore.get("detailed-logging", "false"));
 
     /**
      * A boolean indicating whether to verify the hostname in the requests.
      */
-    boolean hostnameVerification = Boolean.parseBoolean(PropertyUtilities.getProperty("verify-hostname", "true"));
+    boolean hostnameVerification = Boolean.parseBoolean(ContextStore.get("verify-hostname", "true"));
 
     /**
      * A boolean indicating whether to print request body in the outgoing requests.
      */
-    boolean printRequestBody = Boolean.parseBoolean(PropertyUtilities.getProperty("print-request-body", "false"));
+    boolean printRequestBody = Boolean.parseBoolean(ContextStore.get("print-request-body", "false"));
 
     /**
      * Connection timeout in seconds.
      */
-    int connectionTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-timeout", "60"));
+    int connectionTimeout = Integer.parseInt(ContextStore.get("connection-timeout", "60"));
 
     /**
      * Read timeout in seconds.
      */
-    int readTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-read-timeout", "30"));
+    int readTimeout = Integer.parseInt(ContextStore.get("connection-read-timeout", "30"));
 
     /**
      * Write timeout in seconds.
      */
-    int writeTimeout = Integer.parseInt(PropertyUtilities.getProperty("connection-write-timeout", "30"));
+    int writeTimeout = Integer.parseInt(ContextStore.get("connection-write-timeout", "30"));
 
     /**
      * Proxy host. (default: null)
      */
-    String proxyHost = PropertyUtilities.getProperty("proxy-host", null);
+    String proxyHost = ContextStore.get("proxy-host", null);
 
     /**
      * Proxy port (default: 8888)
      */
-    int proxyPort = Integer.parseInt(PropertyUtilities.getProperty("proxy-port", "8888"));
+    int proxyPort = Integer.parseInt(ContextStore.get("proxy-port", "8888"));
+
+    /**
+     * Follow redirects?
+     */
+    boolean followRedirects = Boolean.parseBoolean(ContextStore.get("request-follows-redirects", "false"));
 
     /**
      * Use proxy?
@@ -185,20 +193,57 @@ public class ServiceGenerator {
 
         if (BASE_URL.isEmpty()) BASE_URL = (String) ReflectionUtilities.getFieldValue("BASE_URL", serviceClass);
 
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        HttpLoggingInterceptor headerInterceptor = new HttpLoggingInterceptor();
+        client = client == null ? getDefaultHttpClient() : client;
 
-        if (detailedLogging){
-            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            headerInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-        }
+        assert BASE_URL != null;
+        @SuppressWarnings("deprecation")
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(JacksonConverterFactory.create())
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(SimpleXmlConverterFactory.create()) //Deprecated
+                .addConverterFactory(MoshiConverterFactory.create())
+                .addConverterFactory(WireConverterFactory.create())
+                .addConverterFactory(ProtoConverterFactory.create())
+                .client(client)
+                .build();
+        return retrofit.create(serviceClass);
+    }
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .addInterceptor(headerInterceptor)
+    /**
+     * Sets the OkHttpClient instance to be used by the ServiceGenerator.
+     *
+     * @param client the OkHttpClient instance to be set
+     * @return the current instance of ServiceGenerator for method chaining
+     */
+    public ServiceGenerator setHttpClient(OkHttpClient client){
+        this.client = client;
+        return this;
+    }
+
+    /**
+     * Creates and returns a default OkHttpClient instance with predefined configurations.
+     * <p>
+     * This client includes:
+     * <ul>
+     *     <li>Logging interceptors for both body and headers.</li>
+     *     <li>Connection, read, and write timeouts.</li>
+     *     <li>Redirect handling.</li>
+     *     <li>A network interceptor for modifying requests before execution.</li>
+     * </ul>
+     * The interceptor ensures headers are set, logs the request body if enabled,
+     * and prints headers when required.
+     *
+     * @return a configured OkHttpClient instance
+     */
+    public OkHttpClient getDefaultHttpClient(){
+        OkHttpClient client =  new OkHttpClient.Builder()
                 .connectTimeout(connectionTimeout, TimeUnit.SECONDS)
                 .readTimeout(readTimeout, TimeUnit.SECONDS)
                 .writeTimeout(writeTimeout, TimeUnit.SECONDS)
+                .followRedirects(followRedirects)
                 .addNetworkInterceptor(chain -> {
                     Request request = chain.request().newBuilder().build();
                     request = request.newBuilder()
@@ -249,6 +294,12 @@ public class ServiceGenerator {
                     return chain.proceed(request);
                 }).build();
 
+        if (detailedLogging)
+            client = new OkHttpClient.Builder(client)
+                    .addInterceptor(getLogginInterceptor(HttpLoggingInterceptor.Level.BODY))
+                    .addInterceptor(getLogginInterceptor(HttpLoggingInterceptor.Level.HEADERS))
+                    .build();
+
         if (!hostnameVerification)
             client = new OkHttpClient.Builder(client).hostnameVerifier((hostname, session) -> true).build();
 
@@ -257,22 +308,22 @@ public class ServiceGenerator {
                     .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)))
                     .build();
 
+        return client;
+    }
 
-        assert BASE_URL != null;
-        @SuppressWarnings("deprecation")
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addConverterFactory(JacksonConverterFactory.create())
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(SimpleXmlConverterFactory.create()) //Deprecated
-                .addConverterFactory(MoshiConverterFactory.create())
-                .addConverterFactory(WireConverterFactory.create())
-                .addConverterFactory(ProtoConverterFactory.create())
-                .client(client)
-                .build();
-        return retrofit.create(serviceClass);
+    /**
+     * Creates and returns an {@link HttpLoggingInterceptor} with the specified logging level.
+     * <p>
+     * This interceptor is used to log HTTP request and response details,
+     * such as headers, body, and metadata, depending on the provided level.
+     *
+     * @param level the logging level to set for the interceptor (e.g., BODY, HEADERS, BASIC, NONE)
+     * @return an {@link HttpLoggingInterceptor} instance configured with the specified level
+     */
+    public HttpLoggingInterceptor getLogginInterceptor(HttpLoggingInterceptor.Level level){
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(level);
+        return interceptor;
     }
 
     /**
