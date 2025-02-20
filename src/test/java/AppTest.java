@@ -261,7 +261,11 @@ public class AppTest {
         );
         for (int i = 0; i < getPartitionCount(integers.size(), 2); i++) {
             List<Integer> partition = getListPartition(integers, 2, i);
-            Assert.assertEquals(partition, partitionLists.get(i));
+            Assert.assertEquals(
+                    "getListPartition() returned an unexpected partition!",
+                    partition,
+                    partitionLists.get(i)
+            );
         }
         printer.success("The partitionTest() test pass!");
     }
