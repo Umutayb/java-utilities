@@ -4,6 +4,7 @@ import api_assured.exceptions.JavaUtilitiesException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -50,6 +51,25 @@ public class FileUtilities {
             return Base64.getEncoder().encodeToString(fileContent);
         } catch (IOException e) {
             // If an IOException occurs during file reading, wrap it in a RuntimeException and throw
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Saves a Base64-encoded string as an image file in the specified directory.
+     *
+     * @param base64String The Base64-encoded string representing the image.
+     * @param outputFile The file where the image should be saved.
+     * @throws RuntimeException if an IOException occurs during file writing.
+     */
+    public static void saveDecodedImage(String base64String, File outputFile) {
+        try {
+            // Decode the Base64 string to a byte array
+            byte[] imageBytes = Base64.getDecoder().decode(base64String);
+            // Write the byte array to the specified file
+            Files.write(outputFile.toPath(), imageBytes);
+        } catch (IOException e) {
+            // Wrap IOException in a RuntimeException and throw it
             throw new RuntimeException(e);
         }
     }
@@ -438,6 +458,7 @@ public class FileUtilities {
         public JSONObject urlsJson = new JSONObject();
         public JSONObject notificationJson = new JSONObject();
         private final Printer log = new Printer(Json.class);
+        private static final Gson gson = new Gson();
 
         /**
          * Saves a JSON object to a file.
@@ -602,6 +623,28 @@ public class FileUtilities {
             }
             catch (IOException e) {e.printStackTrace();}
             return null;
+        }
+
+        /**
+         * Converts a given input object to another type using Gson serialization/deserialization.
+         *
+         * @param <T> The target class type.
+         * @param input The input object to be converted.
+         * @param tClass The target class type to convert into.
+         * @return An instance of the target class {@code T} populated with data from the input object, or null if conversion fails.
+         */
+        public static <T> T typeConversion(Object input, Class<T> tClass) {
+            return gson.fromJson(getJsonString(input), tClass);
+        }
+
+        /**
+         * Converts a given input object to its JSON string representation using Gson.
+         *
+         * @param input The input object to be serialized into JSON.
+         * @return A JSON string representing the input object, or null if the input is null.
+         */
+        public static String getJsonString(Object input) {
+            return gson.toJson(input);
         }
     }
 }
