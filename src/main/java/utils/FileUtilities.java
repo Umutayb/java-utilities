@@ -145,7 +145,14 @@ public class FileUtilities {
      * @param fileName    The name (including path, if necessary) under which the PDF should be saved.
      * @throws IOException If an I/O error occurs during reading or writing.
      */
-    public void downloadPdf(InputStream inputStream, String fileName) throws IOException {
+    public static void downloadPdf(InputStream inputStream, String fileDestinationPath, String fileName) throws IOException {
+
+        try (InputStream in = inputStream) {
+            Files.copy(in, Paths.get(fileDestinationPath + fileName), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException exception) {
+            log.error(exception.getMessage(), exception);
+        }
+
         File file = new File(fileName);
         FileOutputStream outputStream = new FileOutputStream(file);
         byte[] buffer = new byte[2048];
