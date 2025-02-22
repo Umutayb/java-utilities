@@ -3,12 +3,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
+import okhttp3.ResponseBody;
 import org.junit.Assert;
 import org.junit.Before;
 import petstore.PetStore;
 import petstore.PetStoreServices;
 import petstore.models.Pet;
 import org.junit.Test;
+import retrofit2.Response;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
@@ -145,6 +147,33 @@ public class AppTest {
         URL url = new URL("https://sandbox.mabl.com/downloads/mabl_dash.pdf");
         String fileDestinationPath = "src/test/resources/filePDF.pdf";
         String pdfText = FileUtilities.getPDFFileText(url, fileDestinationPath);
+
+        assert pdfText != null;
+        Assert.assertTrue(
+                "PDF text does not contain the expected value!",
+                pdfText.contains("Run Settings")
+        );
+        printer.success("The getPDFFileTextTest() test passed!" + pdfText);
+    }
+
+    @Test
+    public void downloadPDFFileTextTest() throws IOException {
+        try {
+        Response<ResponseBody> getPdfResponse = PetStore.GetPdf.getPdf();
+
+        if (getPdfResponse.isSuccessful() && getPdfResponse.body() != null) {
+            FileUtilities.downloadPdf(getPdfResponse.body().byteStream(),"src/test/resources/", "filePDF.pdf");
+        } else {
+            printer.info("Failed to download PDF! HTTP Code: " + getPdfResponse.code());
+        }
+    } catch (IOException e) {
+        printer.info("Exception: " + e.getMessage());
+    }
+        FileUtilities.verifyFilePresence("src/test/resources/filePDF.pdf");
+        printer.success("The pdffile is present!");
+
+        String pdfText = FileUtilities.parsePDFFileToText("src/test/resources/filePDF.pdf");
+        System.out.println(pdfText);
 
         assert pdfText != null;
         Assert.assertTrue(

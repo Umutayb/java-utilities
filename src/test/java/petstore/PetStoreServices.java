@@ -1,5 +1,6 @@
 package petstore;
 
+import okhttp3.ResponseBody;
 import petstore.models.Pet;
 import retrofit2.Call;
 import retrofit2.http.*;
@@ -24,4 +25,10 @@ public interface PetStoreServices {
 
     @POST("pet")
     Call<Pet> postPet(@Body Pet pet);
+
+    interface GetPdf{
+        String BASE_URL = "https://sandbox.mabl.com/";
+        @GET("downloads/mabl_dash.pdf")
+        Call<ResponseBody> getPdf();
+    }
 }
