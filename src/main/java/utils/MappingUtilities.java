@@ -126,6 +126,21 @@ public class MappingUtilities {
 
             /**
              * Generates a JSON schema for the given class, with the option to specify required fields.
+             * This method uses the Jackson library to generate the schema.
+             * It sets the ID of the schema and its nested schemas to null.
+             *
+             * @param clazz The class for which the JSON schema should be generated.
+             * @return A JsonNode representing the generated schema, or null if an exception occurs during generation.
+             */
+            public static JsonNode getJsonNodeFor(Class<?> clazz) {
+                JsonSchema schema = generateSchema(clazz);
+                assert schema != null;
+                schema.setId(null);
+                return mapper.valueToTree(schema);
+            }
+
+            /**
+             * Generates a JSON schema for the given class, with the option to specify required fields.
              * This method uses the Jackson library to generate the schema and customize it based on the provided required fields.
              * It sets the ID of the schema and its nested schemas to null and adds the required fields to the schema's "required" property.
              *

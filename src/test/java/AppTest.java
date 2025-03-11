@@ -1,5 +1,6 @@
 import collections.Pair;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
@@ -279,5 +280,15 @@ public class AppTest {
                 getPartitionCount(integers.size(), 2)
         );
         printer.success("The partitionCountTest() test pass!");
+    }
+
+    @Test
+    public void jsonSchemaTest() {
+       JsonNode petSchema = MappingUtilities.Json.Schema.getJsonNodeFor(Pet.class);
+       Assert.assertEquals(
+               "Generated json schema did not match the expected one!",
+               "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"any\"},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"any\"}},\"status\":{\"type\":\"string\"}}}",
+               petSchema.toString()
+       );
     }
 }
