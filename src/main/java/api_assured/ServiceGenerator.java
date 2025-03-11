@@ -1,5 +1,10 @@
 package api_assured;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import context.ContextStore;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -199,9 +204,9 @@ public class ServiceGenerator {
         @SuppressWarnings("deprecation")
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .addConverterFactory(JacksonConverterFactory.create(mapper))
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addConverterFactory(JacksonConverterFactory.create())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(SimpleXmlConverterFactory.create()) //Deprecated
                 .addConverterFactory(MoshiConverterFactory.create())

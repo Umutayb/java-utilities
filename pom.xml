@@ -6,7 +6,7 @@
 
     <groupId>io.github.umutayb</groupId>
     <artifactId>Utilities</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Java-Utilities</name>
@@ -190,6 +190,13 @@
             <version>3.0.1</version>
         </dependency>
 
+        <!-- Jackson Schema -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jsonSchema</artifactId>
+            <version>2.18.3</version>
+        </dependency>
+
     </dependencies>
 
     <scm>
@@ -288,7 +295,7 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
-                            <skip>false</skip>
+                            <skip>true</skip>
                         </configuration>
                     </execution>
                 </executions>
