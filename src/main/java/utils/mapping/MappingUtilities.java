@@ -1,13 +1,12 @@
-package utils;
+package utils.mapping;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
@@ -133,12 +132,11 @@ public class MappingUtilities {
              */
             public static JsonSchema generateSchema(Class<?> clazz) {
                 try {
-                    JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(new ObjectMapper());
+                    ReferenceFreeSchemaFactoryWrapper schemaFactoryWrapper = new ReferenceFreeSchemaFactoryWrapper();
+                    JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper, schemaFactoryWrapper);
                     return setIdNull(schemaGen.generateSchema(clazz));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
                 }
+                catch (JsonMappingException mappingException) {throw new RuntimeException(mappingException);}
             }
         }
     }

@@ -19,6 +19,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
+import utils.mapping.MappingUtilities;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;

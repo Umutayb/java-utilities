@@ -7,11 +7,13 @@ import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
+import utils.mapping.MappingUtilities;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static utils.MappingUtilities.Json.*;
+import static utils.mapping.MappingUtilities.Json.*;
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
 
