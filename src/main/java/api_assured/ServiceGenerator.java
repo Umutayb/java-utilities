@@ -1,17 +1,11 @@
 package api_assured;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import context.ContextStore;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.Buffer;
-import properties.PropertyUtilities;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -31,8 +25,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static utils.MappingUtilities.Json.getJsonString;
-import static utils.MappingUtilities.Json.mapper;
+import static utils.mapping.MappingUtilities.Json.getJsonString;
+import static utils.mapping.MappingUtilities.Json.mapper;
 
 /**
  * The ServiceGenerator class is responsible for generating Retrofit Service based on the provided service class

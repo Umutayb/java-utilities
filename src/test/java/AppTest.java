@@ -13,6 +13,7 @@ import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
+import utils.mapping.MappingUtilities;
 import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
 import static utils.arrays.ArrayUtilities.*;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
-import static utils.MappingUtilities.Json.*;
+import static utils.mapping.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
 public class AppTest {
