@@ -32,7 +32,7 @@ public abstract class Caller {
     /**
      * A static boolean variable that determines whether logs should be kept for API calls.
      */
-    protected static boolean keepLogs;
+    public static boolean keepLogs;
 
     /**
      * A Printer object for logging.
@@ -143,12 +143,14 @@ public abstract class Caller {
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && !response.message().isEmpty()) log.info(response.message());
             if (printBody && printableResponse) log.info("The response body is: \n" + getJsonString(body));
+            assert body != null;
             return Response.success(body, response.raw());
         }
         else {
             log.warning("The response code is: " + response.code());
-            if (response.message().length()>0) log.warning(response.message());
-            if (response.errorBody() != null && printBody) {
+            if (!response.message().isEmpty()) log.warning(response.message());
+            assert response.errorBody() != null;
+            if (printBody) {
                 Object errorBody = getJsonString(getErrorObject(response, Object.class));
                 String errorLog = errorBody.equals("null") ? "The error body is empty." : "The error body is: \n" + errorBody;
                 log.warning(errorLog);
