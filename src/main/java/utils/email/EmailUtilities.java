@@ -74,6 +74,7 @@ public class EmailUtilities {
         properties.put("mail.smtp.host", host);
         properties.put("mail.smtp.port", "587");
         properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
 
         // Get the Session object.// and pass username and password
         Session session = Session.getInstance(properties, new Authenticator() {
@@ -275,6 +276,7 @@ public class EmailUtilities {
             this.userName = userName;
             this.password = password;
             this.secureCon = secureCon;
+            messages = new ArrayList<>();
         }
 
         public static EmailMessage getEmail(
@@ -386,7 +388,7 @@ public class EmailUtilities {
             properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             properties.setProperty("mail.pop3.socketFactory.fallback", "false");
             properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
-            Session session = Session.getDefaultInstance(properties);
+            Session session = Session.getInstance(properties);
             //----------------------------------------
 
             try {
@@ -400,7 +402,10 @@ public class EmailUtilities {
                 log.info("Getting inbox..");
 
                 // fetches new messages from server
-                List<Message> messages = List.of(folderInbox.getMessages());
+                List<Message> messages = new ArrayList<>(List.of(folderInbox.getMessages()));
+
+                // Reverse the order of the list
+                Collections.reverse(messages);
 
                 for (Message message : messages) {
                     if (emailMatch(EmailMessage.from(message), filterPairs))
@@ -657,14 +662,50 @@ public class EmailUtilities {
          * Clears the email inbox using the configured email credentials and server settings.
          */
         public void clearInbox() {
-            log.info("Flushing email inbox...");
-            new EmailUtilities.Inbox(
-                    host,
-                    port,
-                    userName,
-                    password,
-                    secureCon
-            );
+            Properties properties = new Properties();
+
+            //---------- Server Setting---------------
+            properties.put("mail.imap.host", host);
+            properties.put("mail.imap.port", port);
+            if (secureCon.equalsIgnoreCase("ssl")) {
+                properties.put("mail.imap.ssl.enable", "true");
+            } else {
+                properties.put("mail.imap.ssl.enable", "false");
+            }
+            //---------- SSL setting------------------
+            properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.setProperty("mail.imap.socketFactory.fallback", "false");
+            properties.setProperty("mail.imap.socketFactory.port", String.valueOf(port));
+            Session session = Session.getInstance(properties);
+            //----------------------------------------
+
+            try {
+                log.info("Connecting please wait....");
+                Store store = session.getStore("imap");
+                store.connect(userName, password);
+                Folder folderInbox = store.getFolder("INBOX"); // TODO: Dynamically acquire folder
+
+                folderInbox.open(Folder.READ_WRITE);
+                log.info("Connected to mail via " + host);
+                // opens the inbox folder
+                log.info("Getting inbox..");
+
+                // fetches new messages from server
+                List<Message> messages = List.of(folderInbox.getMessages());
+
+                // Delete all the messages
+                for (Message message : messages) {
+                    message.setFlag(Flags.Flag.DELETED, true);
+                }
+
+                // Delete messages and close connection
+                folderInbox.close(true);
+                store.close();
+                log.info(messages.size() + " messages have been successfully deleted!");
+
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
         }
     }
 }
