@@ -7,6 +7,7 @@ import jakarta.mail.internet.*;
 import utils.DateUtilities;
 import utils.Printer;
 import utils.reflection.ReflectionUtilities;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
@@ -228,7 +229,7 @@ public class EmailUtilities {
                 return new EmailMessage(message);
             }
 
-            public void setFileName(String fileName){
+            public void setFileName(String fileName) {
                 this.fileName = fileName + ".html";
             }
         }
@@ -659,9 +660,9 @@ public class EmailUtilities {
         }
 
         /**
-         * Clears the email inbox using the configured email credentials and server settings.
+         * IMAP connection to get the inbox
          */
-        public void clearInbox() {
+        private Store getImapStore() {
             Properties properties = new Properties();
 
             //---------- Server Setting---------------
@@ -677,22 +678,32 @@ public class EmailUtilities {
             properties.setProperty("mail.imap.socketFactory.fallback", "false");
             properties.setProperty("mail.imap.socketFactory.port", String.valueOf(port));
             Session session = Session.getInstance(properties);
-            //----------------------------------------
-
+            Store store = null;
             try {
                 log.info("Connecting please wait....");
-                Store store = session.getStore("imap");
+                store = session.getStore("imap");
                 store.connect(userName, password);
-                Folder folderInbox = store.getFolder("INBOX"); // TODO: Dynamically acquire folder
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
+            return store;
+        }
 
+
+        /**
+         * Clears the email inbox using the configured email credentials and server settings.
+         */
+        public void clearInbox() {
+            try {
+                Store store = getImapStore();
+                Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_WRITE);
-                log.info("Connected to mail via " + host);
-                // opens the inbox folder
-                log.info("Getting inbox..");
 
                 // fetches new messages from server
+                log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
+                log.info("Deleting messages..");
                 // Delete all the messages
                 for (Message message : messages) {
                     message.setFlag(Flags.Flag.DELETED, true);
@@ -702,6 +713,35 @@ public class EmailUtilities {
                 folderInbox.close(true);
                 store.close();
                 log.info(messages.size() + " messages have been successfully deleted!");
+
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
+        }
+
+        /**
+         * Clear inbox in batches - use it on the large inboxes to optimize the process
+         */
+        public void clearInboxInBatches(int batchSize) {
+            try {
+                Store store = getImapStore();
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_WRITE);
+
+                // fetches new messages from server
+                log.info("Getting inbox..");
+                List<Message> messages = List.of(folderInbox.getMessages());
+                List<Message> batchToDelete = messages.subList(0, batchSize);
+                log.info("Deleting messages..");
+                // Delete all the messages
+                for (Message message : batchToDelete) {
+                    message.setFlag(Flags.Flag.DELETED, true);
+                }
+
+                // Delete messages and close connection
+                folderInbox.close(true);
+                store.close();
+                log.info(batchToDelete.size() + " messages out of " + messages.size() + " have been successfully deleted!");
 
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
