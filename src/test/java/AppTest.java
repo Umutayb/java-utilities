@@ -178,7 +178,47 @@ public class AppTest {
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
     }
-	
+
+    @Test
+    public void cleanEmailTest() {
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl");
+
+        String emailTestContent = "username:xyz";
+        String emailSubject = "Test subject of email for deletion";
+        EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
+        emailUtilities.sendEmail(
+                emailSubject,
+                emailTestContent,
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null);
+
+        inbox.load(30, 1, false, false, false,
+                List.of(Pair.of(SUBJECT, emailSubject)));
+        Assert.assertEquals("Unexpected number of emails found!", 1, inbox.getMessages().size());
+
+        new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl").clearInbox();
+
+        EmailUtilities.Inbox newInbox = new EmailUtilities.Inbox("pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl");
+        newInbox.load(SUBJECT, emailSubject, false, true, true);
+
+        Assert.assertEquals("Unexpected number of emails found!", 0, newInbox.getMessages().size());
+        printer.success("cleanEmailTest() is successful!");
+    }
+
 	@Test
     public void filterEmailTest() {
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
@@ -189,7 +229,12 @@ public class AppTest {
                 "ssl"
         );
 
-        inbox.clearInbox();
+        new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl").clearInbox();
+
         String emailTestContent = "username:xyz";
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
