@@ -229,7 +229,12 @@ public class AppTest {
                 "ssl"
         );
 
-        inbox.clearInbox();
+        new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl").clearInbox();
+
         String emailTestContent = "username:xyz";
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
