@@ -7,7 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.Assert;
-import utils.MappingUtilities;
+import utils.mapping.MappingUtilities;
 import utils.Printer;
 import utils.StringUtilities;
 
@@ -658,4 +658,19 @@ public class ReflectionUtilities {
         StackTraceElement[] stackTrace = new Throwable().getStackTrace();
         return stackTrace.length > 2 ? stackTrace[2].getMethodName() : null;
     }
+
+    /**
+     * Retrieves the names of all declared fields in the given class, excluding synthetic fields such as "this$0".
+     *
+     * @param clazz the class whose field names are to be retrieved
+     * @return an array of field names declared in the specified class
+     * @throws NullPointerException if {@code clazz} is null
+     */
+    public static String[] getAllFieldNames(Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredFields())
+                .map(Field::getName)
+                .filter(name -> !name.equals("this$0")) // Excludes synthetic fields like inner class references
+                .toArray(String[]::new);
+    }
+
 }

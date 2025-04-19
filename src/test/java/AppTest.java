@@ -1,5 +1,6 @@
 import collections.Pair;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
+import utils.mapping.MappingUtilities;
 import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
@@ -22,7 +24,7 @@ import java.util.regex.Pattern;
 import static utils.arrays.ArrayUtilities.*;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
-import static utils.MappingUtilities.Json.*;
+import static utils.mapping.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
 public class AppTest {
@@ -176,7 +178,47 @@ public class AppTest {
         );
         printer.success("The getSimpleDateFormatStringFromTest() test passed!");
     }
-	
+
+    @Test
+    public void cleanEmailTest() {
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl");
+
+        String emailTestContent = "username:xyz";
+        String emailSubject = "Test subject of email for deletion";
+        EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
+        emailUtilities.sendEmail(
+                emailSubject,
+                emailTestContent,
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null);
+
+        inbox.load(30, 1, false, false, false,
+                List.of(Pair.of(SUBJECT, emailSubject)));
+        Assert.assertEquals("Unexpected number of emails found!", 1, inbox.getMessages().size());
+
+        new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl").clearInbox();
+
+        EmailUtilities.Inbox newInbox = new EmailUtilities.Inbox("pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl");
+        newInbox.load(SUBJECT, emailSubject, false, true, true);
+
+        Assert.assertEquals("Unexpected number of emails found!", 0, newInbox.getMessages().size());
+        printer.success("cleanEmailTest() is successful!");
+    }
+
 	@Test
     public void filterEmailTest() {
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
@@ -187,7 +229,12 @@ public class AppTest {
                 "ssl"
         );
 
-        inbox.clearInbox();
+        new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl").clearInbox();
+
         String emailTestContent = "username:xyz";
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
         emailUtilities.sendEmail(
@@ -261,7 +308,11 @@ public class AppTest {
         );
         for (int i = 0; i < getPartitionCount(integers.size(), 2); i++) {
             List<Integer> partition = getListPartition(integers, 2, i);
-            Assert.assertEquals(partition, partitionLists.get(i));
+            Assert.assertEquals(
+                    "getListPartition() returned an unexpected partition!",
+                    partition,
+                    partitionLists.get(i)
+            );
         }
         printer.success("The partitionTest() test pass!");
     }
@@ -275,5 +326,15 @@ public class AppTest {
                 getPartitionCount(integers.size(), 2)
         );
         printer.success("The partitionCountTest() test pass!");
+    }
+
+    @Test
+    public void jsonSchemaTest() {
+       JsonNode petSchema = MappingUtilities.Json.Schema.getJsonNodeFor(Pet.class);
+       Assert.assertEquals(
+               "Generated json schema did not match the expected one!",
+               "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"any\"},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"any\"}},\"status\":{\"type\":\"string\"}}}",
+               petSchema.toString()
+       );
     }
 }

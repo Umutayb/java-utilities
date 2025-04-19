@@ -45,6 +45,12 @@
             <email>jsoldelvalle@gmail.com</email>
             <organizationUrl>https://github.com/soldelv</organizationUrl>
         </developer>
+
+        <developer>
+            <name>Valeriia Ubei-Volk</name>
+            <email>lerkayulaeva@gmail.com</email>
+            <organizationUrl>https://github.com/valerieqq</organizationUrl>
+        </developer>
     </developers>
 
     <properties>
@@ -188,6 +194,13 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>3.0.1</version>
+        </dependency>
+
+        <!-- Jackson Schema -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jsonSchema</artifactId>
+            <version>2.18.3</version>
         </dependency>
 
     </dependencies>

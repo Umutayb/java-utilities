@@ -8,6 +8,7 @@ import org.junit.Assert;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
+import utils.mapping.MappingUtilities;
 import utils.reflection.ReflectionUtilities;
 import java.io.File;
 import java.io.IOException;
