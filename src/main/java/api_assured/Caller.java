@@ -7,14 +7,14 @@ import okio.Buffer;
 import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
-import utils.*;
-import utils.reflection.ReflectionUtilities;
-
+import utils.Printer;
+import utils.StringUtilities;
+import utils.mapping.MappingUtilities;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static utils.MappingUtilities.Json.*;
+import static utils.FileUtilities.Json.*;
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
 import static utils.reflection.ReflectionUtilities.isOfType;
@@ -175,7 +175,7 @@ public abstract class Caller {
      * @return A deserialized error object instance of type {@code Model}.
      * @throws RuntimeException if there's an issue processing the error content or deserializing it.
      *
-     * @see MappingUtilities.Json#fromJsonString(String, Class)
+     * @see utils.mapping.MappingUtilities.Json#fromJsonString(String, Class)
      */
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel) throws JsonProcessingException {
@@ -187,7 +187,7 @@ public abstract class Caller {
              if (!StringUtilities.isBlank(bodyString)) {
                  if (errorModel.isAssignableFrom(String.class))
                      return (ErrorModel) bodyString;
-                 else return fromJsonString(bodyString, errorModel);
+                 else return MappingUtilities.Json.fromJsonString(bodyString, errorModel);
              }
             else
                 return null;
@@ -253,8 +253,8 @@ public abstract class Caller {
      * @return A deserialized error model instance of type {@code ErrorModel} if a match is found.
      * @throws RuntimeException if none of the provided error models match the error content of the response.
      *
-     * @see MappingUtilities.Json#fromJsonString(String, Class)
-     * @see MappingUtilities.Json#getJsonStringFor(Object)
+     * @see utils.mapping.MappingUtilities.Json#fromJsonString(String, Class)
+     * @see utils.mapping.MappingUtilities.Json#getJsonStringFor(Object)
      * @see #getErrorObject(Response, Class)
      */
     @SuppressWarnings("unchecked")
