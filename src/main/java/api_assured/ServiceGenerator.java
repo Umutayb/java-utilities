@@ -37,7 +37,10 @@ import static utils.mapping.MappingUtilities.Json.mapper;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ServiceGenerator {
 
-    OkHttpClient client = new OkHttpClient();
+    /**
+     * OkHttpClient instance used to execute HTTP requests.
+     */
+    private OkHttpClient client;
 
     /**
      * The header object containing the headers to be added to the requests.
@@ -102,7 +105,7 @@ public class ServiceGenerator {
     /**
      * The base URL for the service.
      */
-    private String BASE_URL = "";
+    private String BASE_URL;
 
     /**
      * The logger object for logging information.
@@ -138,6 +141,7 @@ public class ServiceGenerator {
      * Ensure the correct behavior is intended.
      */
     public ServiceGenerator() {
+        this.client = new OkHttpClient();
         this.BASE_URL = "";
         this.headers = new Headers.Builder().build();
         this.printHeaders = Boolean.parseBoolean(ContextStore.get("log-headers", "true"));
