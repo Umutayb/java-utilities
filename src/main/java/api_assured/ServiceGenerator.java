@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static utils.mapping.MappingUtilities.Json.getJsonString;
 import static utils.mapping.MappingUtilities.Json.mapper;
