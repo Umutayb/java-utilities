@@ -17,13 +17,11 @@ import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import retrofit2.converter.wire.WireConverterFactory;
 import utils.*;
 import utils.reflection.ReflectionUtilities;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static utils.mapping.MappingUtilities.Json.getJsonString;
 import static utils.mapping.MappingUtilities.Json.mapper;
@@ -39,72 +37,72 @@ import static utils.mapping.MappingUtilities.Json.mapper;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ServiceGenerator {
 
-    OkHttpClient client;
+    OkHttpClient client = new OkHttpClient();
 
     /**
      * The header object containing the headers to be added to the requests.
      */
-    Headers headers = new Headers.Builder().build();
+    private Headers headers;
 
     /**
      * A boolean indicating whether to log the headers in the requests.
      */
-    boolean printHeaders = Boolean.parseBoolean(ContextStore.get("log-headers", "true"));
+    private boolean printHeaders;
 
     /**
      * A boolean indicating whether to log detailed information in the requests.
      */
-    boolean detailedLogging = Boolean.parseBoolean(ContextStore.get("detailed-logging", "false"));
+    private boolean detailedLogging;
 
     /**
      * A boolean indicating whether to verify the hostname in the requests.
      */
-    boolean hostnameVerification = Boolean.parseBoolean(ContextStore.get("verify-hostname", "true"));
+    private boolean hostnameVerification;
 
     /**
      * A boolean indicating whether to print request body in the outgoing requests.
      */
-    boolean printRequestBody = Boolean.parseBoolean(ContextStore.get("print-request-body", "false"));
+    private boolean printRequestBody;
 
     /**
      * Connection timeout in seconds.
      */
-    int connectionTimeout = Integer.parseInt(ContextStore.get("connection-timeout", "60"));
+    private int connectionTimeout;
 
     /**
      * Read timeout in seconds.
      */
-    int readTimeout = Integer.parseInt(ContextStore.get("connection-read-timeout", "30"));
+    private int readTimeout;
 
     /**
      * Write timeout in seconds.
      */
-    int writeTimeout = Integer.parseInt(ContextStore.get("connection-write-timeout", "30"));
+    private int writeTimeout;
 
     /**
      * Proxy host. (default: null)
      */
-    String proxyHost = ContextStore.get("proxy-host", null);
+    private String proxyHost;
 
     /**
      * Proxy port (default: 8888)
      */
-    int proxyPort = Integer.parseInt(ContextStore.get("proxy-port", "8888"));
+    private int proxyPort;
 
     /**
      * Follow redirects?
      */
-    boolean followRedirects = Boolean.parseBoolean(ContextStore.get("request-follows-redirects", "false"));
+    private final boolean followRedirects;
 
     /**
      * Use proxy?
      */
-    boolean useProxy = proxyHost != null;
+    private final boolean useProxy;
 
     /**
      * The base URL for the service.
      */
-    String BASE_URL = "";
+    private String BASE_URL = "";
 
     /**
      * The logger object for logging information.
@@ -112,34 +110,48 @@ public class ServiceGenerator {
     private static final Printer log = new Printer(ServiceGenerator.class);
 
     /**
-     * Constructor for the ServiceGenerator class with headers and base URL.
-     *
-     * @param headers The headers to be added to the requests.
-     * @param BASE_URL The base URL for the service.
-     */ // TODO: Constructor should reference each other
-    public ServiceGenerator(Headers headers, String BASE_URL) {
-        this(BASE_URL);
-        setHeaders(headers);
+     * Default constructor for the {@code ServiceGenerator} class.
+     * <p>
+     * Initializes configuration settings for the service client using values retrieved
+     * from the test.properties. These settings control various aspects of HTTP communication,
+     * such as timeouts, proxy settings, logging preferences, and hostname verification.
+     * Configurations are adjustable from test.properties and by using the setters.
+     * <p>
+     * The following configurations are applied by default:
+     * <ul>
+     *   <li>{@code BASE_URL}: Set to an empty string by default. Use the setBASE_URL() method or define the "BASE_URL" variable on service class.</li>
+     *   <li>{@code headers}: Initialized as an empty header set.</li>
+     *   <li>{@code printHeaders}: Indicates whether to log headers; defaults to {@code true}.</li>
+     *   <li>{@code detailedLogging}: Enables verbose logging; defaults to {@code false}.</li>
+     *   <li>{@code hostnameVerification}: Enables hostname verification for SSL; defaults to {@code true}.</li>
+     *   <li>{@code printHeaders}: (Overwritten again) Indicates whether to log request body; defaults to {@code false}.</li>
+     *   <li>{@code connectionTimeout}: Connection timeout in seconds; defaults to 60.</li>
+     *   <li>{@code readTimeout}: Read timeout in seconds; defaults to 30.</li>
+     *   <li>{@code writeTimeout}: Write timeout in seconds; defaults to 30.</li>
+     *   <li>{@code proxyHost}: Proxy host to use, if any; default is {@code null}.</li>
+     *   <li>{@code proxyPort}: Proxy port; defaults to 8888.</li>
+     *   <li>{@code followRedirects}: Whether to follow HTTP redirects; defaults to {@code false}.</li>
+     *   <li>{@code useProxy}: Set to {@code true} if {@code proxyHost} is not {@code null}.</li>
+     * </ul>
+     * <p>
+     * Note: The {@code printHeaders} field is set twice using different context keys.
+     * Ensure the correct behavior is intended.
+     */
+    public ServiceGenerator() {
+        this.BASE_URL = "";
+        this.headers = new Headers.Builder().build();
+        this.printHeaders = Boolean.parseBoolean(ContextStore.get("log-headers", "true"));
+        this.detailedLogging = Boolean.parseBoolean(ContextStore.get("detailed-logging", "false"));
+        this.hostnameVerification = Boolean.parseBoolean(ContextStore.get("verify-hostname", "true"));
+        this.printHeaders = Boolean.parseBoolean(ContextStore.get("print-request-body", "false"));
+        this.connectionTimeout = Integer.parseInt(ContextStore.get("connection-timeout", "60"));
+        this.readTimeout = Integer.parseInt(ContextStore.get("connection-read-timeout", "30"));
+        this.writeTimeout = Integer.parseInt(ContextStore.get("connection-write-timeout", "30"));
+        this.proxyHost = ContextStore.get("proxy-host", null);
+        this.proxyPort = Integer.parseInt(ContextStore.get("proxy-port", "8888"));
+        this.followRedirects = Boolean.parseBoolean(ContextStore.get("request-follows-redirects", "false"));
+        this.useProxy = proxyHost != null;
     }
-
-    /**
-     * Constructor for the ServiceGenerator class with headers.
-     *
-     * @param headers The headers to be added to the requests.
-     */
-    public ServiceGenerator(Headers headers) {setHeaders(headers);}
-
-    /**
-     * Constructor for the ServiceGenerator class with base URL.
-     *
-     * @param BASE_URL The base URL for the service.
-     */
-    public ServiceGenerator(String BASE_URL) {this.BASE_URL = BASE_URL;}
-
-    /**
-     * Default constructor for the ServiceGenerator class.
-     */
-    public ServiceGenerator(){}
 
     /**
      * Creates Retrofit Service based on the provided service class and configurations.
@@ -160,7 +172,7 @@ public class ServiceGenerator {
             boolean hostnameVerification,
             String proxyHost
     ) {
-        return new ServiceGenerator(headers, BASE_URL)
+        return new ServiceGenerator()
                 .setRequestLogging(printRequestBody)
                 .hostnameVerification(hostnameVerification)
                 .detailedLogging(detailedLogging)
@@ -179,7 +191,7 @@ public class ServiceGenerator {
      * @return The created Retrofit Service.
      */
     public static <S> S generate(Class<S> serviceClass, String BASE_URL) {
-        return new ServiceGenerator(BASE_URL).generate(serviceClass);
+        return new ServiceGenerator().generate(serviceClass);
     }
 
     /**
@@ -508,4 +520,5 @@ public class ServiceGenerator {
     public int getWriteTimeout() {
         return writeTimeout;
     }
+
 }
