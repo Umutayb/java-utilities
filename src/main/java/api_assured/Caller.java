@@ -7,13 +7,12 @@ import okio.Buffer;
 import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
-import utils.*;
+import utils.Printer;
+import utils.StringUtilities;
 import utils.mapping.MappingUtilities;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
 import static utils.reflection.ReflectionUtilities.isOfType;
