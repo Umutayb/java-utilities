@@ -187,7 +187,7 @@ public abstract class Caller {
              if (!StringUtilities.isBlank(bodyString)) {
                  if (errorModel.isAssignableFrom(String.class))
                      return (ErrorModel) bodyString;
-                 else return fromJsonString(bodyString, errorModel);
+                 else return MappingUtilities.Json.fromJsonString(bodyString, errorModel);
              }
             else
                 return null;
