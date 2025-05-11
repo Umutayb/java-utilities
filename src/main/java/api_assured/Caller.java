@@ -8,6 +8,7 @@ import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
+import utils.mapping.MappingUtilities;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -143,7 +144,7 @@ public abstract class Caller {
             T body = response.body();
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && !response.message().isEmpty()) log.info(response.message());
-            if (printBody && printableResponse) log.info("The response body is: \n" + getJsonString(body));
+            if (printBody && printableResponse) log.info("The response body is: \n" + MappingUtilities.Json.getJsonString(body));
             return Response.success(body, response.raw());
         }
         else {
@@ -151,7 +152,7 @@ public abstract class Caller {
             if (response.message().length()>0) log.warning(response.message());
             if (response.errorBody() != null && printBody) {
                 Object errorBody =  isOfType(response, Object.class) ?
-                        getJsonString(getErrorObject(response, Object.class)) :
+                        MappingUtilities.Json.getJsonString(getErrorObject(response, Object.class)) :
                         response.raw();
                 String errorLog = errorBody.equals("null") ?
                         "The error body is empty." :
