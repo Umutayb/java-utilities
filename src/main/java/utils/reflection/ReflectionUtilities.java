@@ -516,7 +516,7 @@ public class ReflectionUtilities {
             field.setAccessible(true);
             if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(field.getName()))) {
                 boolean isMember = field.getType().isMemberClass();
-                boolean isList = isOfType(field, "List");
+                boolean isList = fieldIsOfType(field, "List");
                 if (isMember)
                     json.add(field.getName(), getJsonObject(field.getType(), new JsonObject(), exceptions));
                 else if (isList)
@@ -547,7 +547,7 @@ public class ReflectionUtilities {
             field.setAccessible(true);
             if (Arrays.stream(exceptions).noneMatch(exception -> exception.equals(field.getName()))) {
                 boolean isMember = field.getType().isMemberClass();
-                boolean isList = isOfType(field, "List");
+                boolean isList = fieldIsOfType(field, "List");
 
                 if (isMember)
                     json.add(field.getName(), getJsonFromObject(field, new JsonObject(), exceptions));
@@ -567,8 +567,40 @@ public class ReflectionUtilities {
      * @param expectedType expected field type
      * @return true or false
      */
-    public static boolean isOfType(Field field, String expectedType) {
+    public static boolean fieldIsOfType(Field field, String expectedType) {
         return field.getType().getTypeName().contains(expectedType);
+    }
+
+    /**
+     * Verifies type of given object
+     *
+     * @param object        target object
+     * @param type expected object type
+     * @return true or false
+     */
+    public static <Type> boolean isOfType(Type object, Class<Type> type) {
+        try {
+            String jsonString = MappingUtilities.Json.getJsonStringFor(object);
+            return isOfType(jsonString, type);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Verifies type of given object
+     *
+     * @param objectString expected object string
+     * @param type expected object type
+     * @return true or false
+     */
+    public static <Type> boolean isOfType(String objectString, Class<Type> type) {
+        try {
+            MappingUtilities.Json.fromJsonString(objectString, type);
+            return true;
+        } catch (JsonProcessingException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /**

@@ -2,20 +2,22 @@ package api_assured;
 
 import api_assured.exceptions.FailedCallException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
-import utils.mapping.MappingUtilities;
+import utils.reflection.ReflectionUtilities;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static utils.mapping.MappingUtilities.Json.*;
+import static utils.MappingUtilities.Json.*;
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
+import static utils.reflection.ReflectionUtilities.isOfType;
 
 /**
  * This abstract class represents a caller that performs API calls, logs the results and returns objects in response bodies.
@@ -32,7 +34,7 @@ public abstract class Caller {
     /**
      * A static boolean variable that determines whether logs should be kept for API calls.
      */
-    public static boolean keepLogs;
+    protected static boolean keepLogs;
 
     /**
      * A Printer object for logging.
@@ -143,16 +145,18 @@ public abstract class Caller {
             if (keepLogs) log.success("The response code is: " + response.code());
             if (keepLogs && !response.message().isEmpty()) log.info(response.message());
             if (printBody && printableResponse) log.info("The response body is: \n" + getJsonString(body));
-            assert body != null;
             return Response.success(body, response.raw());
         }
         else {
             log.warning("The response code is: " + response.code());
-            if (!response.message().isEmpty()) log.warning(response.message());
-            assert response.errorBody() != null;
-            if (printBody) {
-                Object errorBody = getJsonString(getErrorObject(response, Object.class));
-                String errorLog = errorBody.equals("null") ? "The error body is empty." : "The error body is: \n" + errorBody;
+            if (response.message().length()>0) log.warning(response.message());
+            if (response.errorBody() != null && printBody) {
+                Object errorBody =  isOfType(response, Object.class) ?
+                        getJsonString(getErrorObject(response, Object.class)) :
+                        response.raw();
+                String errorLog = errorBody.equals("null") ?
+                        "The error body is empty." :
+                        "The error body is: \n" + errorBody;
                 log.warning(errorLog);
             }
             return Response.error(response.errorBody(), response.raw());
@@ -173,12 +177,18 @@ public abstract class Caller {
      *
      * @see MappingUtilities.Json#fromJsonString(String, Class)
      */
+    @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel) throws JsonProcessingException {
         assert response.errorBody() != null;
+        if (errorModel.isAssignableFrom(ResponseBody.class))
+            return (ErrorModel) response.errorBody();
         try (Buffer errorBuffer = response.errorBody().source().getBuffer().clone()) {
             String bodyString = errorBuffer.readString(StandardCharsets.UTF_8);
-            if (!StringUtilities.isBlank(bodyString))
-                return fromJsonString(bodyString, errorModel);
+             if (!StringUtilities.isBlank(bodyString)) {
+                 if (errorModel.isAssignableFrom(String.class))
+                     return (ErrorModel) bodyString;
+                 else return fromJsonString(bodyString, errorModel);
+             }
             else
                 return null;
         }
@@ -249,9 +259,12 @@ public abstract class Caller {
      */
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorBody(Response<?> response, Class<?>... errorModels){
-        for (Class<?> errorModel:errorModels){
+        for (Class<?> errorClass:errorModels){
             try {
-                return (ErrorModel) fromJsonString(getJsonStringFor(getErrorObject(response, errorModel)), errorModel);
+                ErrorModel errorModel = (ErrorModel) getErrorObject(response, errorClass);
+                assert errorModel != null;
+                if (errorClass.isAssignableFrom(errorModel.getClass()))
+                    return errorModel;
             }
             catch (JsonProcessingException ignored) {}
         }
