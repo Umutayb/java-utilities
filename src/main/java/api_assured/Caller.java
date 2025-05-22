@@ -8,13 +8,11 @@ import properties.PropertyUtilities;
 import retrofit2.Call;
 import retrofit2.Response;
 import utils.*;
-import utils.reflection.ReflectionUtilities;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
-import static utils.MappingUtilities.Json.*;
+import static utils.mapping.MappingUtilities.Json.fromJsonString;
+import static utils.mapping.MappingUtilities.Json.getJsonString;
 import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.StringUtilities.Color.*;
 import static utils.reflection.ReflectionUtilities.isOfType;
@@ -29,6 +27,7 @@ import static utils.reflection.ReflectionUtilities.isOfType;
  * @version 1.4.0 (Documented in 1.4.0, released in an earlier version)
  */
 @SuppressWarnings("unused")
+@Deprecated(since = "1.7.4")
 public abstract class Caller {
 
     /**
@@ -175,7 +174,7 @@ public abstract class Caller {
      * @return A deserialized error object instance of type {@code Model}.
      * @throws RuntimeException if there's an issue processing the error content or deserializing it.
      *
-     * @see MappingUtilities.Json#fromJsonString(String, Class)
+     * @see utils.mapping.MappingUtilities.Json#fromJsonString(String, Class)
      */
     @SuppressWarnings("unchecked")
     private static <ErrorModel> ErrorModel getErrorObject(Response<?> response, Class<ErrorModel> errorModel) throws JsonProcessingException {
@@ -253,8 +252,8 @@ public abstract class Caller {
      * @return A deserialized error model instance of type {@code ErrorModel} if a match is found.
      * @throws RuntimeException if none of the provided error models match the error content of the response.
      *
-     * @see MappingUtilities.Json#fromJsonString(String, Class)
-     * @see MappingUtilities.Json#getJsonStringFor(Object)
+     * @see utils.mapping.MappingUtilities.Json#fromJsonString(String, Class)
+     * @see utils.mapping.MappingUtilities.Json#getJsonStringFor(Object)
      * @see #getErrorObject(Response, Class)
      */
     @SuppressWarnings("unchecked")
