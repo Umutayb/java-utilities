@@ -6,4 +6,5 @@ package api_assured;
  * @param <Response> expected Response-SuccessModel-
  * @param <ErrorBody> potential error body
  */
+@Deprecated(since = "1.7.4")
 public record ResponsePair<Response, ErrorBody>(Response response, ErrorBody errorBody) { }

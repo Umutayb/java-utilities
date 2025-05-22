@@ -3,6 +3,7 @@ package api_assured.exceptions;
 /**
  * This class represents an exception that is thrown when a call fails.
  */
+@Deprecated(since = "1.7.4")
 public class FailedCallException extends RuntimeException {
 
     /**
