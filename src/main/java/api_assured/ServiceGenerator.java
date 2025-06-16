@@ -37,6 +37,7 @@ import static utils.mapping.MappingUtilities.Json.mapper;
  * @version 1.4.0 (Documented in 1.4.0, released in version 1.0.0)
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
+@Deprecated(since = "1.7.4")
 public class ServiceGenerator {
 
     OkHttpClient client;

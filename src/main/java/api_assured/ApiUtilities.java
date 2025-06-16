@@ -19,6 +19,7 @@ import static utils.reflection.ReflectionUtilities.getPreviousMethodName;
 import static utils.reflection.ReflectionUtilities.iterativeConditionalInvocation;
 
 @SuppressWarnings("unused")
+@Deprecated(since = "1.7.4")
 public abstract class ApiUtilities extends Caller {
 
     public static Printer log = new Printer(ApiUtilities.class);
