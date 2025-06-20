@@ -224,54 +224,48 @@ public class DateUtilities {
     }
 
     /**
-     * Fixes a date string assuming the input format is "yyyy-M-dd".
+     * Formats a date string from an automatically detected input format to a
+     * user-specified output format.
      *
-     * @param input The date string to fix, expected in "yyyy-M-dd" format.
-     * @return The formatted date string in "yyyy-MM-dd" format, or the original input if it doesn't match.
-     * @throws IllegalArgumentException if input is null.
+     * @param input        The date string to format.
+     * @param outputFormat The desired output format string (e.g., "yyyy-MM-dd").
+     * @return The formatted date string, or the original input string if the
+     *         input format cannot be detected.
      */
-    public static String fixDateFormat(String input) {
-        // Regex to match the pattern "yyyy-M-dd" where M is a single digit month
-        Pattern pattern = Pattern.compile("(\\d{4})-(\\d)-(\\d{2})");
-        Matcher matcher = pattern.matcher(input);
-
-        return fixDateFormat(input, "(\\d{4})-(\\d)-(\\d{2})", "{1}-{2}-{3}");
+    public static String fixDateFormat(String input, String outputFormat) {
+        String[] SUPPORTED_INPUT_FORMATS = {
+                "yyyy-M-dd", "yyyy-MM-dd", "M/d/yyyy", "MM/d/yyyy", "yyyy/M/d", "yyyy/MM/d",
+                "M-d-yyyy", "MM-d-yyyy", "yyyy-M-d", "yyyy-MM-d"
+        };
+        for (String inputFormat : SUPPORTED_INPUT_FORMATS) {
+            try {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(inputFormat);
+                Date date = simpleDateFormat.parse(input);
+                SimpleDateFormat outputSimpleDateFormat = new SimpleDateFormat(outputFormat);
+                return outputSimpleDateFormat.format(date);
+            }
+            catch (ParseException ignored) {}
+        }
+        return input;
     }
 
     /**
-     * Fixes a date string based on a provided input pattern and formats it according to an output pattern.
+     * Formats a date string from a specified input format to a desired output format.
      *
-     * @param input The date string to fix and format.
-     * @param inputPattern The regular expression pattern to match the input date format.  Capture groups should be used to extract date components.
-     * @param outputPattern The desired output format string. Use `{1}`, `{2}`, etc. to refer to captured groups from the input pattern.
-     * @return The formatted date string if the input matches the pattern, otherwise the original input string.
-     * @throws IllegalArgumentException if input, inputPattern, or outputPattern is null.
+     * @param input        The date string to format.
+     * @param inputFormat  The format of the input date string (e.g., "yyyy-MM-dd").
+     * @param outputFormat The desired format of the output date string (e.g., "MM/dd/yyyy").
+     * @return The formatted date string.
+     * @throws RuntimeException If the input date string cannot be parsed according to the specified input format.
+     *                          The exception is a `RuntimeException` wrapping the original `ParseException`.
      */
-    public static String fixDateFormat(String input, String inputPattern, String outputPattern) {
-        // Build the regex pattern dynamically
-        Pattern pattern = Pattern.compile(inputPattern);
-        Matcher matcher = pattern.matcher(input);
-
-        if (matcher.matches()) {
-            // Extract groups based on the number of capture groups in the input pattern
-            String[] groups = new String[matcher.groupCount()];
-            for (int i = 1; i <= matcher.groupCount(); i++) {
-                groups[i - 1] = matcher.group(i);
-            }
-
-            // Format the output based on the output pattern.  This is a simplified example
-            // and might need adjustments for more complex output formats.  It assumes
-            // the output pattern uses numbered placeholders like {1}, {2}, etc.
-            String formattedDate = outputPattern;
-            for (int i = 0; i < groups.length; i++) {
-                formattedDate = formattedDate.replace("{" + (i + 1) + "}", groups[i]);
-            }
-
-            return formattedDate;
-
-        } else {
-            // If the input doesn't match the expected format, return it unchanged.
-            return input;
+    public static String fixDateFormat(String input, String inputFormat, String outputFormat) {
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(inputFormat);
+            Date date = simpleDateFormat.parse(input);
+            SimpleDateFormat outputSimpleDateFormat = new SimpleDateFormat(outputFormat);
+            return outputSimpleDateFormat.format(date);
         }
+        catch (ParseException exception) {throw new RuntimeException(exception);}
     }
 }
