@@ -347,7 +347,7 @@ public class AppTest {
        Assert.assertEquals(
                "Fixed date format did not match the expected one!",
                expectedDate,
-               DateUtilities.fixDateFormat(date, "yyyy-MM-dd")
+               DateUtilities.reformatDateString(date, "yyyy-MM-dd")
        );
         printer.success("The dateFormatTest() test pass!");
     }

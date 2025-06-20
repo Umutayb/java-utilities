@@ -224,26 +224,6 @@ public class DateUtilities {
     }
 
     /**
-     * Formats a date string from a specified input format to a desired output format.
-     *
-     * @param input        The date string to format.
-     * @param inputFormat  The format of the input date string (e.g., "yyyy-MM-dd").
-     * @param outputFormat The desired format of the output date string (e.g., "MM/dd/yyyy").
-     * @return The formatted date string.
-     * @throws RuntimeException If the input date string cannot be parsed according to the specified input format.
-     *                          The exception is a `RuntimeException` wrapping the original `ParseException`.
-     */
-    public static String fixDateFormat(String input, String inputFormat, String outputFormat) {
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(inputFormat);
-            Date date = simpleDateFormat.parse(input);
-            SimpleDateFormat outputSimpleDateFormat = new SimpleDateFormat(outputFormat);
-            return outputSimpleDateFormat.format(date);
-        }
-        catch (ParseException exception) {throw new RuntimeException(exception);}
-    }
-
-    /**
      * Formats a date string from an automatically detected input format to a
      * user-specified output format.
      *
@@ -252,14 +232,90 @@ public class DateUtilities {
      * @return The formatted date string, or the original input string if the
      *         input format cannot be detected.
      */
-    public static String fixDateFormat(String input, String outputFormat) {
+    public static String reformatDateString(String input, String outputFormat) {
         String[] SUPPORTED_INPUT_FORMATS = {
-                "yyyy-M-dd", "yyyy-MM-dd", "M/d/yyyy", "MM/d/yyyy", "yyyy/M/d", "yyyy/MM/d",
-                "M-d-yyyy", "MM-d-yyyy", "yyyy-M-d", "yyyy-MM-d"
+                // Standard formats
+                "yyyy-M-dd",
+                "yyyy-MM-dd",
+                "M/d/yyyy",
+                "MM/d/yyyy",
+                "yyyy/M/d",
+                "yyyy/MM/d",
+                "M-d-yyyy",
+                "MM-d-yyyy",
+                "yyyy-M-d",
+                "yyyy-MM-d",
+
+                // Variations with different separators
+                "yyyy.M.dd",
+                "yyyy.MM.dd",
+                "M.d.yyyy",
+                "MM.d.yyyy",
+                "yyyy.M.d",
+                "yyyy.MM.d",
+                "M-d-yyyy",
+                "MM-d-yyyy",
+
+                // Single digit month/day
+                "y-M-d",
+                "y-MM-d",
+                "M/d/yy",
+                "MM/d/yy",
+                "y/M/d",
+                "y/MM/d",
+                "M-d-yy",
+                "MM-d-yy",
+
+                //No separators
+                "yyyyMdd",
+                "yyMdd",
+                "yyyyMd",
+                "yyMd",
+                "Myyyy",
+                "Mddyy",
+                "Mdyyyy",
+
+                //Common International Formats
+                "dd/M/yyyy",
+                "dd/MM/yyyy",
+                "dd-M-yyyy",
+                "dd-MM-yyyy",
+                "d/M/yyyy",
+                "d/MM/yyyy",
+
+                //More variations
+                "yyyyMdd",
+                "yyMdd",
+                "yyyyMd",
+                "yyMd",
+                "Mdyyyy",
+                "Mddyy",
+                "Myyyy",
+
+                // Short year format
+                "M/d/yy",
+                "MM/d/yy",
+                "M-d-yy",
+                "MM-d-yy",
+                "dd/M/yy",
+                "dd/MM/yy",
+
+                //More separators
+                "M/d/yyyy",
+                "MM/d/yyyy",
+                "M-d-yyyy",
+                "MM-d-yyyy",
+                "d/M/yyyy",
+                "d/MM/yyyy",
+
+                //No Separators
+                "yyyyMMdd",
+                "yyMMdd",
         };
         for (String inputFormat : SUPPORTED_INPUT_FORMATS) {
-            try {return fixDateFormat(input, inputFormat, outputFormat);}
-            catch (Exception ignored) {}
+            String formattedDate = reformatDateString(input, inputFormat, outputFormat);
+            if (formattedDate == null) continue;
+            return formattedDate;
         }
         return input;
     }
