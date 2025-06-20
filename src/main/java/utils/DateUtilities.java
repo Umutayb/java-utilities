@@ -276,12 +276,12 @@ public class DateUtilities {
                 "Mdyyyy",
 
                 //Common International Formats
-                "dd/M/yyyy",  // Common in Europe
-                "dd/MM/yyyy", // Common in Europe
+                "dd/M/yyyy",
+                "dd/MM/yyyy",
                 "dd-M-yyyy",
                 "dd-MM-yyyy",
-                "d/M/yyyy",   // Single-digit day
-                "d/MM/yyyy",  // Single-digit day
+                "d/M/yyyy",
+                "d/MM/yyyy",
 
                 //More variations
                 "yyyyMdd",
@@ -308,9 +308,9 @@ public class DateUtilities {
                 "d/M/yyyy",
                 "d/MM/yyyy",
 
-                //Edge cases/less common
-                "yyyyMMdd", //No Separators
-                "yyMMdd",  //No Separators
+                //No Separators
+                "yyyyMMdd",
+                "yyMMdd",
         };
         for (String inputFormat : SUPPORTED_INPUT_FORMATS) {
             String formattedDate = reformatDateString(input, inputFormat, outputFormat);
