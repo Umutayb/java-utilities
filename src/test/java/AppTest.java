@@ -333,7 +333,7 @@ public class AppTest {
        JsonNode petSchema = MappingUtilities.Json.Schema.getJsonNodeFor(Pet.class);
        Assert.assertEquals(
                "Generated json schema did not match the expected one!",
-               "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"any\"},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"any\"}},\"status\":{\"type\":\"string\"}}}",
+               "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}}},\"status\":{\"type\":\"string\"}}}",
                petSchema.toString()
        );
     }
