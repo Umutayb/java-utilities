@@ -9,6 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateUtilities {
 
@@ -219,5 +221,57 @@ public class DateUtilities {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of(zoneId.getZoneId()));
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return dtf.format(now);
+    }
+
+    /**
+     * Fixes a date string assuming the input format is "yyyy-M-dd".
+     *
+     * @param input The date string to fix, expected in "yyyy-M-dd" format.
+     * @return The formatted date string in "yyyy-MM-dd" format, or the original input if it doesn't match.
+     * @throws IllegalArgumentException if input is null.
+     */
+    public static String fixDateFormat(String input) {
+        // Regex to match the pattern "yyyy-M-dd" where M is a single digit month
+        Pattern pattern = Pattern.compile("(\\d{4})-(\\d)-(\\d{2})");
+        Matcher matcher = pattern.matcher(input);
+
+        return fixDateFormat(input, "(\\d{4})-(\\d)-(\\d{2})", "{1}-{2}-{3}");
+    }
+
+    /**
+     * Fixes a date string based on a provided input pattern and formats it according to an output pattern.
+     *
+     * @param input The date string to fix and format.
+     * @param inputPattern The regular expression pattern to match the input date format.  Capture groups should be used to extract date components.
+     * @param outputPattern The desired output format string. Use `{1}`, `{2}`, etc. to refer to captured groups from the input pattern.
+     * @return The formatted date string if the input matches the pattern, otherwise the original input string.
+     * @throws IllegalArgumentException if input, inputPattern, or outputPattern is null.
+     */
+    public static String fixDateFormat(String input, String inputPattern, String outputPattern) {
+        // Build the regex pattern dynamically
+        Pattern pattern = Pattern.compile(inputPattern);
+        Matcher matcher = pattern.matcher(input);
+
+        if (matcher.matches()) {
+            // Extract groups based on the number of capture groups in the input pattern
+            String[] groups = new String[matcher.groupCount()];
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                groups[i - 1] = matcher.group(i);
+            }
+
+            // Format the output based on the output pattern.  This is a simplified example
+            // and might need adjustments for more complex output formats.  It assumes
+            // the output pattern uses numbered placeholders like {1}, {2}, etc.
+            String formattedDate = outputPattern;
+            for (int i = 0; i < groups.length; i++) {
+                formattedDate = formattedDate.replace("{" + (i + 1) + "}", groups[i]);
+            }
+
+            return formattedDate;
+
+        } else {
+            // If the input doesn't match the expected format, return it unchanged.
+            return input;
+        }
     }
 }
