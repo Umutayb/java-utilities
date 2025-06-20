@@ -224,32 +224,6 @@ public class DateUtilities {
     }
 
     /**
-     * Formats a date string from an automatically detected input format to a
-     * user-specified output format.
-     *
-     * @param input        The date string to format.
-     * @param outputFormat The desired output format string (e.g., "yyyy-MM-dd").
-     * @return The formatted date string, or the original input string if the
-     *         input format cannot be detected.
-     */
-    public static String fixDateFormat(String input, String outputFormat) {
-        String[] SUPPORTED_INPUT_FORMATS = {
-                "yyyy-M-dd", "yyyy-MM-dd", "M/d/yyyy", "MM/d/yyyy", "yyyy/M/d", "yyyy/MM/d",
-                "M-d-yyyy", "MM-d-yyyy", "yyyy-M-d", "yyyy-MM-d"
-        };
-        for (String inputFormat : SUPPORTED_INPUT_FORMATS) {
-            try {
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(inputFormat);
-                Date date = simpleDateFormat.parse(input);
-                SimpleDateFormat outputSimpleDateFormat = new SimpleDateFormat(outputFormat);
-                return outputSimpleDateFormat.format(date);
-            }
-            catch (ParseException ignored) {}
-        }
-        return input;
-    }
-
-    /**
      * Formats a date string from a specified input format to a desired output format.
      *
      * @param input        The date string to format.
@@ -267,5 +241,26 @@ public class DateUtilities {
             return outputSimpleDateFormat.format(date);
         }
         catch (ParseException exception) {throw new RuntimeException(exception);}
+    }
+
+    /**
+     * Formats a date string from an automatically detected input format to a
+     * user-specified output format.
+     *
+     * @param input        The date string to format.
+     * @param outputFormat The desired output format string (e.g., "yyyy-MM-dd").
+     * @return The formatted date string, or the original input string if the
+     *         input format cannot be detected.
+     */
+    public static String fixDateFormat(String input, String outputFormat) {
+        String[] SUPPORTED_INPUT_FORMATS = {
+                "yyyy-M-dd", "yyyy-MM-dd", "M/d/yyyy", "MM/d/yyyy", "yyyy/M/d", "yyyy/MM/d",
+                "M-d-yyyy", "MM-d-yyyy", "yyyy-M-d", "yyyy-MM-d"
+        };
+        for (String inputFormat : SUPPORTED_INPUT_FORMATS) {
+            try {return fixDateFormat(input, inputFormat, outputFormat);}
+            catch (Exception ignored) {}
+        }
+        return input;
     }
 }

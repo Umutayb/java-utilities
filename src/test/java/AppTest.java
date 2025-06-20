@@ -336,5 +336,19 @@ public class AppTest {
                "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}}},\"status\":{\"type\":\"string\"}}}",
                petSchema.toString()
        );
+        printer.success("The jsonSchemaTest() test pass!");
+    }
+
+    @Test
+    public void dateFormatTest() {
+       String date = "2025-6-20";
+       String expectedDate = "2025-06-20";
+
+       Assert.assertEquals(
+               "Fixed date format did not match the expected one!",
+               expectedDate,
+               DateUtilities.fixDateFormat(date, "yyyy-MM-dd")
+       );
+        printer.success("The dateFormatTest() test pass!");
     }
 }
