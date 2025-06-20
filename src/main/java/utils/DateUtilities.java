@@ -234,16 +234,17 @@ public class DateUtilities {
      */
     public static String reformatDateString(String input, String outputFormat) {
         String[] SUPPORTED_INPUT_FORMATS = {
-                "yyyy-M-dd",    // Original
-                "yyyy-MM-dd",   // Original
-                "M/d/yyyy",     // Original
-                "MM/d/yyyy",    // Original
-                "yyyy/M/d",     // Original
-                "yyyy/MM/d",    // Original
-                "M-d-yyyy",     // Original
-                "MM-d-yyyy",    // Original
-                "yyyy-M-d",     // Original
-                "yyyy-MM-d",    // Original
+                // Standard formats
+                "yyyy-M-dd",
+                "yyyy-MM-dd",
+                "M/d/yyyy",
+                "MM/d/yyyy",
+                "yyyy/M/d",
+                "yyyy/MM/d",
+                "M-d-yyyy",
+                "MM-d-yyyy",
+                "yyyy-M-d",
+                "yyyy-MM-d",
 
                 // Variations with different separators
                 "yyyy.M.dd",
