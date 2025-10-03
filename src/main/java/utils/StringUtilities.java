@@ -260,6 +260,9 @@ public class StringUtilities {
         String expression = input.substring("MATH->".length());
         String args = expression.substring(4, expression.length() - 1); //Scoop from inside ADD() or SUB()
         String[] parts = args.split(",");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Exactly two arguments required.");
+        }
         int left = parseOperand(parts[0]);
         int right = parseOperand(parts[1]);
         if (expression.startsWith("ADD(") && expression.endsWith(")")) {
