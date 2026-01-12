@@ -3,7 +3,6 @@ package utils;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jetbrains.annotations.NotNull;
 import properties.PropertyUtilities;
 import java.text.Normalizer;
 import java.util.*;
@@ -223,7 +222,7 @@ public class StringUtilities {
      * @param input string that is to be context checked
      * @return value depending on the context (could be from ContextStore, Properties, Random etc)
      */
-    public static String contextCheck(@NotNull String input){
+    public static String contextCheck(String input){
         if (input.contains("CONTEXT-")) {
             if (input.startsWith("MATH")) input = evaluateMathExpression(input);
             else input = ContextStore.get(TextParser.parse("CONTEXT-", null, input));

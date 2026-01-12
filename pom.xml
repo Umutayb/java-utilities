@@ -6,7 +6,7 @@
 
     <groupId>io.github.umutayb</groupId>
     <artifactId>Utilities</artifactId>
-    <version>1.7.6</version>
+    <version>1.7.7</version>
     <packaging>jar</packaging>
 
     <name>Java-Utilities</name>
@@ -59,7 +59,7 @@
         <serenity.maven.version>1.9.12</serenity.maven.version>
         <maven.surefire.version>2.22.1</maven.surefire.version>
         <maven.compiler.version>3.8.0</maven.compiler.version>
-        <context.store.version>1.0.0</context.store.version>
+        <context.store.version>1.0.3</context.store.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <cucumber.version>4.8.0</cucumber.version>
@@ -84,65 +84,6 @@
             <groupId>io.github.umutayb</groupId>
             <artifactId>context-store</artifactId>
             <version>${context.store.version}</version>
-        </dependency>
-
-        <!-- OKHttp -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
-        <!-- Retrofit -->
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>adapter-rxjava</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-gson</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>retrofit</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-jackson</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-scalars</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-simplexml</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-moshi</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-protobuf</artifactId>
-            <version>${retrofit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>converter-wire</artifactId>
-            <version>${retrofit.version}</version>
         </dependency>
 
         <!-- Apache -->
@@ -314,7 +255,7 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
-                            <skip>false</skip>
+                            <skip>true</skip>
                         </configuration>
                     </execution>
                 </executions>
