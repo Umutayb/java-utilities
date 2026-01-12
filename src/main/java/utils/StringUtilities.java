@@ -233,7 +233,7 @@ public class StringUtilities {
         }
         if (input != null && ContextStore.get("localised-elements", false)){
             JsonObject localisationJson = ContextStore.get("localisation-json");
-            String translation = localisationJson.get(input).getAsString();
+            String translation = String.valueOf(localisationJson.get(input));
             if (translation != null) input = localisationJson.get(input).getAsString();
         }
         else {

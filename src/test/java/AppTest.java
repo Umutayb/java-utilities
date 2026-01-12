@@ -1,5 +1,4 @@
 import collections.Pair;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
@@ -9,8 +8,6 @@ import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
-import utils.mapping.MappingUtilities;
-import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -59,6 +56,7 @@ public class AppTest {
             );
         }
         printer.success("The localisationCapabilityTest() test passed!");
+        ContextStore.put("localised-elements", false);
     }
 
     @Test
