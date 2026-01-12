@@ -23,10 +23,7 @@ import utils.mapping.MappingUtilities;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -37,6 +34,25 @@ import static utils.StringUtilities.Color.*;
 public class FileUtilities {
 
     static Printer log = new Printer(FileUtilities.class);
+
+    /**
+     * Checks if a given string is a valid file path.
+     *
+     * @param path The string representing the file path to validate.
+     * @return true if the string is a valid file path, false otherwise.
+     */
+    public static boolean isValidFilePath(String path) {
+        if (path == null || path.isEmpty()) return false;
+
+        try {
+            Path filePath = Paths.get(path);
+            filePath.toRealPath();
+            return true;
+        }
+        catch (InvalidPathException | SecurityException | IOException e) {
+            return false;
+        }
+    }
 
     /**
      * Retrieves the Base64-encoded string representation of an image file.
