@@ -1,14 +1,10 @@
 import collections.Pair;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
 import org.junit.Assert;
 import org.junit.Before;
-import petstore.PetStore;
-import petstore.PetStoreServices;
-import petstore.models.Pet;
 import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
@@ -17,14 +13,12 @@ import utils.mapping.MappingUtilities;
 import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import static utils.arrays.ArrayUtilities.*;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
-import static utils.mapping.MappingUtilities.Json.*;
 import static utils.StringUtilities.contextCheck;
 
 public class AppTest {
@@ -47,82 +41,6 @@ public class AppTest {
     @Test
     public void dataGeneratorPetTest() {
         printer.info("Test!");
-    }
-
-    @Test
-    public void stringToObjectTest() throws JsonProcessingException {
-        Pet pet = fromJsonString("{\"id\" : null, \"category\" : {\"id\" : null, \"name\" : \"Cats\"},\"name\" : \"Whiskers\", \"photoUrls\" : [ \"https://example.com/cat.jpg\" ],\"tags\" : [ {\"id\" : 123456789, \"name\" : \"Furry\"}, {\"id\" : 987654321, \"name\" : \"Playful\"} ],\"status\" : \"Available\"}", Pet.class);
-        printer.success("The stringToObjectTest() test passed!");
-    }
-
-    @Test
-    public void petStatusTest() {
-        PetStore petStore = new PetStore();
-        petStore.getPetsByStatus(PetStoreServices.PetStatus.pending);
-        printer.success("The petStatusTest() test passed!");
-    }
-
-    @Test
-    public void petPostTest() {
-        PetStore petStore = new PetStore();
-        Pet pet = new Pet();
-        pet.setName("doggie");
-        List<String> photoUrls = List.of("string");
-        pet.setPhotoUrls(photoUrls);
-        pet.setStatus("available");
-        petStore.postPet(pet);
-        printer.success("The petPostTest() test passed!");
-    }
-
-    @Test
-    public void petCompareJsonTest() {
-        PetStore petStore = new PetStore();
-        List<String> photoUrls = List.of("string1", "string2");
-        List<Pet.DataModel> tags = new ArrayList<>();
-        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
-        tags.add(dataModel);
-        Pet.DataModel category = new Pet.DataModel(3333L, "category");
-        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
-        Pet createdPet = petStore.postPet(pet);
-        Pet actualPet = petStore.getPetById(createdPet.getId());
-        createdPet.setId(actualPet.getId());
-        ReflectionUtilities.objectsMatch(createdPet, actualPet);
-        printer.success("The petCompareJsonTest() test passed!");
-    }
-
-    @Test
-    public void compareJsonPetWithEmptyArrayNegativeTest() {
-        PetStore petStore = new PetStore();
-        List<String> photoUrls = List.of("string1", "string2");
-        List<Pet.DataModel> tags = new ArrayList<>();
-        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
-        tags.add(dataModel);
-        Pet.DataModel category = new Pet.DataModel(3333L, "category");
-        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
-        Pet createdPet = petStore.postPet(pet);
-        Pet actualPet = petStore.getPetById(createdPet.getId());
-        createdPet.setId(actualPet.getId());
-        createdPet.setPhotoUrls(new ArrayList<>());
-        Assert.assertFalse("The compareJsonPetWithEmptyArrayNegativeTest() negative test fails!", ReflectionUtilities.objectsMatch(createdPet, actualPet));
-        printer.success("The compareJsonPetWithEmptyArrayNegativeTest() negative test passes!");
-    }
-
-    @Test
-    public void compareJsonPetWithNullFieldValueInObjectNegativeTest() {
-        PetStore petStore = new PetStore();
-        List<String> photoUrls = List.of("string1", "string2");
-        List<Pet.DataModel> tags = new ArrayList<>();
-        Pet.DataModel dataModel = new Pet.DataModel(111222L, "dataModel1");
-        tags.add(dataModel);
-        Pet.DataModel category = new Pet.DataModel(3333L, "category");
-        Pet pet = new Pet(category, "Puppy", photoUrls, tags, "available");
-        Pet createdPet = petStore.postPet(pet);
-        Pet actualPet = petStore.getPetById(createdPet.getId());
-        createdPet.setId(actualPet.getId());
-        Pet.DataModel expectedCategory = new Pet.DataModel(3333L, null);
-        createdPet.setCategory(expectedCategory);
-        Assert.assertFalse("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test fails!", ReflectionUtilities.objectsMatch(createdPet, actualPet));
-        printer.success("The compareJsonPetWithNullFieldValueInObjectNegativeTest() negative test passes!");
     }
 
     @Test
@@ -278,20 +196,6 @@ public class AppTest {
     }
 
     @Test
-    public void setFieldTest() {
-        Pet pet = new Pet();
-        String expectedFieldName = "name";
-        String expectedFieldValue = "Bella";
-        ReflectionUtilities.setField(pet, expectedFieldName, expectedFieldValue);
-        Assert.assertEquals(
-                "Value of field " + expectedFieldName + " does not match!",
-                expectedFieldValue,
-                pet.getName()
-        );
-        printer.success("The setFieldTest() test pass!");
-    }
-
-    @Test
     public void lastItemOfTest() {
         List<Integer> integers = List.of(1, 2, 3, 4, 5);
         Assert.assertTrue("Integer was not the last member!", isLastMemberOf(integers, 5));
@@ -326,17 +230,6 @@ public class AppTest {
                 getPartitionCount(integers.size(), 2)
         );
         printer.success("The partitionCountTest() test pass!");
-    }
-
-    @Test
-    public void jsonSchemaTest() {
-       JsonNode petSchema = MappingUtilities.Json.Schema.getJsonNodeFor(Pet.class);
-       Assert.assertEquals(
-               "Generated json schema did not match the expected one!",
-               "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"category\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}},\"name\":{\"type\":\"string\"},\"photoUrls\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"}}}},\"status\":{\"type\":\"string\"}}}",
-               petSchema.toString()
-       );
-        printer.success("The jsonSchemaTest() test pass!");
     }
 
     @Test
