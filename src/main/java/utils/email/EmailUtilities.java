@@ -712,7 +712,8 @@ public class EmailUtilities {
         /**
          * Clears the email inbox using the configured email credentials and server settings.
          */
-        public void clearInbox(Flags.Flag flag, Pair<EmailField, String>... filterPairs) {
+        @SafeVarargs
+        public final void clearInbox(Flags.Flag flag, Pair<EmailField, String>... filterPairs) {
             try {
                 Store store = getImapStore();
                 Folder folderInbox = store.getFolder("INBOX");
@@ -722,15 +723,18 @@ public class EmailUtilities {
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
-                log.info("Deleting messages..");
+                log.info("Marking messages as " + flag);
+                int markedMessageCounter = 0;
                 for (Message message : messages)
-                    if (emailMatch(EmailMessage.from(message), List.of(filterPairs)))
+                    if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
                         message.setFlag(flag, true);
+                        markedMessageCounter+=1;
+                    }
 
                 // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
-                log.info(messages.size() + " messages have been successfully deleted!");
+                log.info(markedMessageCounter + " messages have been successfully mark as " + flag + "!");
 
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
