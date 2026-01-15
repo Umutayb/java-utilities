@@ -693,8 +693,6 @@ public class EmailUtilities {
          * @param filterPairs List of key-value pairs where:
          *                    - Key: {@link EmailField} (e.g., SUBJECT, FROM)
          *                    - Value: String to match against the corresponding field
-         * @throws MessagingException if there's an error connecting to the email server
-         *                            or performing mailbox operations
          */
         public void clearInbox(List<Pair<EmailField, String>> filterPairs) {
             try {
