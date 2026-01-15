@@ -6,6 +6,7 @@ import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import utils.DateUtilities;
 import utils.Printer;
+import utils.StringUtilities;
 import utils.email.mapping.EmailFlag;
 import utils.reflection.ReflectionUtilities;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.*;
 
+import static utils.StringUtilities.markup;
 import static utils.arrays.lambda.Collectors.toSingleton;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -682,7 +684,17 @@ public class EmailUtilities {
         }
 
         /**
-         * Clears the email inbox using the configured email credentials and server settings.
+         * Clears the email inbox by deleting messages that match the specified filters
+         * using the configured email credentials and server settings.
+         *
+         * <p>Each filter pair consists of an {@link EmailField} and a string value.
+         * Messages are deleted only if they match <b>all</b> provided filter criteria.
+         *
+         * @param filterPairs List of key-value pairs where:
+         *                    - Key: {@link EmailField} (e.g., SUBJECT, FROM)
+         *                    - Value: String to match against the corresponding field
+         * @throws MessagingException if there's an error connecting to the email server
+         *                            or performing mailbox operations
          */
         public void clearInbox(List<Pair<EmailField, String>> filterPairs) {
             try {
@@ -711,7 +723,16 @@ public class EmailUtilities {
 
 
         /**
-         * Clears the email inbox using the configured email credentials and server settings.
+         * Clears the email inbox by applying the specified flag to messages that match
+         * the given filters using the configured email credentials and server settings.
+         *
+         * <p>Messages are filtered based on key-value pairs (EmailField + String value)
+         * and the specified flag is applied to matching messages.
+         *
+         * @param flag        The flag to apply to matching messages (e.g., Flags.Flag.DELETED)
+         * @param filterPairs Variable arguments of key-value pairs where:
+         *                    - Key: {@link EmailField} (e.g., SUBJECT, FROM)
+         *                    - Value: String to match against the corresponding field
          */
         @SafeVarargs
         public final void clearInbox(EmailFlag flag, Pair<EmailField, String>... filterPairs) {
@@ -724,7 +745,7 @@ public class EmailUtilities {
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
-                log.info("Marking messages as " + flag);
+                log.info("Marking messages as " + markup(StringUtilities.Color.BLUE, flag.name()) + "...");
                 int markedMessageCounter = 0;
                 for (Message message : messages)
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
@@ -735,7 +756,7 @@ public class EmailUtilities {
                 // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
-                log.info(markedMessageCounter + " messages have been successfully marked as " + flag.name() + "!");
+                log.info(markedMessageCounter + " messages have been marked as " + flag.name() + "!");
 
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
@@ -743,7 +764,11 @@ public class EmailUtilities {
         }
 
         /**
-         * Clears the email inbox using the configured email credentials and server settings.
+         * Clears the email inbox by deleting <b>all</b> messages using the configured
+         * email credentials and server settings.
+         *
+         * <p>This method does not apply any filters and will delete every message in the inbox.
+         *
          */
         public void clearInbox() {
             try {
