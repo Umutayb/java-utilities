@@ -1,5 +1,4 @@
 import collections.Pair;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
@@ -9,13 +8,12 @@ import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
-import utils.mapping.MappingUtilities;
-import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static utils.arrays.ArrayUtilities.*;
 import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
 import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
@@ -58,6 +56,7 @@ public class AppTest {
             );
         }
         printer.success("The localisationCapabilityTest() test passed!");
+        ContextStore.put("localised-elements", false);
     }
 
     @Test
@@ -243,5 +242,57 @@ public class AppTest {
                DateUtilities.reformatDateString(date, "yyyy-MM-dd")
        );
         printer.success("The dateFormatTest() test pass!");
+    }
+
+    @Test
+    public void testSubtractionWithContextAndLiteral() {
+        ContextStore.put("val", "20");
+        String input = "MATH -> SUB ( CONTEXT-val , 5 )";
+        String result = contextCheck(input);
+        Assert.assertEquals("15", result);
+        printer.success("The testSubtractionWithContextAndLiteral() test pass!");
+    }
+
+    @Test
+    public void testAdditionWithContextOperands() {
+        ContextStore.put("a", "10");
+        ContextStore.put("b", "5");
+        String input = "MATH->ADD(CONTEXT-a, CONTEXT-b)";
+        String result = contextCheck(input);
+        Assert.assertEquals("15", result);
+        printer.success("The testAdditionWithContextOperands() test pass!");
+    }
+
+    @Test
+    public void testInvalidOperation() {
+        ContextStore.put("a", "3");
+        String input = "MATH->MUL(2,CONTEXT-a)";
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            contextCheck(input);
+        });
+        Assert.assertTrue(exception.getMessage().contains("Unsupported"));
+        printer.success("The testInvalidOperation() test pass!");
+    }
+
+    @Test
+    public void testNonNumericContextValue() {
+        ContextStore.put("bad", "abc");
+
+        String input = "MATH->ADD(CONTEXT-bad, 2)";
+        assertThrows(NumberFormatException.class, () -> {
+            contextCheck(input);
+        });
+        printer.success("The testNonNumericContextValue() test pass!");
+    }
+
+    @Test
+    public void testBadNumberOfArguments() {
+        ContextStore.put("abc", "10");
+        String input = "MATH->ADD(CONTEXT-abc,2,3)";
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            contextCheck(input);
+        });
+        Assert.assertTrue(exception.getMessage().contains("Exactly two arguments required"));
+        printer.success("The testBadNumberOfArguments() test pass!");
     }
 }

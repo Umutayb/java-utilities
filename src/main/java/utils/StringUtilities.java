@@ -223,15 +223,17 @@ public class StringUtilities {
      * @return value depending on the context (could be from ContextStore, Properties, Random etc)
      */
     public static String contextCheck(String input){
-        if (input.contains("CONTEXT-"))
-            input = ContextStore.get(TextParser.parse("CONTEXT-", null, input));
+        if (input.contains("CONTEXT-")) {
+            if (input.startsWith("MATH")) input = evaluateMathExpression(input);
+            else input = ContextStore.get(TextParser.parse("CONTEXT-", null, input));
+        }
         else if (input.contains("PROPERTY-")){
             String propertyName = TextParser.parse("PROPERTY-", null, input);
             input = PropertyUtilities.getProperty(propertyName, "NULL");
         }
         if (input != null && ContextStore.get("localised-elements", false)){
             JsonObject localisationJson = ContextStore.get("localisation-json");
-            String translation = localisationJson.get(input).getAsString();
+            String translation = String.valueOf(localisationJson.get(input));
             if (translation != null) input = localisationJson.get(input).getAsString();
         }
         else {
@@ -250,6 +252,36 @@ public class StringUtilities {
             }
         }
         return input;
+    }
+
+    private static String evaluateMathExpression(String input) {
+        input = input.replaceAll("\\s+", "");
+        String expression = input.substring("MATH->".length());
+        String args = expression.substring(4, expression.length() - 1); //Scoop from inside ADD() or SUB()
+        String[] parts = args.split(",");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Exactly two arguments required.");
+        }
+        int left = parseOperand(parts[0]);
+        int right = parseOperand(parts[1]);
+        if (expression.startsWith("ADD(") && expression.endsWith(")")) {
+            return String.valueOf(left + right);
+        } else if (expression.startsWith("SUB(") && expression.endsWith(")")) {
+            return String.valueOf(left - right);
+        } else {
+            throw new IllegalArgumentException("Unsupported math operation: " + expression);
+        }
+    }
+
+    private static int parseOperand(String operand) {
+        if (operand.startsWith("CONTEXT-")) {
+            String contextKey = TextParser.parse("CONTEXT-", null, operand);
+            String value = ContextStore.get(contextKey);
+            assert value != null;
+            return Integer.parseInt(value);
+        } else {
+            return Integer.parseInt(operand);
+        }
     }
 
     /**
