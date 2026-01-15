@@ -304,6 +304,27 @@ public class EmailUtilities {
             return this.getMessageBy(filterPairs);
         }
 
+        @SafeVarargs
+        public static EmailMessage getEmail(
+                Inbox inbox,
+                int timeout,
+                int expectedMessageCount,
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                Pair<EmailField, String>... filterPairs) {
+            return getEmail(inbox, timeout, expectedMessageCount, print, save, saveAttachments, List.of(filterPairs));
+        }
+
+        @SafeVarargs
+        public final EmailMessage getEmail(
+                boolean print,
+                boolean save,
+                boolean saveAttachments,
+                Pair<EmailField, String>... filterPairs) {
+            return getEmail(print, save, saveAttachments, List.of(filterPairs));
+        }
+
         /**
          * Saves an email message body to a file with the given filename in the 'inbox' directory.
          *
@@ -335,6 +356,22 @@ public class EmailUtilities {
             EmailUtilities.Inbox.load(this, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
         }
 
+
+        /**
+         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
+         *
+         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
+         * @param expectedMessageCount the expected number of messages to be loaded
+         * @param print                boolean flag indicating whether to print the emails
+         * @param save                 boolean flag indicating whether to save the emails
+         * @param saveAttachments      boolean flag indicating whether to save email attachments
+         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         */
+        @SafeVarargs
+        public final void load(int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
+            load(timeout, expectedMessageCount, print, save, saveAttachments, List.of(filterPairs));
+        }
+
         /**
          * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
          *
@@ -354,6 +391,22 @@ public class EmailUtilities {
                         return messages.size() >= expectedMessageCount;
                     }
             );
+        }
+
+        /**
+         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
+         *
+         * @param inbox                the inbox from which to load emails
+         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
+         * @param expectedMessageCount the expected number of messages to be loaded
+         * @param print                boolean flag indicating whether to print the emails
+         * @param save                 boolean flag indicating whether to save the emails
+         * @param saveAttachments      boolean flag indicating whether to save email attachments
+         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         */
+        @SafeVarargs
+        public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
+            load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, List.of(filterPairs));
         }
 
         /**
@@ -408,6 +461,19 @@ public class EmailUtilities {
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
+        }
+
+        /**
+         * Loads emails from the configured mail server with specified settings and filters.
+         *
+         * @param print           boolean flag indicating whether to print the emails
+         * @param save            boolean flag indicating whether to save the emails
+         * @param saveAttachments boolean flag indicating whether to save email attachments
+         * @param filterPairs     a list of pairs consisting of email fields and corresponding filter strings
+         */
+        @SafeVarargs
+        public final void load(boolean print, boolean save, boolean saveAttachments, Pair<EmailField, String>... filterPairs) {
+            this.load(print, save, saveAttachments, List.of(filterPairs));
         }
 
         Properties getConnectionProperties() {
