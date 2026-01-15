@@ -188,4 +188,8 @@ public class EmailAcquisition {
             }
         return absolutePath;
     }
+
+    public EmailUtilities.Inbox getInbox() {
+        return inbox;
+    }
 }
