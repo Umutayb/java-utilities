@@ -375,22 +375,8 @@ public class EmailUtilities {
          * @param filterPairs     a list of pairs consisting of email fields and corresponding filter strings
          */
         public void load(boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
-            Properties properties = new Properties();
-
-            //---------- Server Setting---------------
-            properties.put("mail.pop3.host", host);
-            properties.put("mail.pop3.port", port);
-            if (secureCon.equalsIgnoreCase("ssl")) {
-                properties.put("mail.smtp.ssl.enable", "true");
-            } else {
-                properties.put("mail.smtp.ssl.enable", "false");
-            }
-            //---------- SSL setting------------------
-            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
-            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
+            Properties properties = getConnectionProperties();
             Session session = Session.getInstance(properties);
-            //----------------------------------------
 
             try {
                 log.info("Connecting please wait....");
@@ -419,6 +405,24 @@ public class EmailUtilities {
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
+        }
+
+        Properties getConnectionProperties() {
+            Properties properties = new Properties();
+
+            //---------- Server Setting---------------
+            properties.put("mail.pop3.host", host);
+            properties.put("mail.pop3.port", port);
+            if (secureCon.equalsIgnoreCase("ssl")) {
+                properties.put("mail.smtp.ssl.enable", "true");
+            } else {
+                properties.put("mail.smtp.ssl.enable", "false");
+            }
+            //---------- SSL setting------------------
+            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
+            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
+            return properties;
         }
 
         /**
@@ -663,25 +667,12 @@ public class EmailUtilities {
          * IMAP connection to get the inbox
          */
         private Store getImapStore() {
-            Properties properties = new Properties();
-
-            //---------- Server Setting---------------
-            properties.put("mail.imap.host", host);
-            properties.put("mail.imap.port", port);
-            if (secureCon.equalsIgnoreCase("ssl")) {
-                properties.put("mail.imap.ssl.enable", "true");
-            } else {
-                properties.put("mail.imap.ssl.enable", "false");
-            }
-            //---------- SSL setting------------------
-            properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            properties.setProperty("mail.imap.socketFactory.fallback", "false");
-            properties.setProperty("mail.imap.socketFactory.port", String.valueOf(port));
+            Properties properties = getConnectionProperties();
             Session session = Session.getInstance(properties);
             Store store = null;
             try {
-                log.info("Connecting please wait....");
-                store = session.getStore("imap");
+                log.info("Connecting please wait...");
+                store = session.getStore("pop3");
                 store.connect(userName, password);
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
