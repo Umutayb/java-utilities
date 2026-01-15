@@ -255,7 +255,7 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                             </gpgArguments>
-                            <skip>true</skip>
+                            <skip>false</skip>
                         </configuration>
                     </execution>
                 </executions>
