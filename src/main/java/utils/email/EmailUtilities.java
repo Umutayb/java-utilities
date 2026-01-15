@@ -680,6 +680,62 @@ public class EmailUtilities {
             return store;
         }
 
+        /**
+         * Clears the email inbox using the configured email credentials and server settings.
+         */
+        public void clearInbox(List<Pair<EmailField, String>> filterPairs) {
+            try {
+                Store store = getImapStore();
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_WRITE);
+
+                // fetches new messages from server
+                log.info("Getting inbox..");
+                List<Message> messages = List.of(folderInbox.getMessages());
+
+                log.info("Deleting messages..");
+                for (Message message : messages)
+                    if (emailMatch(EmailMessage.from(message), filterPairs))
+                        message.setFlag(Flags.Flag.DELETED, true);
+
+                // Delete messages and close connection
+                folderInbox.close(true);
+                store.close();
+                log.info(messages.size() + " messages have been successfully deleted!");
+
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
+        }
+
+
+        /**
+         * Clears the email inbox using the configured email credentials and server settings.
+         */
+        public void clearInbox(Flags.Flag flag, Pair<EmailField, String>... filterPairs) {
+            try {
+                Store store = getImapStore();
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_WRITE);
+
+                // fetches new messages from server
+                log.info("Getting inbox..");
+                List<Message> messages = List.of(folderInbox.getMessages());
+
+                log.info("Deleting messages..");
+                for (Message message : messages)
+                    if (emailMatch(EmailMessage.from(message), List.of(filterPairs)))
+                        message.setFlag(flag, true);
+
+                // Delete messages and close connection
+                folderInbox.close(true);
+                store.close();
+                log.info(messages.size() + " messages have been successfully deleted!");
+
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
+        }
 
         /**
          * Clears the email inbox using the configured email credentials and server settings.
