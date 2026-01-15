@@ -6,6 +6,7 @@ import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import utils.DateUtilities;
 import utils.Printer;
+import utils.email.mapping.EmailFlag;
 import utils.reflection.ReflectionUtilities;
 
 import java.io.FileWriter;
@@ -713,7 +714,7 @@ public class EmailUtilities {
          * Clears the email inbox using the configured email credentials and server settings.
          */
         @SafeVarargs
-        public final void clearInbox(Flags.Flag flag, Pair<EmailField, String>... filterPairs) {
+        public final void clearInbox(EmailFlag flag, Pair<EmailField, String>... filterPairs) {
             try {
                 Store store = getImapStore();
                 Folder folderInbox = store.getFolder("INBOX");
@@ -727,14 +728,14 @@ public class EmailUtilities {
                 int markedMessageCounter = 0;
                 for (Message message : messages)
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
-                        message.setFlag(flag, true);
+                        message.setFlag(flag.getFlag(), true);
                         markedMessageCounter+=1;
                     }
 
                 // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
-                log.info(markedMessageCounter + " messages have been successfully mark as " + flag + "!");
+                log.info(markedMessageCounter + " messages have been successfully marked as " + flag.name() + "!");
 
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
