@@ -188,4 +188,20 @@ public class EmailAcquisition {
             }
         return absolutePath;
     }
+
+    public EmailUtilities.Inbox getInbox() {
+        return inbox;
+    }
+
+    public void setInbox(EmailUtilities.Inbox inbox) {
+        this.inbox = inbox;
+    }
+
+    public int getEmailAcquisitionTimeout() {
+        return emailAcquisitionTimeout;
+    }
+
+    public void setEmailAcquisitionTimeout(int emailAcquisitionTimeout) {
+        this.emailAcquisitionTimeout = emailAcquisitionTimeout;
+    }
 }
