@@ -472,13 +472,16 @@ public class EmailUtilities {
 
                 for (Message message : messages) {
                     Flags initialFlags = message.getFlags();
+                    boolean hasFlags = !initialFlags.toString().isEmpty();
 
                     if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                         message.setFlag(Flags.Flag.SEEN, true);
-                    } else {
-                        message.setFlags(initialFlags, true);
                     }
+                    else if (hasFlags)
+                        message.setFlags(initialFlags, true);
+                    else
+                        message.setFlag(Flags.Flag.SEEN, false);
                 }
                 log.info("You have " + messages.size() + " new mails in your inbox");
 
@@ -783,13 +786,16 @@ public class EmailUtilities {
                 int markedMessageCounter = 0;
                 for (Message message : messages) {
                     Flags initialFlags = message.getFlags();
+                    boolean hasFlags = !initialFlags.toString().isEmpty();
 
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
                         message.setFlag(flag.getFlag(), true);
                         markedMessageCounter += 1;
-                    } else {
-                        message.setFlags(initialFlags, true);
                     }
+                    else if (hasFlags)
+                        message.setFlags(initialFlags, true);
+                    else
+                        message.setFlag(Flags.Flag.SEEN, false);
                 }
 
                 folderInbox.close(true);
