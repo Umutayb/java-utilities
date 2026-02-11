@@ -145,6 +145,38 @@ public class EmailUtilities {
          */
         public static List<EmailMessage> messages = new ArrayList<>();
 
+        public String getHost() {
+            return host;
+        }
+
+        public String getPort() {
+            return port;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getSecureCon() {
+            return secureCon;
+        }
+
+        public EmailProtocol getProtocol() {
+            return protocol;
+        }
+
+        public static List<EmailMessage> getMessages() {
+            return messages;
+        }
+
+        public static void setMessages(List<EmailMessage> messages) {
+            Inbox.messages = messages;
+        }
+
         /**
          * Enumeration of supported email protocols.
          */
