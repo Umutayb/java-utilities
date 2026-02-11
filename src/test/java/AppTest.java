@@ -142,7 +142,56 @@ public class AppTest {
         printer.success("cleanEmailTest() is successful!");
     }
 
-	@Test
+    @Test
+    public void cleanFilterEmailTest() {
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl",
+                EmailUtilities.Inbox.EmailProtocol.IMAP
+        );
+
+        inbox.clearInbox();
+
+        String emailTestContent = "username:xyz";
+        String emailSubject = "Test subject of email for deletion";
+        EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
+        emailUtilities.sendEmail(
+                emailSubject,
+                emailTestContent,
+                ContextStore.get("test-email"),
+                ContextStore.get("sender-test-email"),
+                ContextStore.get("test-email-master-password"),
+                null);
+
+        inbox.load(
+                60,
+                1,
+                false,
+                false,
+                false,
+                List.of(Pair.of(SUBJECT, emailSubject))
+        );
+
+        Assert.assertEquals("Unexpected number of emails found!", 1, inbox.getMessages().size());
+
+        inbox.clearInbox();
+
+        EmailUtilities.Inbox newInbox = new EmailUtilities.Inbox("pop.gmail.com",
+                "995",
+                ContextStore.get("test-email"),
+                ContextStore.get("test-email-application-password"),
+                "ssl"
+        );
+        newInbox.load(SUBJECT, emailSubject, false, true, true);
+
+        Assert.assertEquals("Unexpected number of emails found!", 0, newInbox.getMessages().size());
+        printer.success("cleanEmailTest() is successful!");
+    }
+
+
+    @Test
     public void filterEmailTest() {
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("imap.gmail.com",
                 "993",
@@ -245,4 +294,6 @@ public class AppTest {
        );
         printer.success("The dateFormatTest() test pass!");
     }
+
+
 }
