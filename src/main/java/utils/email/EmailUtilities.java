@@ -208,7 +208,7 @@ public class EmailUtilities {
             String from;
             String sentDate;
             String subject;
-            String messageContent;
+            String content;
             String attachments;
             String fileName;
 
@@ -221,7 +221,7 @@ public class EmailUtilities {
                 try {
                     this.from = message.getFrom()[0].toString();
                     this.subject = message.getSubject();
-                    this.messageContent = getContent(message);
+                    this.content = Inbox.getContent(message);
                     this.sentDate = String.valueOf(message.getSentDate());
                 } catch (MessagingException e) {
                     throw new RuntimeException(e);
@@ -254,12 +254,12 @@ public class EmailUtilities {
                 this.subject = subject;
             }
 
-            public String getMessageContent() {
-                return messageContent;
+            public String getContent() {
+                return content;
             }
 
-            public void setMessageContent(String messageContent) {
-                this.messageContent = messageContent;
+            public void setContent(String content) {
+                this.content = content;
             }
 
             public String getAttachments() {
@@ -483,9 +483,8 @@ public class EmailUtilities {
                     else
                         message.setFlag(Flags.Flag.SEEN, false);
                 }
-                log.info("You have " + messages.size() + " new mails in your inbox");
+                log.info("You have " + this.messages.size() + " new (filtered) mails in your inbox");
 
-                // Close without expunging (we didn't delete anything, just changed flags)
                 folderInbox.close(false);
                 store.close();
             } catch (MessagingException exception) {
@@ -525,24 +524,33 @@ public class EmailUtilities {
          * @return True if the message matches ALL filters, false otherwise.
          */
         public static boolean emailMatch(EmailMessage emailMessage, List<Pair<EmailField, String>> filterPairs) {
+            boolean allFiltersMatch = true;
+
             for (Pair<EmailField, String> filterPair : filterPairs) {
-                String selector;
                 EmailField filterType = filterPair.alpha();
                 String filterValue = filterPair.beta();
 
                 if (filterType != null) {
-                    selector = switch (filterType) {
-                        case SUBJECT -> emailMessage.getSubject();
-                        case SENDER -> emailMessage.getFrom();
-                        case CONTENT -> emailMessage.getMessageContent();
-                        case DATE -> emailMessage.getSentDate();
-                        default -> throw new EnumConstantNotPresentException(EmailField.class, filterValue);
-                    };
-                    if (!(selector.contains(filterValue) || selector.equalsIgnoreCase(filterValue)))
-                        return false;
+                    boolean currentFilterMatches = filterMatch(emailMessage, filterType, filterValue);
+
+                    if (!currentFilterMatches)
+                        allFiltersMatch = false;
                 }
             }
-            return true;
+
+            return allFiltersMatch;
+        }
+
+        private static boolean filterMatch(EmailMessage emailMessage, EmailField filterType, String filterValue) {
+            String selector = switch (filterType) {
+                case SUBJECT -> emailMessage.getSubject();
+                case SENDER -> emailMessage.getFrom();
+                case CONTENT -> emailMessage.getContent();
+                case DATE -> emailMessage.getSentDate();
+                default -> throw new IllegalArgumentException("Unknown filter type: " + filterType);
+            };
+
+            return (selector != null) && (selector.contains(filterValue) || selector.equalsIgnoreCase(filterValue));
         }
 
         /**
@@ -643,8 +651,14 @@ public class EmailUtilities {
                         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) messageContent = getText(message);
                         else messageContent = part.getContent().toString();
                     }
-                } else if ((contentType.contains("text/plain") || contentType.contains("text/html") && message.getContent() != null))
+                }
+                else if ((contentType.toLowerCase().contains("text/plain") ||
+                        contentType.equalsIgnoreCase("text/plain") ||
+                        contentType.toLowerCase().contains("text/html")  ||
+                        contentType.equalsIgnoreCase("text/html")
+                ) && message.getContent() != null)
                     messageContent = message.getContent().toString();
+                else messageContent = "";
                 return messageContent;
             } catch (MessagingException | IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
