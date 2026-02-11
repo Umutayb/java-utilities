@@ -96,13 +96,15 @@ public class AppTest {
 
     @Test
     public void cleanEmailTest() {
-        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
-                "pop.gmail.com",
-                "995",
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("imap.gmail.com",
+                "993",
                 ContextStore.get("test-email"),
                 ContextStore.get("test-email-application-password"),
-                "ssl"
+                "ssl",
+                EmailUtilities.Inbox.EmailProtocol.IMAP
         );
+
+        inbox.clearInbox();
 
         String emailTestContent = "username:xyz";
         String emailSubject = "Test subject of email for deletion";
@@ -115,21 +117,25 @@ public class AppTest {
                 ContextStore.get("test-email-master-password"),
                 null);
 
-        inbox.load(30, 1, false, false, false,
-                List.of(Pair.of(SUBJECT, emailSubject)));
+        inbox.load(
+                60,
+                1,
+                false,
+                false,
+                false,
+                List.of(Pair.of(SUBJECT, emailSubject))
+        );
+
         Assert.assertEquals("Unexpected number of emails found!", 1, inbox.getMessages().size());
 
-        new EmailUtilities.Inbox("imap.gmail.com",
-                "993",
-                ContextStore.get("test-email"),
-                ContextStore.get("test-email-application-password"),
-                "ssl").clearInbox();
+        inbox.clearInbox();
 
         EmailUtilities.Inbox newInbox = new EmailUtilities.Inbox("pop.gmail.com",
                 "995",
                 ContextStore.get("test-email"),
                 ContextStore.get("test-email-application-password"),
-                "ssl");
+                "ssl"
+        );
         newInbox.load(SUBJECT, emailSubject, false, true, true);
 
         Assert.assertEquals("Unexpected number of emails found!", 0, newInbox.getMessages().size());
@@ -138,19 +144,15 @@ public class AppTest {
 
 	@Test
     public void filterEmailTest() {
-        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
-                "pop.gmail.com",
-                "995",
-                ContextStore.get("test-email"),
-                ContextStore.get("test-email-application-password"),
-                "ssl"
-        );
-
-        new EmailUtilities.Inbox("imap.gmail.com",
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("imap.gmail.com",
                 "993",
                 ContextStore.get("test-email"),
                 ContextStore.get("test-email-application-password"),
-                "ssl").clearInbox();
+                "ssl",
+                EmailUtilities.Inbox.EmailProtocol.IMAP
+        );
+
+        inbox.clearInbox();
 
         String emailTestContent = "username:xyz";
         EmailUtilities emailUtilities = new EmailUtilities(ContextStore.get("host"));
@@ -180,7 +182,7 @@ public class AppTest {
         );
 
         inbox.load(
-                30,
+                60,
                 2,
                 true,
                 true,
@@ -189,8 +191,8 @@ public class AppTest {
         );
 
         Assert.assertEquals("Unexpected number of emails found!", 2, inbox.getMessages().size());
-        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getMessageContent().contains(emailTestContent));
-        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getMessageContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter banana").getContent().contains(emailTestContent));
+        Assert.assertTrue("Unexpected content!", inbox.getMessageBy(SUBJECT, "Test filter apple").getContent().contains(emailTestContent));
         printer.success("Sending and receiving emails tests are successful!");
     }
 
