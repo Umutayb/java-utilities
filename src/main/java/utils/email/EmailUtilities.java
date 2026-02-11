@@ -472,15 +472,13 @@ public class EmailUtilities {
 
                 for (Message message : messages) {
                     Flags initialFlags = message.getFlags();
-                    boolean hasFlags = !initialFlags.toString().isEmpty();
+                    boolean wasSeen = message.getFlags().contains(Flags.Flag.SEEN);
 
                     if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                         message.setFlag(Flags.Flag.SEEN, true);
                     }
-                    else if (hasFlags)
-                        message.setFlags(initialFlags, true);
-                    else
+                    else if (!wasSeen)
                         message.setFlag(Flags.Flag.SEEN, false);
                 }
                 log.info("You have " + this.messages.size() + " new (filtered) mails in your inbox");
