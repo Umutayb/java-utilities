@@ -447,8 +447,8 @@ public class EmailUtilities {
          * Connects to the mail server, retrieves messages, applies filters, and populates the local messages list.
          * <p>
          * <b>Note:</b> This opens the Inbox folder in {@code READ_WRITE} mode.
-         * Messages that match the filters are processed (and implicitly marked SEEN).
-         * Messages that do <b>not</b> match the filters are explicitly marked as {@code SEEN = false} (Unread).
+         * It preserves the original {@code SEEN} (read) state of messages that do not match the filter.
+         * Messages that match the filter are processed and implicitly marked as {@code SEEN}.
          * </p>
          *
          * @param print           whether to print message details
@@ -471,13 +471,13 @@ public class EmailUtilities {
                 Collections.reverse(messages);
 
                 for (Message message : messages) {
+                    Flags initialFlags = message.getFlags();
+
                     if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
-                        // Ensure matched email is marked as SEEN
                         message.setFlag(Flags.Flag.SEEN, true);
                     } else {
-                        // Re-mark non-matching email as UNSEEN (Unread)
-                        message.setFlag(Flags.Flag.SEEN, false);
+                        message.setFlags(initialFlags, true);
                     }
                 }
                 log.info("You have " + messages.size() + " new mails in your inbox");
@@ -729,7 +729,7 @@ public class EmailUtilities {
 
         /**
          * Marks messages as DELETED if they match the provided filters.
-         * Messages that do <b>not</b> match are marked as UNSEEN.
+         * Messages that do <b>not</b> match are restored to their original SEEN state.
          *
          * @param filterPairs filters to identify messages to delete
          */
@@ -744,11 +744,13 @@ public class EmailUtilities {
 
                 log.info("Deleting messages..");
                 for (Message message : messages) {
+                    boolean wasSeen = message.getFlags().contains(Flags.Flag.SEEN);
+
                     if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         message.setFlag(Flags.Flag.DELETED, true);
                     } else {
-                        // Re-mark non-matching email as UNSEEN (Unread)
-                        message.setFlag(Flags.Flag.SEEN, false);
+                        // Restore original state
+                        message.setFlag(Flags.Flag.SEEN, wasSeen);
                     }
                 }
 
@@ -762,7 +764,7 @@ public class EmailUtilities {
 
         /**
          * Applies a specific EmailFlag (e.g., DELETED, SEEN) to messages matching the provided filters.
-         * Messages that do <b>not</b> match are marked as UNSEEN.
+         * Messages that do <b>not</b> match are restored to their original flags.
          *
          * @param flag        the flag to apply
          * @param filterPairs variable arguments of filters
@@ -780,12 +782,13 @@ public class EmailUtilities {
                 log.info("Marking messages as " + markup(StringUtilities.Color.BLUE, flag.name()) + "...");
                 int markedMessageCounter = 0;
                 for (Message message : messages) {
+                    Flags initialFlags = message.getFlags();
+
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
                         message.setFlag(flag.getFlag(), true);
                         markedMessageCounter += 1;
                     } else {
-                        // Re-mark non-matching email as UNSEEN (Unread)
-                        message.setFlag(Flags.Flag.SEEN, false);
+                        message.setFlags(initialFlags, true);
                     }
                 }
 
