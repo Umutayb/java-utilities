@@ -9,6 +9,7 @@ import utils.Printer;
 import utils.StringUtilities;
 import utils.email.mapping.EmailFlag;
 import utils.reflection.ReflectionUtilities;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -320,7 +321,7 @@ public class EmailUtilities {
          * @param secureCon the type of secure connection (e.g. "ssl")
          */
         public Inbox(String host, String port, String userName, String password, String secureCon) {
-            this(host, port, userName, password, secureCon, EmailProtocol.POP3);
+            this(host, port, userName, password, secureCon, EmailProtocol.IMAP);
         }
 
         /**
@@ -445,7 +446,9 @@ public class EmailUtilities {
         /**
          * Connects to the mail server, retrieves messages, applies filters, and populates the local messages list.
          * <p>
-         * Note: This opens the Inbox folder in READ_ONLY mode.
+         * <b>Note:</b> This opens the Inbox folder in {@code READ_WRITE} mode.
+         * Messages that match the filters are processed (and implicitly marked SEEN).
+         * Messages that do <b>not</b> match the filters are explicitly marked as {@code SEEN = false} (Unread).
          * </p>
          *
          * @param print           whether to print message details
@@ -458,7 +461,8 @@ public class EmailUtilities {
                 Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
 
-                folderInbox.open(Folder.READ_ONLY);
+                // Opened as READ_WRITE to allow resetting flags for non-matching emails
+                folderInbox.open(Folder.READ_WRITE);
 
                 log.info("Connected to mail via " + host + " (" + protocol.name() + ")");
                 log.info("Getting inbox..");
@@ -467,10 +471,18 @@ public class EmailUtilities {
                 Collections.reverse(messages);
 
                 for (Message message : messages) {
-                    if (emailMatch(EmailMessage.from(message), filterPairs))
+                    if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
+                        // Ensure matched email is marked as SEEN
+                        message.setFlag(Flags.Flag.SEEN, true);
+                    } else {
+                        // Re-mark non-matching email as UNSEEN (Unread)
+                        message.setFlag(Flags.Flag.SEEN, false);
+                    }
                 }
                 log.info("You have " + messages.size() + " new mails in your inbox");
+
+                // Close without expunging (we didn't delete anything, just changed flags)
                 folderInbox.close(false);
                 store.close();
             } catch (MessagingException exception) {
@@ -532,10 +544,6 @@ public class EmailUtilities {
 
         /**
          * Evaluates if an email message satisfies a list of filtering criteria within a specific date range.
-         * <p>
-         * This method parses the email's sent date (expected format: "EEE MMM dd HH:mm:ss zzz yyyy", English Locale)
-         * and ensures it falls inclusively within the provided ZonedDateTime range before applying standard content filters.
-         * </p>
          *
          * @param emailMessage the {@link EmailMessage} object to be validated.
          * @param filterPairs  a {@link List} of {@link Pair} objects for content filtering.
@@ -563,12 +571,6 @@ public class EmailUtilities {
 
         /**
          * Helper method to process a raw Jakarta Message into an internal EmailMessage and handle I/O (printing/saving).
-         *
-         * @param message         The raw message.
-         * @param index           The index of the message in the list.
-         * @param print           Whether to log details.
-         * @param save            Whether to save body to disk.
-         * @param saveAttachments Whether to save attachments to disk.
          */
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments) {
             try {
@@ -625,10 +627,6 @@ public class EmailUtilities {
 
         /**
          * Extracts the text content from a message, handling Multipart/Alternative structures.
-         *
-         * @param message the email message
-         * @return the content string (plain text or HTML)
-         * @throws RuntimeException if extraction fails
          */
         public static String getContent(Message message) {
             try {
@@ -652,10 +650,6 @@ public class EmailUtilities {
 
         /**
          * Extracts attachments from a message and optionally saves them to 'inbox/attachments'.
-         *
-         * @param message         the email message
-         * @param saveAttachments true to save files to disk
-         * @return a comma-separated string of attachment filenames
          */
         private String getAttachments(Message message, Boolean saveAttachments) {
             StringBuilder attachments = new StringBuilder();
@@ -685,12 +679,7 @@ public class EmailUtilities {
         }
 
         /**
-         * recursively retrieves the best text candidate (Html/Plain) from a Part.
-         *
-         * @param part the MIME part
-         * @return the text content or null
-         * @throws MessagingException if email parsing fails
-         * @throws IOException        if stream reading fails
+         * Recursively retrieves the best text candidate (Html/Plain) from a Part.
          */
         private static String getText(Part part) throws MessagingException, IOException {
             if (part.isMimeType("text/*")) {
@@ -719,12 +708,6 @@ public class EmailUtilities {
 
         /**
          * Clears all messages from the inbox for the given credentials using the default IMAP protocol.
-         *
-         * @param email                    the email address
-         * @param emailApplicationPassword the password
-         * @param host                     the host
-         * @param port                     the port
-         * @param secureCon                security connection type
          */
         public static void clearInbox(String email, String emailApplicationPassword, String host, String port, String secureCon) {
             new Printer(Inbox.class).info("Flushing email inbox...");
@@ -734,9 +717,6 @@ public class EmailUtilities {
 
         /**
          * Creates a store connection using the configured protocol.
-         *
-         * @return The connected Store object.
-         * @throws MessagingException if connection fails.
          */
         private Store createStoreConnection() throws MessagingException {
             Properties properties = getConnectionProperties();
@@ -749,9 +729,7 @@ public class EmailUtilities {
 
         /**
          * Marks messages as DELETED if they match the provided filters.
-         * <p>
-         * Requires a READ_WRITE folder connection.
-         * </p>
+         * Messages that do <b>not</b> match are marked as UNSEEN.
          *
          * @param filterPairs filters to identify messages to delete
          */
@@ -765,9 +743,14 @@ public class EmailUtilities {
                 List<Message> messages = List.of(folderInbox.getMessages());
 
                 log.info("Deleting messages..");
-                for (Message message : messages)
-                    if (emailMatch(EmailMessage.from(message), filterPairs))
+                for (Message message : messages) {
+                    if (emailMatch(EmailMessage.from(message), filterPairs)) {
                         message.setFlag(Flags.Flag.DELETED, true);
+                    } else {
+                        // Re-mark non-matching email as UNSEEN (Unread)
+                        message.setFlag(Flags.Flag.SEEN, false);
+                    }
+                }
 
                 folderInbox.close(true);
                 store.close();
@@ -779,6 +762,7 @@ public class EmailUtilities {
 
         /**
          * Applies a specific EmailFlag (e.g., DELETED, SEEN) to messages matching the provided filters.
+         * Messages that do <b>not</b> match are marked as UNSEEN.
          *
          * @param flag        the flag to apply
          * @param filterPairs variable arguments of filters
@@ -795,11 +779,15 @@ public class EmailUtilities {
 
                 log.info("Marking messages as " + markup(StringUtilities.Color.BLUE, flag.name()) + "...");
                 int markedMessageCounter = 0;
-                for (Message message : messages)
+                for (Message message : messages) {
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
                         message.setFlag(flag.getFlag(), true);
                         markedMessageCounter += 1;
+                    } else {
+                        // Re-mark non-matching email as UNSEEN (Unread)
+                        message.setFlag(Flags.Flag.SEEN, false);
                     }
+                }
 
                 folderInbox.close(true);
                 store.close();
