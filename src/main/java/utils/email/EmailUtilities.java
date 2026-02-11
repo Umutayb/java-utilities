@@ -143,7 +143,7 @@ public class EmailUtilities {
         /**
          * List of email messages retrieved from the server.
          */
-        public static List<EmailMessage> messages = new ArrayList<>();
+        public List<EmailMessage> messages = new ArrayList<>();
 
         public String getHost() {
             return host;
@@ -169,12 +169,12 @@ public class EmailUtilities {
             return protocol;
         }
 
-        public static List<EmailMessage> getMessages() {
+        public List<EmailMessage> getMessages() {
             return messages;
         }
 
-        public static void setMessages(List<EmailMessage> messages) {
-            Inbox.messages = messages;
+        public void setMessages(List<EmailMessage> messages) {
+            this.messages = messages;
         }
 
         /**
@@ -320,7 +320,7 @@ public class EmailUtilities {
          * @param secureCon the type of secure connection (e.g. "ssl")
          */
         public Inbox(String host, String port, String userName, String password, String secureCon) {
-            this(host, port, userName, password, secureCon, EmailProtocol.IMAP);
+            this(host, port, userName, password, secureCon, EmailProtocol.POP3);
         }
 
         /**
@@ -424,7 +424,7 @@ public class EmailUtilities {
                     timeout,
                     () -> {
                         inbox.load(print, save, saveAttachments, filterPairs);
-                        return messages.size() >= expectedMessageCount;
+                        return inbox.getMessages().size() >= expectedMessageCount;
                     }
             );
         }
@@ -470,7 +470,7 @@ public class EmailUtilities {
                     if (emailMatch(EmailMessage.from(message), filterPairs))
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
-                log.info("You have " + Inbox.messages.size() + " new mails in your inbox");
+                log.info("You have " + messages.size() + " new mails in your inbox");
                 folderInbox.close(false);
                 store.close();
             } catch (MessagingException exception) {
