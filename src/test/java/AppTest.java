@@ -1,5 +1,4 @@
 import collections.Pair;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import context.ContextStore;
 import enums.ZoneIds;
@@ -9,8 +8,6 @@ import org.junit.Test;
 import utils.*;
 import utils.arrays.ArrayUtilities;
 import utils.email.EmailUtilities;
-import utils.mapping.MappingUtilities;
-import utils.reflection.ReflectionUtilities;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -99,11 +96,13 @@ public class AppTest {
 
     @Test
     public void cleanEmailTest() {
-        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("pop.gmail.com",
+        EmailUtilities.Inbox inbox = new EmailUtilities.Inbox(
+                "pop.gmail.com",
                 "995",
                 ContextStore.get("test-email"),
                 ContextStore.get("test-email-application-password"),
-                "ssl");
+                "ssl"
+        );
 
         String emailTestContent = "username:xyz";
         String emailSubject = "Test subject of email for deletion";
