@@ -9,20 +9,28 @@ import utils.Printer;
 import utils.StringUtilities;
 import utils.email.mapping.EmailFlag;
 import utils.reflection.ReflectionUtilities;
-
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.File;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static utils.StringUtilities.markup;
 import static utils.arrays.lambda.Collectors.toSingleton;
 
+/**
+ * Utility class for sending and managing emails.
+ * <p>
+ * This class provides functionality to send emails via SMTP and includes an inner {@link Inbox} class
+ * for retrieving, filtering, and managing emails using IMAP or POP3 protocols.
+ * </p>
+ */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class EmailUtilities {
 
     /**
-     * Creates a new instance of EmailUtilities with the specified host.
+     * Creates a new instance of EmailUtilities with the specified SMTP host.
      *
      * @param host the hostname of the SMTP server for sending emails
      */
@@ -35,14 +43,14 @@ public class EmailUtilities {
     private String host;
 
     /**
-     * Sends an email message with an optional attachment to the specified recipient.
+     * Sends an email message with an optional attachment to the specified recipient using default text/plain content type.
      *
      * @param subject    the subject of the email
-     * @param content    the content of the email
+     * @param content    the body content of the email
      * @param receiver   the email address of the recipient
-     * @param ID         the username for authenticating with the SMTP server
-     * @param password   the password for authenticating with the SMTP server
-     * @param attachment the optional multipart attachment to include in the email
+     * @param ID         the username (sender email) for authenticating with the SMTP server
+     * @param password   the password (or application password) for authenticating with the SMTP server
+     * @param attachment the optional multipart attachment to include in the email; can be null
      * @return true if the email was sent successfully, false otherwise
      */
     public Boolean sendEmail(String subject, String content, String receiver, String ID, String password, Multipart attachment) {
@@ -58,58 +66,48 @@ public class EmailUtilities {
     }
 
     /**
-     * Sends an email message with an optional attachment to the specified recipient.
+     * Sends an email message with an optional attachment to the specified recipient with a custom content type.
+     * <p>
+     * This method configures the SMTP session using port 587 with STARTTLS enabled.
+     * </p>
      *
-     * @param subject    the subject of the email
-     * @param content    the content of the email
-     * @param receiver   the email address of the recipient
-     * @param ID         the username for authenticating with the SMTP server
-     * @param password   the password for authenticating with the SMTP server
-     * @param attachment the optional multipart attachment to include in the email
+     * @param subject     the subject of the email
+     * @param content     the body content of the email
+     * @param contentType the MIME type of the content (e.g., "text/html; charset=utf-8")
+     * @param receiver    the email address of the recipient
+     * @param ID          the username (sender email) for authenticating with the SMTP server
+     * @param password    the password (or application password) for authenticating with the SMTP server
+     * @param attachment  the optional multipart attachment to include in the email; can be null
      * @return true if the email was sent successfully, false otherwise
      */
     public Boolean sendEmail(String subject, String content, String contentType, String receiver, String ID, String password, Multipart attachment) {
-
-        // Get system properties
         Properties properties = new Properties();
         properties.putAll(System.getProperties());
 
-        // Setup mail server
         properties.put("mail.smtp.host", host);
         properties.put("mail.smtp.port", "587");
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
 
-        // Get the Session object.// and pass username and password
         Session session = Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(ID, password);
             }
         });
 
-        // Used to debug SMTP issues
         session.setDebug(keepLogs);
 
         try {
-            // Create a default MimeMessage object.
             MimeMessage message = new MimeMessage(session);
-
-            // Set From: header field of the header.
             message.setFrom(new InternetAddress(ID));
-
-            // Set To: header field of the header.
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(receiver));
-
-            // Set Subject: header field
             message.setSubject(subject);
-
-            // Now set the actual message
             message.setContent(content, contentType);
             if (attachment != null)
                 message.setContent(attachment);
 
             if (keepLogs) log.info("Sending...");
-            Transport.send(message);// Send message
+            Transport.send(message);
             if (keepLogs) log.success("Sent message successfully!");
             return true;
         } catch (MessagingException mex) {
@@ -127,6 +125,12 @@ public class EmailUtilities {
         this.host = host;
     }
 
+    /**
+     * Represents an email inbox and provides methods to retrieve, filter, and delete messages.
+     * <p>
+     * Supports both IMAP and POP3 protocols via the {@link EmailProtocol} enum.
+     * </p>
+     */
     public static class Inbox {
         private final Printer log = new Printer(Inbox.class);
         private final String host;
@@ -134,27 +138,72 @@ public class EmailUtilities {
         private final String userName;
         private final String password;
         private final String secureCon;
+        private final EmailProtocol protocol;
 
         /**
-         * List of email messages represented as a list of maps where each map contains email fields as keys
-         * and their corresponding values as values.
+         * List of email messages retrieved from the server.
          */
         public static List<EmailMessage> messages = new ArrayList<>();
 
-        public List<EmailMessage> getMessages() {
-            return messages;
+        /**
+         * Enumeration of supported email protocols.
+         */
+        public enum EmailProtocol {
+            IMAP("imap"),
+            POP3("pop3");
+
+            private final String value;
+
+            EmailProtocol(String value) {
+                this.value = value;
+            }
+
+            public String getValue() {
+                return value;
+            }
         }
 
         /**
-         * Enumeration of email fields used as keys in the map representation of email messages.
+         * Enumeration of email fields used for filtering and mapping.
          */
         public enum EmailField {SUBJECT, SENDER, CONTENT, @Deprecated(since = "1.6.2", forRemoval = true) INDEX, DATE, ATTACHMENTS}
 
         /**
-         * This class represents an email message.
+         * Represents a simplified email message containing common fields.
          */
         public static class EmailMessage {
             String from;
+            String sentDate;
+            String subject;
+            String messageContent;
+            String attachments;
+            String fileName;
+
+            /**
+             * Constructs an EmailMessage object from a jakarta.mail.Message.
+             *
+             * @param message The jakarta.mail.Message object to construct from.
+             */
+            public EmailMessage(Message message) {
+                try {
+                    this.from = message.getFrom()[0].toString();
+                    this.subject = message.getSubject();
+                    this.messageContent = getContent(message);
+                    this.sentDate = String.valueOf(message.getSentDate());
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            /**
+             * Factory method to create an EmailMessage object from a jakarta.mail.Message.
+             *
+             * @param message The jakarta.mail.Message object.
+             * @return The created EmailMessage object.
+             */
+            public static EmailMessage from(Message message) {
+                return new EmailMessage(message);
+            }
 
             public String getSentDate() {
                 return sentDate;
@@ -200,48 +249,17 @@ public class EmailUtilities {
                 this.from = from;
             }
 
-            String sentDate;
-            String subject;
-            String messageContent;
-            String attachments;
-            String fileName;
-
-            /**
-             * Constructs an EmailMessage object from a javax.mail.Message.
-             *
-             * @param message The javax.mail.Message object to construct from.
-             */
-            public EmailMessage(Message message) {
-                try {
-                    this.from = message.getFrom()[0].toString();
-                    this.subject = message.getSubject();
-                    this.messageContent = getContent(message);
-                    this.sentDate = String.valueOf(message.getSentDate());
-                } catch (MessagingException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            /**
-             * Creates an EmailMessage object from a javax.mail.Message.
-             *
-             * @param message The javax.mail.Message object to create from.
-             * @return The created EmailMessage object.
-             */
-            public static EmailMessage from(Message message) {
-                return new EmailMessage(message);
-            }
-
             public void setFileName(String fileName) {
                 this.fileName = fileName + ".html";
             }
         }
 
         /**
-         * Retrieves an email message based on the provided filter pairs.
+         * Retrieves a single email message matching the provided list of filter criteria.
          *
          * @param filterPairs a list of pairs consisting of email fields and corresponding filter strings
-         * @return the email message matching the filter criteria
+         * @return the unique email message matching the filter criteria
+         * @throws RuntimeException if zero or more than one message matches the criteria
          */
         public EmailMessage getMessageBy(List<Pair<EmailField, String>> filterPairs) {
             return messages.stream()
@@ -250,9 +268,9 @@ public class EmailUtilities {
         }
 
         /**
-         * Retrieves an email message based on the specified filter type and value.
+         * Retrieves a single email message based on a specific filter type and value.
          *
-         * @param filterType  The type of filter to apply.
+         * @param filterType  The type of filter to apply (e.g., SUBJECT).
          * @param filterValue The value to filter by.
          * @return The email message matching the specified filter.
          */
@@ -261,55 +279,78 @@ public class EmailUtilities {
         }
 
         /**
-         * Constructs a new Inbox object with the specified configuration settings.
+         * Constructs a new Inbox object using the default IMAP protocol.
          *
          * @param host      the hostname of the email server
          * @param port      the port number of the email server
          * @param userName  the username for authenticating with the email server
          * @param password  the password for authenticating with the email server
-         * @param secureCon the type of secure connection to use (e.g. "ssl", "tls", "starttls")
+         * @param secureCon the type of secure connection (e.g. "ssl")
          */
-        public Inbox(String host,
-                     String port,
-                     String userName,
-                     String password,
-                     String secureCon
-        ) {
+        public Inbox(String host, String port, String userName, String password, String secureCon) {
+            this(host, port, userName, password, secureCon, EmailProtocol.IMAP);
+        }
+
+        /**
+         * Constructs a new Inbox object with a specified protocol.
+         *
+         * @param host      the hostname of the email server
+         * @param port      the port number of the email server
+         * @param userName  the username for authenticating with the email server
+         * @param password  the password for authenticating with the email server
+         * @param secureCon the type of secure connection (e.g. "ssl")
+         * @param protocol  the protocol to use (IMAP or POP3)
+         */
+        public Inbox(String host, String port, String userName, String password, String secureCon, EmailProtocol protocol) {
             this.host = host;
             this.port = port;
             this.userName = userName;
             this.password = password;
             this.secureCon = secureCon;
+            this.protocol = protocol;
             messages = new ArrayList<>();
         }
 
-        public static EmailMessage getEmail(
-                Inbox inbox,
-                int timeout,
-                int expectedMessageCount,
-                boolean print,
-                boolean save,
-                boolean saveAttachments,
-                List<Pair<EmailField, String>> filterPairs) {
+        /**
+         * Static convenience method to load emails and retrieve a specific message.
+         * <p>
+         * This method waits for the expected number of messages to appear before filtering.
+         * </p>
+         *
+         * @param inbox                the Inbox instance to use
+         * @param timeout              timeout in seconds to wait for messages
+         * @param expectedMessageCount the number of messages expected in the inbox
+         * @param print                whether to print message details to the log
+         * @param save                 whether to save the message body to a file
+         * @param saveAttachments      whether to download attachments
+         * @param filterPairs          filters to identify the specific message to return
+         * @return the matching EmailMessage
+         */
+        public static EmailMessage getEmail(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             load(inbox, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
             return inbox.getMessageBy(filterPairs);
         }
 
-        public EmailMessage getEmail(
-                boolean print,
-                boolean save,
-                boolean saveAttachments,
-                List<Pair<EmailField, String>> filterPairs) {
+        /**
+         * Loads emails and returns a message matching the filters immediately.
+         *
+         * @param print           whether to print message details to the log
+         * @param save            whether to save the message body to a file
+         * @param saveAttachments whether to download attachments
+         * @param filterPairs     filters to identify the specific message to return
+         * @return the matching EmailMessage
+         */
+        public EmailMessage getEmail(boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             load(print, save, saveAttachments, filterPairs);
             return this.getMessageBy(filterPairs);
         }
 
         /**
-         * Saves an email message body to a file with the given filename in the 'inbox' directory.
+         * Saves an email message body to a file in the 'inbox' directory.
          *
-         * @param filename       the name of the file to be created and saved as.
-         * @param messageContent the content of the email message body to be saved.
-         * @throws RuntimeException if there is an IOException during the file write operation.
+         * @param filename       the name of the file to be created.
+         * @param messageContent the content of the email message body.
+         * @throws RuntimeException if there is an IOException.
          */
         public void saveMessage(String filename, String messageContent) {
             log.info("Saving email body...");
@@ -322,29 +363,29 @@ public class EmailUtilities {
         }
 
         /**
-         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
+         * Instance method to load emails with a wait condition.
          *
-         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
-         * @param expectedMessageCount the expected number of messages to be loaded
-         * @param print                boolean flag indicating whether to print the emails
-         * @param save                 boolean flag indicating whether to save the emails
-         * @param saveAttachments      boolean flag indicating whether to save email attachments
-         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         * @param timeout              maximum time in seconds to wait
+         * @param expectedMessageCount minimum number of messages expected
+         * @param print                whether to print message details
+         * @param save                 whether to save message content
+         * @param saveAttachments      whether to save attachments
+         * @param filterPairs          filters to apply (affects which messages are processed/saved)
          */
         public void load(int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             EmailUtilities.Inbox.load(this, timeout, expectedMessageCount, print, save, saveAttachments, filterPairs);
         }
 
         /**
-         * Loads emails from the specified inbox with the given settings and filters, waiting until the expected message count is reached or the timeout is reached.
+         * Static method that iteratively attempts to load emails until the expected count is reached or timeout occurs.
          *
-         * @param inbox                the inbox from which to load emails
-         * @param timeout              the maximum time to wait for the expected message count to be reached, in seconds
-         * @param expectedMessageCount the expected number of messages to be loaded
-         * @param print                boolean flag indicating whether to print the emails
-         * @param save                 boolean flag indicating whether to save the emails
-         * @param saveAttachments      boolean flag indicating whether to save email attachments
-         * @param filterPairs          a list of pairs consisting of email fields and corresponding filter strings
+         * @param inbox                the inbox instance
+         * @param timeout              maximum time in seconds to wait
+         * @param expectedMessageCount minimum number of messages expected
+         * @param print                whether to print message details
+         * @param save                 whether to save message content
+         * @param saveAttachments      whether to save attachments
+         * @param filterPairs          filters to apply
          */
         public static void load(Inbox inbox, int timeout, int expectedMessageCount, boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
             ReflectionUtilities.iterativeConditionalInvocation(
@@ -357,44 +398,40 @@ public class EmailUtilities {
         }
 
         /**
-         * Loads emails from the inbox based on the specified filter criteria.
+         * Loads emails matching a single filter criterion.
          *
-         * @param filterType      the type of the filter.
-         * @param filterKey       the key to filter emails.
-         * @param print           true if the loaded emails should be printed, false otherwise.
-         * @param save            true if the loaded emails should be saved, false otherwise.
-         * @param saveAttachments true if attachments of the loaded emails should be saved, false otherwise.
+         * @param filterType      the field to filter by
+         * @param filterKey       the value to match
+         * @param print           whether to print message details
+         * @param save            whether to save message content
+         * @param saveAttachments whether to save attachments
          */
         public void load(EmailField filterType, String filterKey, boolean print, boolean save, boolean saveAttachments) {
             load(print, save, saveAttachments, List.of(Pair.of(filterType, filterKey)));
         }
 
         /**
-         * Loads emails from the configured mail server with specified settings and filters.
+         * Connects to the mail server, retrieves messages, applies filters, and populates the local messages list.
+         * <p>
+         * Note: This opens the Inbox folder in READ_ONLY mode.
+         * </p>
          *
-         * @param print           boolean flag indicating whether to print the emails
-         * @param save            boolean flag indicating whether to save the emails
-         * @param saveAttachments boolean flag indicating whether to save email attachments
-         * @param filterPairs     a list of pairs consisting of email fields and corresponding filter strings
+         * @param print           whether to print message details
+         * @param save            whether to save message content
+         * @param saveAttachments whether to save attachments
+         * @param filterPairs     filters to apply
          */
         public void load(boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
-            Properties properties = getConnectionProperties();
-            Session session = Session.getInstance(properties);
-
             try {
-                log.info("Connecting please wait....");
-                Store store = session.getStore("pop3");
-                store.connect(userName, password);
-                Folder folderInbox = store.getFolder("INBOX"); // TODO: Dynamically acquire folder
+                Store store = createStoreConnection();
+                Folder folderInbox = store.getFolder("INBOX");
+
                 folderInbox.open(Folder.READ_ONLY);
-                log.info("Connected to mail via " + host);
-                // opens the inbox folder
+
+                log.info("Connected to mail via " + host + " (" + protocol.name() + ")");
                 log.info("Getting inbox..");
 
-                // fetches new messages from server
                 List<Message> messages = new ArrayList<>(List.of(folderInbox.getMessages()));
-
-                // Reverse the order of the list
                 Collections.reverse(messages);
 
                 for (Message message : messages) {
@@ -402,7 +439,6 @@ public class EmailUtilities {
                         resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
                 }
                 log.info("You have " + Inbox.messages.size() + " new mails in your inbox");
-                // disconnect
                 folderInbox.close(false);
                 store.close();
             } catch (MessagingException exception) {
@@ -410,35 +446,40 @@ public class EmailUtilities {
             }
         }
 
+        /**
+         * Generates the connection properties based on the selected protocol (IMAP or POP3).
+         *
+         * @return a Properties object containing host, port, and SSL settings.
+         */
         Properties getConnectionProperties() {
             Properties properties = new Properties();
+            String proto = protocol.getValue();
 
-            //---------- Server Setting---------------
-            properties.put("mail.pop3.host", host);
-            properties.put("mail.pop3.port", port);
+            properties.put("mail." + proto + ".host", host);
+            properties.put("mail." + proto + ".port", port);
+
             if (secureCon.equalsIgnoreCase("ssl")) {
-                properties.put("mail.smtp.ssl.enable", "true");
+                properties.put("mail." + proto + ".ssl.enable", "true");
+                properties.setProperty("mail." + proto + ".socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+                properties.setProperty("mail." + proto + ".socketFactory.fallback", "false");
+                properties.setProperty("mail." + proto + ".socketFactory.port", String.valueOf(port));
             } else {
-                properties.put("mail.smtp.ssl.enable", "false");
+                properties.put("mail." + proto + ".ssl.enable", "false");
             }
-            //---------- SSL setting------------------
-            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
-            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
+
             return properties;
         }
 
         /**
-         * Checks if an email message matches the specified filters.
+         * Checks if an email message matches a list of filter criteria.
          *
-         * @param emailMessage The email message to be matched against the filters.
-         * @param filterPairs  An array of filter pairs containing the filter type and value.
-         * @return True if the email message matches all filters, false otherwise.
+         * @param emailMessage The email message to check.
+         * @param filterPairs  A list of criteria where the message must match the given value for the given field.
+         * @return True if the message matches ALL filters, false otherwise.
          */
         public static boolean emailMatch(EmailMessage emailMessage, List<Pair<EmailField, String>> filterPairs) {
             for (Pair<EmailField, String> filterPair : filterPairs) {
                 String selector;
-
                 EmailField filterType = filterPair.alpha();
                 String filterValue = filterPair.beta();
 
@@ -458,17 +499,46 @@ public class EmailUtilities {
         }
 
         /**
-         * Resolves the content and attachments of a provided email message, and adds the message data to the instance's messages list.
+         * Evaluates if an email message satisfies a list of filtering criteria within a specific date range.
+         * <p>
+         * This method parses the email's sent date (expected format: "EEE MMM dd HH:mm:ss zzz yyyy", English Locale)
+         * and ensures it falls inclusively within the provided ZonedDateTime range before applying standard content filters.
+         * </p>
          *
-         * @param message         the email message to resolve.
-         * @param index           the index of the email message in the mailbox.
-         * @param print           whether or not to print the resolved message content and attachments.
-         * @param save            whether or not to save the resolved message content.
-         * @param saveAttachments whether or not to save the resolved message attachments.
-         * @throws Error if there is a MessagingException during the process.
+         * @param emailMessage the {@link EmailMessage} object to be validated.
+         * @param filterPairs  a {@link List} of {@link Pair} objects for content filtering.
+         * @param start        the inclusive start of the date range.
+         * @param end          the inclusive end of the date range.
+         * @return {@code true} if the message is within the date range and matches all filters; {@code false} otherwise.
+         */
+        public static boolean emailMatch(
+                EmailMessage emailMessage,
+                List<Pair<EmailField, String>> filterPairs,
+                ZonedDateTime start,
+                ZonedDateTime end
+        ) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            ZonedDateTime sentDate = ZonedDateTime.parse(emailMessage.getSentDate(), formatter);
+
+            boolean isWithinRange = !sentDate.isBefore(start) && !sentDate.isAfter(end);
+
+            if (!isWithinRange) {
+                return false;
+            }
+
+            return emailMatch(emailMessage, filterPairs);
+        }
+
+        /**
+         * Helper method to process a raw Jakarta Message into an internal EmailMessage and handle I/O (printing/saving).
+         *
+         * @param message         The raw message.
+         * @param index           The index of the message in the list.
+         * @param print           Whether to log details.
+         * @param save            Whether to save body to disk.
+         * @param saveAttachments Whether to save attachments to disk.
          */
         private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments) {
-            EmailMessage emailMessage;
             try {
                 String from = message.getFrom()[0].toString();
                 String sentDate = String.valueOf(message.getSentDate());
@@ -476,7 +546,7 @@ public class EmailUtilities {
                 String messageContent = getContent(message);
                 String attachments = getAttachments(message, saveAttachments);
 
-                emailMessage = EmailMessage.from(message);
+                EmailMessage emailMessage = EmailMessage.from(message);
                 emailMessage.setFileName(String.format("message#%s", DateUtilities.getDate().getTimeInMillis()));
 
                 messages.add(emailMessage);
@@ -497,60 +567,42 @@ public class EmailUtilities {
         }
 
         /**
-         * Retrieves the current status of the connection.
+         * Tests the connection to the email server.
          *
-         * @return A string indicating the status of the connection.
-         * Possible values are:
-         * - "connected_to_pop3" if the connection to the POP3 server was successful.
-         * - An error message if there was a problem connecting to the server.
+         * @return A status string ("connected_to_imap" or "connected_to_pop3") or an error message.
          */
         public String getConnectionStatus() {
-            Properties properties = new Properties();
-
-            //---------- Server Setting---------------
-            properties.put("mail.pop3.host", host);
-            properties.put("mail.pop3.port", port);
-            properties.put("mail.smtp.ssl.enable", "true");
-            //---------- SSL setting------------------
-            properties.setProperty("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            properties.setProperty("mail.pop3.socketFactory.fallback", "false");
-            properties.setProperty("mail.pop3.socketFactory.port", String.valueOf(port));
-            Session session = Session.getDefaultInstance(properties);
-            //----------------------------------------
-            String isconnected = "";
+            String status = "";
             try {
-                // connects to the message store
-                log.info("Connecting please wait....");
-                Store store = session.getStore("pop3");
-                store.connect(userName, password);
-                isconnected = "connected_to_pop3";
-                log.info("Is Connected: " + isconnected);
+                Store store = createStoreConnection();
+                status = "connected_to_" + protocol.getValue();
+                log.info("Is Connected: " + status);
                 log.info("Connected to mail via " + host);
+                store.close();
             } catch (NoSuchProviderException ex) {
-                String ex1 = "No provider for pop3.";
+                String ex1 = "No provider for " + protocol.getValue() + ".";
                 log.warning(ex1);
                 return ex1;
             } catch (MessagingException ex) {
                 String ex2 = "Could not connect to the message store";
-                log.warning("Could not connect to the message store");
+                log.warning(ex2);
                 return ex2;
             }
-            return isconnected;
+            return status;
         }
 
         /**
-         * Retrieves the content of the given email message.
+         * Extracts the text content from a message, handling Multipart/Alternative structures.
          *
-         * @param message the email message from which to retrieve content
-         * @return the message content, as a String
-         * @throws RuntimeException if there is a problem retrieving the message content
+         * @param message the email message
+         * @return the content string (plain text or HTML)
+         * @throws RuntimeException if extraction fails
          */
         public static String getContent(Message message) {
             try {
                 String messageContent = "";
                 String contentType = message.getContentType();
                 if (contentType.contains("multipart")) {
-                    // content may contain attachments
                     Multipart multiPart = (Multipart) message.getContent();
                     int numberOfParts = multiPart.getCount();
                     for (int partCount = 0; partCount < numberOfParts; partCount++) {
@@ -567,25 +619,23 @@ public class EmailUtilities {
         }
 
         /**
-         * Retrieves the attachments from the given email message and optionally saves them to the "inbox/attachments" directory.
+         * Extracts attachments from a message and optionally saves them to 'inbox/attachments'.
          *
-         * @param message         the email message from which to retrieve attachments
-         * @param saveAttachments true if attachments should be saved, false otherwise
+         * @param message         the email message
+         * @param saveAttachments true to save files to disk
          * @return a comma-separated string of attachment filenames
-         * @throws RuntimeException if there is a problem retrieving or saving attachments
          */
         private String getAttachments(Message message, Boolean saveAttachments) {
             StringBuilder attachments = new StringBuilder();
             try {
                 String contentType = message.getContentType();
                 if (contentType.contains("multipart")) {
-                    // content may contain attachments
                     Multipart multiPart = (Multipart) message.getContent();
                     int numberOfParts = multiPart.getCount();
                     for (int partCount = 0; partCount < numberOfParts; partCount++) {
                         MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
                         if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-                            if (saveAttachments) { // Attachment
+                            if (saveAttachments) {
                                 String fileName = part.getFileName();
                                 attachments.append(fileName).append(", ");
                                 part.saveFile("inbox/attachments" + File.separator + fileName);
@@ -603,23 +653,18 @@ public class EmailUtilities {
         }
 
         /**
-         * This method is used to handle MIME message.
-         * a message with an attachment is represented in MIME as a multipart message.
-         * In the simple case, the results of the Message object's getContent method will be a MimeMultipart object.
-         * The first body part of the multipart object wil be the main text of the message.
-         * The other body parts will be attachments.
+         * recursively retrieves the best text candidate (Html/Plain) from a Part.
          *
-         * @param part is the body
-         * @return returns the body of the email
+         * @param part the MIME part
+         * @return the text content or null
+         * @throws MessagingException if email parsing fails
+         * @throws IOException        if stream reading fails
          */
         private static String getText(Part part) throws MessagingException, IOException {
-
             if (part.isMimeType("text/*")) {
                 return (String) part.getContent();
             }
-
             if (part.isMimeType("multipart/alternative")) {
-                // prefer html text over plain text
                 Multipart multipart = (Multipart) part.getContent();
                 String text = null;
                 for (int i = 0; i < multipart.getCount(); i++) {
@@ -641,68 +686,49 @@ public class EmailUtilities {
         }
 
         /**
-         * Clears the email inbox using the specified email credentials and server settings.
+         * Clears all messages from the inbox for the given credentials using the default IMAP protocol.
          *
-         * @param email                    The email address.
-         * @param emailApplicationPassword The application-specific password for the email account.
-         * @param host                     The email server host.
-         * @param port                     The email server port.
-         * @param secureCon                Indicates whether to use secure connection (e.g., "true" or "false").
+         * @param email                    the email address
+         * @param emailApplicationPassword the password
+         * @param host                     the host
+         * @param port                     the port
+         * @param secureCon                security connection type
          */
-        public static void clearInbox(
-                String email,
-                String emailApplicationPassword,
-                String host,
-                String port,
-                String secureCon
-        ) {
+        public static void clearInbox(String email, String emailApplicationPassword, String host, String port, String secureCon) {
             new Printer(Inbox.class).info("Flushing email inbox...");
-            new EmailUtilities.Inbox(
-                    host,
-                    port,
-                    email,
-                    emailApplicationPassword,
-                    secureCon
-            );
+            Inbox inbox = new EmailUtilities.Inbox(host, port, email, emailApplicationPassword, secureCon, EmailProtocol.IMAP);
+            inbox.clearInbox();
         }
 
         /**
-         * IMAP connection to get the inbox
+         * Creates a store connection using the configured protocol.
+         *
+         * @return The connected Store object.
+         * @throws MessagingException if connection fails.
          */
-        private Store getImapStore() {
+        private Store createStoreConnection() throws MessagingException {
             Properties properties = getConnectionProperties();
             Session session = Session.getInstance(properties);
-            Store store = null;
-            try {
-                log.info("Connecting please wait...");
-                store = session.getStore("pop3");
-                store.connect(userName, password);
-            } catch (MessagingException exception) {
-                log.error(exception.getLocalizedMessage(), exception);
-            }
+            log.info("Connecting please wait...");
+            Store store = session.getStore(protocol.getValue());
+            store.connect(userName, password);
             return store;
         }
 
         /**
-         * Clears the email inbox by deleting messages that match the specified filters
-         * using the configured email credentials and server settings.
+         * Marks messages as DELETED if they match the provided filters.
+         * <p>
+         * Requires a READ_WRITE folder connection.
+         * </p>
          *
-         * <p>Each filter pair consists of an {@link EmailField} and a string value.
-         * Messages are deleted only if they match <b>all</b> provided filter criteria.
-         *
-         * @param filterPairs List of key-value pairs where:
-         *                    - Key: {@link EmailField} (e.g., SUBJECT, FROM)
-         *                    - Value: String to match against the corresponding field
-         * @throws MessagingException if there's an error connecting to the email server
-         *                            or performing mailbox operations
+         * @param filterPairs filters to identify messages to delete
          */
         public void clearInbox(List<Pair<EmailField, String>> filterPairs) {
             try {
-                Store store = getImapStore();
+                Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_WRITE);
 
-                // fetches new messages from server
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
@@ -711,37 +737,27 @@ public class EmailUtilities {
                     if (emailMatch(EmailMessage.from(message), filterPairs))
                         message.setFlag(Flags.Flag.DELETED, true);
 
-                // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
                 log.info(messages.size() + " messages have been successfully deleted!");
-
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
         }
 
-
         /**
-         * Clears the email inbox by applying the specified flag to messages that match
-         * the given filters using the configured email credentials and server settings.
+         * Applies a specific EmailFlag (e.g., DELETED, SEEN) to messages matching the provided filters.
          *
-         * <p>Messages are filtered based on key-value pairs (EmailField + String value)
-         * and the specified flag is applied to matching messages.
-         *
-         * @param flag        The flag to apply to matching messages (e.g., Flags.Flag.DELETED)
-         * @param filterPairs Variable arguments of key-value pairs where:
-         *                    - Key: {@link EmailField} (e.g., SUBJECT, FROM)
-         *                    - Value: String to match against the corresponding field
+         * @param flag        the flag to apply
+         * @param filterPairs variable arguments of filters
          */
         @SafeVarargs
         public final void clearInbox(EmailFlag flag, Pair<EmailField, String>... filterPairs) {
             try {
-                Store store = getImapStore();
+                Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_WRITE);
 
-                // fetches new messages from server
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
@@ -750,76 +766,74 @@ public class EmailUtilities {
                 for (Message message : messages)
                     if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
                         message.setFlag(flag.getFlag(), true);
-                        markedMessageCounter+=1;
+                        markedMessageCounter += 1;
                     }
 
-                // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
                 log.info(markedMessageCounter + " messages have been marked as " + flag.name() + "!");
-
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
         }
 
         /**
-         * Clears the email inbox by deleting <b>all</b> messages using the configured
-         * email credentials and server settings.
-         *
-         * <p>This method does not apply any filters and will delete every message in the inbox.
-         *
+         * Deletes all messages in the inbox.
          */
         public void clearInbox() {
             try {
-                Store store = getImapStore();
+                Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_WRITE);
 
-                // fetches new messages from server
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
 
                 log.info("Deleting messages..");
-                // Delete all the messages
                 for (Message message : messages) {
                     message.setFlag(Flags.Flag.DELETED, true);
                 }
 
-                // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
                 log.info(messages.size() + " messages have been successfully deleted!");
-
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
         }
 
         /**
-         * Clear inbox in batches - use it on the large inboxes to optimize the process
+         * Deletes messages in the inbox in batches to handle large volumes.
+         *
+         * @param batchSize the maximum number of messages to delete in this operation
          */
         public void clearInboxInBatches(int batchSize) {
             try {
-                Store store = getImapStore();
+                Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
                 folderInbox.open(Folder.READ_WRITE);
 
-                // fetches new messages from server
                 log.info("Getting inbox..");
                 List<Message> messages = List.of(folderInbox.getMessages());
-                List<Message> batchToDelete = messages.subList(0, batchSize);
+
+                if (messages.isEmpty()) {
+                    log.info("Inbox is empty.");
+                    folderInbox.close(false);
+                    store.close();
+                    return;
+                }
+
+                int safeBatchSize = Math.min(batchSize, messages.size());
+                List<Message> batchToDelete = messages.subList(0, safeBatchSize);
+
                 log.info("Deleting messages..");
-                // Delete all the messages
                 for (Message message : batchToDelete) {
                     message.setFlag(Flags.Flag.DELETED, true);
                 }
 
-                // Delete messages and close connection
                 folderInbox.close(true);
                 store.close();
                 log.info(batchToDelete.size() + " messages out of " + messages.size() + " have been successfully deleted!");
-
             } catch (MessagingException exception) {
                 log.error(exception.getLocalizedMessage(), exception);
             }
