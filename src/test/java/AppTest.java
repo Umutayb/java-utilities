@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static utils.arrays.ArrayUtilities.*;
-import static utils.email.EmailUtilities.Inbox.EmailField.CONTENT;
-import static utils.email.EmailUtilities.Inbox.EmailField.SUBJECT;
+import static utils.email.EmailUtilities.Inbox.EmailField.*;
 import static utils.StringUtilities.contextCheck;
 
 public class AppTest {
@@ -36,11 +35,6 @@ public class AppTest {
     }
 
     @Test
-    public void dataGeneratorPetTest() {
-        printer.info("Test!");
-    }
-
-    @Test
     public void localisationCapabilityTest() {
         JsonObject localisationJson = FileUtilities.Json.parseJsonFile("src/test/resources/localisation.json");
         ContextStore.put("localisation-json", localisationJson);
@@ -58,7 +52,7 @@ public class AppTest {
     }
 
     @Test
-	public void getPDFFileTextTest() throws IOException {
+    public void getPDFFileTextTest() throws IOException {
         URL url = new URL("https://sandbox.mabl.com/downloads/mabl_dash.pdf");
         String fileDestinationPath = "src/test/resources/filePDF.pdf";
         String pdfText = FileUtilities.getPDFFileText(url, fileDestinationPath);
@@ -142,7 +136,7 @@ public class AppTest {
         printer.success("cleanEmailTest() is successful!");
     }
 
-	@Test
+    @Test
     public void filterEmailTest() {
         EmailUtilities.Inbox inbox = new EmailUtilities.Inbox("imap.gmail.com",
                 "993",
@@ -235,14 +229,14 @@ public class AppTest {
 
     @Test
     public void dateFormatTest() {
-       String date = "2025-6-20";
-       String expectedDate = "2025-06-20";
+        String date = "2025-6-20";
+        String expectedDate = "2025-06-20";
 
-       Assert.assertEquals(
-               "Fixed date format did not match the expected one!",
-               expectedDate,
-               DateUtilities.reformatDateString(date, "yyyy-MM-dd")
-       );
+        Assert.assertEquals(
+                "Fixed date format did not match the expected one!",
+                expectedDate,
+                DateUtilities.reformatDateString(date, "yyyy-MM-dd")
+        );
         printer.success("The dateFormatTest() test pass!");
     }
 }
