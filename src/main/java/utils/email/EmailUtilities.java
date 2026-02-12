@@ -452,35 +452,39 @@ public class EmailUtilities {
          * </p>
          *
          * @param print           whether to print message details
-         * @param save            whether to save message content
-         * @param saveAttachments whether to save attachments
+         * @param download            whether to download message content
+         * @param saveAttachments whether to download attachments
          * @param filterPairs     filters to apply
          */
-        public void load(boolean print, boolean save, boolean saveAttachments, List<Pair<EmailField, String>> filterPairs) {
+        public void load(
+                boolean print,
+                boolean download,
+                boolean saveAttachments,
+                List<Pair<EmailField, String>> filterPairs)
+        {
             try {
                 Store store = createStoreConnection();
                 Folder folderInbox = store.getFolder("INBOX");
 
-                // Opened as READ_WRITE to allow resetting flags for non-matching emails
                 folderInbox.open(Folder.READ_WRITE);
 
                 log.info("Connected to mail via " + host + " (" + protocol.name() + ")");
                 log.info("Getting inbox..");
 
-                List<Message> messages = new ArrayList<>(List.of(folderInbox.getMessages()));
-                Collections.reverse(messages);
+                Message[] messages = folderInbox.getMessages();
 
-                for (Message message : messages) {
-                    Flags initialFlags = message.getFlags();
-                    boolean wasSeen = message.getFlags().contains(Flags.Flag.SEEN);
+                for (int i = 0; i < messages.length; i++)
+                    processMessage(
+                            messages[i],
+                            true,
+                            true,
+                            true,
+                            true,
+                            i,
+                            EmailFlag.SEEN,
+                            filterPairs
+                    );
 
-                    if (emailMatch(EmailMessage.from(message), filterPairs)) {
-                        resolveMessage(message, messages.indexOf(message), print, save, saveAttachments);
-                        message.setFlag(Flags.Flag.SEEN, true);
-                    }
-                    else if (!wasSeen)
-                        message.setFlag(Flags.Flag.SEEN, false);
-                }
                 log.info("You have " + this.messages.size() + " new (filtered) mails in your inbox");
 
                 folderInbox.close(false);
@@ -581,7 +585,13 @@ public class EmailUtilities {
         /**
          * Helper method to process a raw Jakarta Message into an internal EmailMessage and handle I/O (printing/saving).
          */
-        private void resolveMessage(Message message, Integer index, Boolean print, Boolean save, Boolean saveAttachments) {
+        private void resolveMessage(
+                Message message,
+                int messageIndex,
+                boolean log,
+                boolean download,
+                boolean saveAttachments
+        ) {
             try {
                 String from = message.getFrom()[0].toString();
                 String sentDate = String.valueOf(message.getSentDate());
@@ -592,20 +602,20 @@ public class EmailUtilities {
                 EmailMessage emailMessage = EmailMessage.from(message);
                 emailMessage.setFileName(String.format("message#%s", DateUtilities.getDate().getTimeInMillis()));
 
-                messages.add(emailMessage);
-
-                if (print) {
-                    log.info("Message #" + index);
-                    log.info("From: " + from);
-                    log.info("Subject: " + subject);
-                    log.info("Sent Date: " + sentDate);
-                    log.info("Message: " + messageContent);
-                    if (!attachments.isEmpty()) log.info("Attachments: " + attachments);
+                if (log) {
+                    this.log.info("Message #" + messageIndex);
+                    this.log.info("From: " + from);
+                    this.log.info("Subject: " + subject);
+                    this.log.info("Sent Date: " + sentDate);
+                    this.log.info("Message: " + messageContent);
+                    if (!attachments.isEmpty()) this.log.info("Attachments: " + attachments);
                 }
 
-                if (save) saveMessage(emailMessage.getFileName(), messageContent);
+                messages.add(emailMessage);
+
+                if (download) saveMessage(emailMessage.getFileName(), messageContent);
             } catch (MessagingException exception) {
-                log.error("Could not connect to the message store", exception);
+                this.log.error("Could not connect to the message store", exception);
             }
         }
 
@@ -743,38 +753,50 @@ public class EmailUtilities {
         }
 
         /**
+         * Applies a specific EmailFlag (e.g., DELETED, SEEN) to messages matching the provided filters.
+         * Messages that do <b>not</b> match are restored to their original flags.
+         *
+         * @param flag        the flag to apply
+         * @param filterPairs variable arguments of filters
+         */
+        public final void clearInbox(EmailFlag flag, List<Pair<EmailField, String>> filterPairs) {
+            try (Store store = createStoreConnection()) {
+                Folder folderInbox = store.getFolder("INBOX");
+                folderInbox.open(Folder.READ_WRITE);
+
+                log.info("Getting inbox..");
+                Message[] messages = folderInbox.getMessages();
+
+                log.info("Marking messages as " + markup(StringUtilities.Color.BLUE, flag.name()) + "...");
+                int markedMessageCounter = 0;
+
+                for (int i = 0; i < messages.length; i++)
+                    if (processMessage(
+                            messages[i],
+                            false,
+                            false,
+                            false,
+                            false,
+                            i,
+                            flag,
+                            filterPairs
+                    )) markedMessageCounter += 1;
+
+                folderInbox.close(true);
+                log.info(markedMessageCounter + " messages have been marked as " + flag.name() + "!");
+            } catch (MessagingException exception) {
+                log.error(exception.getLocalizedMessage(), exception);
+            }
+        }
+
+        /**
          * Marks messages as DELETED if they match the provided filters.
          * Messages that do <b>not</b> match are restored to their original SEEN state.
          *
          * @param filterPairs filters to identify messages to delete
          */
         public void clearInbox(List<Pair<EmailField, String>> filterPairs) {
-            try {
-                Store store = createStoreConnection();
-                Folder folderInbox = store.getFolder("INBOX");
-                folderInbox.open(Folder.READ_WRITE);
-
-                log.info("Getting inbox..");
-                List<Message> messages = List.of(folderInbox.getMessages());
-
-                log.info("Deleting messages..");
-                for (Message message : messages) {
-                    boolean wasSeen = message.getFlags().contains(Flags.Flag.SEEN);
-
-                    if (emailMatch(EmailMessage.from(message), filterPairs)) {
-                        message.setFlag(Flags.Flag.DELETED, true);
-                    } else {
-                        // Restore original state
-                        message.setFlag(Flags.Flag.SEEN, wasSeen);
-                    }
-                }
-
-                folderInbox.close(true);
-                store.close();
-                log.info(messages.size() + " messages have been successfully deleted!");
-            } catch (MessagingException exception) {
-                log.error(exception.getLocalizedMessage(), exception);
-            }
+            clearInbox(EmailFlag.DELETED, filterPairs);
         }
 
         /**
@@ -786,36 +808,58 @@ public class EmailUtilities {
          */
         @SafeVarargs
         public final void clearInbox(EmailFlag flag, Pair<EmailField, String>... filterPairs) {
+            clearInbox(flag, List.of(filterPairs));
+        }
+
+        /**
+         * Processes an individual message to determine if it matches the specified filters
+         * and updates its flags accordingly.
+         * <p>
+         * If the message matches the filters, the specified {@code flag} is applied. If it
+         * does not match, the method attempts to restore the message's original flags.
+         * If no flags were previously present, it defaults to unsetting the SEEN flag.
+         * </p>
+         *
+         * @param message         the {@link Message} to process
+         * @param resolve         if true, triggers message resolution logic (logging, downloading)
+         * @param download        if true, downloads the message content during resolution
+         * @param log             if true, logs the resolution process
+         * @param saveAttachments if true, saves attachments during resolution
+         * @param messageIndex    the index of the message within the folder for logging purposes
+         * @param flag            the {@link EmailFlag} to apply if the message matches filters
+         * @param filterPairs     the list of criteria used to match the message
+         * @return true if emailMatch() is true for message and filters.
+         */
+        private boolean processMessage(
+                Message message,
+                boolean resolve,
+                boolean download,
+                boolean log,
+                boolean saveAttachments,
+                int messageIndex,
+                EmailFlag flag,
+                List<Pair<EmailField, String>> filterPairs
+        ){
+            boolean processed = false;
             try {
-                Store store = createStoreConnection();
-                Folder folderInbox = store.getFolder("INBOX");
-                folderInbox.open(Folder.READ_WRITE);
+                Flags initialFlags = message.getFlags();
+                boolean hasFlags = !initialFlags.toString().isEmpty();
 
-                log.info("Getting inbox..");
-                List<Message> messages = List.of(folderInbox.getMessages());
-
-                log.info("Marking messages as " + markup(StringUtilities.Color.BLUE, flag.name()) + "...");
-                int markedMessageCounter = 0;
-                for (Message message : messages) {
-                    Flags initialFlags = message.getFlags();
-                    boolean hasFlags = !initialFlags.toString().isEmpty();
-
-                    if (emailMatch(EmailMessage.from(message), List.of(filterPairs))) {
+                if (emailMatch(EmailMessage.from(message), filterPairs)) {
+                    if (resolve)
+                        resolveMessage(message, messageIndex, log, download, saveAttachments);
+                    if (flag != null)
                         message.setFlag(flag.getFlag(), true);
-                        markedMessageCounter += 1;
-                    }
-                    else if (hasFlags)
-                        message.setFlags(initialFlags, true);
-                    else
-                        message.setFlag(Flags.Flag.SEEN, false);
+                    processed = true;
                 }
-
-                folderInbox.close(true);
-                store.close();
-                log.info(markedMessageCounter + " messages have been marked as " + flag.name() + "!");
+                else if (hasFlags)
+                    message.setFlags(initialFlags, true);
+                else
+                    message.setFlag(Flags.Flag.SEEN, false);
             } catch (MessagingException exception) {
-                log.error(exception.getLocalizedMessage(), exception);
+                this.log.error(exception.getLocalizedMessage(), exception);
             }
+            return processed;
         }
 
         /**
